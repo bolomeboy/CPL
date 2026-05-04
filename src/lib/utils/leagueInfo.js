@@ -7,7 +7,6 @@ export const enableBlog = false; // requires VITE_CONTENTFUL_ACCESS_TOKEN and VI
 
 /*   STEP 2   */
 export const homepageText = `
-  <p><script>(function(d, s, id) { var js, pjs = d.getElementsByTagName(s)[0]; if (d.getElementById(id)) return; js = d.createElement(s); js.id = id; js.src = "//www.tickcounter.com/static/js/loader.js"; pjs.parentNode.insertBefore(js, pjs); }(document, "script", "tickcounter-sdk"));</script><a data-type="countdown" data-id="10100262" class="tickcounter" style="display:block; left:0; width:100%; height:0; position:relative; padding-bottom:25%; margin:0 auto;" title="2026 DOC Draft" href="//www.tickcounter.com/">2026 DOC Draft</a></p>
   <p>The Dynasty of California (The DOC) is a 12-team dynasty fantasy football league built on competition, strategy, and a lot of personality. Managers are constantly trading players and future draft picks, making bold moves in pursuit of the next championship.</p>
   <p>The league is highly active, with trades, debates, and plenty of smack talk throughout the season. While the competition is intense, the league is ultimately about having fun, staying engaged, and building rivalries that carry from year to year.</p>
   <p>Most of the league members share Portuguese roots, which adds its own unique culture and camaraderie to the league.</p>
