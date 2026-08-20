@@ -1,4 +1,4 @@
-import {leagueID} from '$lib/utils/leagueInfo';
+import { leagueID } from '$lib/utils/leagueInfo';
 
 export const tabs = [
     {
@@ -7,81 +7,127 @@ export const tabs = [
         dest: '/',
         key: 'home',
     },
+
     {
-        icon: 'sports',
-        label: 'Matchups',
-        dest: '/matchups',
-        key: 'matchups',
-    },
-    {
-        icon: 'swap_horiz',
-        label: 'Trades & Waivers',
-        dest: '/transactions',
-        key: 'transactions',
-    },
-    {
-        icon: 'article',
-        label: 'Blog',
-        dest: '/blog',
-        key: 'blog',
-    },
-    {
-        icon: 'view_comfy',
-        label: 'League Info',
+        icon: 'emoji_events',
+        label: 'California Primeira Liga',
         nest: true,
-        key: 'league_info',
+        key: 'cpl',
         children: [
-            {
-                icon: 'storage',
-                label: 'Rosters',
-                dest: '/rosters',
-            },
-            {
-                icon: 'groups',
-                label: 'Managers',
-                dest: '/managers',
-            },
-            {
-                icon: 'local_fire_department',
-                label: 'Rivalry',
-                dest: '/rivalry',
-            },
             {
                 icon: 'leaderboard',
                 label: 'Standings',
-                dest: '/standings',
+                dest: '/cpl/standings',
             },
             {
-                icon: 'view_comfy',
-                label: 'Drafts',
-                dest: '/drafts',
+                icon: 'sports',
+                label: 'Matchups',
+                dest: '/cpl/matchups',
+            },
+            {
+                icon: 'storage',
+                label: 'Rosters',
+                dest: '/cpl/rosters',
+            },
+            {
+                icon: 'swap_horiz',
+                label: 'Transactions',
+                dest: '/cpl/transactions',
             },
             {
                 icon: 'emoji_events',
-                label: 'Trophy Room',
-                dest: '/awards',
+                label: 'Champions',
+                dest: '/cpl/champions',
             },
             {
                 icon: 'military_tech',
                 label: 'Records',
-                dest: '/records',
+                dest: '/cpl/records',
+            },
+        ],
+    },
+
+    {
+        icon: 'emoji_events',
+        label: 'Segunda Liga',
+        nest: true,
+        key: 'segunda',
+        children: [
+            {
+                icon: 'leaderboard',
+                label: 'Standings',
+                dest: '/segunda/standings',
+            },
+            {
+                icon: 'sports',
+                label: 'Matchups',
+                dest: '/segunda/matchups',
+            },
+            {
+                icon: 'storage',
+                label: 'Rosters',
+                dest: '/segunda/rosters',
+            },
+            {
+                icon: 'swap_horiz',
+                label: 'Transactions',
+                dest: '/segunda/transactions',
+            },
+            {
+                icon: 'emoji_events',
+                label: 'Champions',
+                dest: '/segunda/champions',
+            },
+            {
+                icon: 'military_tech',
+                label: 'Records',
+                dest: '/segunda/records',
+            },
+        ],
+    },
+
+    {
+        icon: 'sync_alt',
+        label: 'Promotion & Relegation',
+        dest: '/promotion-relegation',
+        key: 'promotion',
+    },
+
+    {
+        icon: 'history',
+        label: 'League History',
+        nest: true,
+        key: 'history',
+        children: [
+            {
+                icon: 'emoji_events',
+                label: 'Champions',
+                dest: '/history/champions',
+            },
+            {
+                icon: 'leaderboard',
+                label: 'All-Time Records',
+                dest: '/history/records',
             },
             {
                 icon: 'history_edu',
-                label: 'Constitution',
-                dest: '/constitution',
+                label: 'Season History',
+                dest: '/history/seasons',
             },
-            {
-                icon: 'sports_football',
-                label: 'Go to Sleeper',
-                dest: `https://sleeper.app/leagues/${leagueID}`,
-            },
-        ]
+        ],
     },
+
     {
-        icon: 'lightbulb',
-        label: 'Resources',
-        dest: '/resources',
-        key: 'resources',
+        icon: 'menu_book',
+        label: 'League Rules',
+        dest: '/rules',
+        key: 'rules',
+    },
+
+    {
+        icon: 'sports_football',
+        label: 'Go to Sleeper',
+        dest: `https://sleeper.app/leagues/${leagueID}`,
+        key: 'sleeper',
     },
 ];
