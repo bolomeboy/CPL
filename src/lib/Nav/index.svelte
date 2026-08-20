@@ -40,11 +40,20 @@
 	}
 
 	#logo {
-		width: 80px;
-		display: block;
-		margin: 0 auto;
-		padding: 10px;
-	}
+    width: 105px;
+    display: block;
+    margin: 0 auto;
+    padding: 10px;
+
+    filter:
+        drop-shadow(1px 0 0 #333)
+        drop-shadow(-1px 0 0 #333)
+        drop-shadow(0 1px 0 #333)
+        drop-shadow(0 -1px 0 #333)
+        drop-shadow(2px 0 2px rgba(0, 0, 0, 0.75))
+        drop-shadow(-2px 0 2px rgba(0, 0, 0, 0.75))
+        drop-shadow(0 3px 4px rgba(0, 0, 0, 0.65));
+}
 
     .large {
 		display: block;
