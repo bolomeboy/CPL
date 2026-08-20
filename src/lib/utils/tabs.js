@@ -21,19 +21,16 @@ export const tabs = [
     },
 
     {
+        icon: 'sync_alt',
+        label: 'Promotion & Relegation',
+        dest: '/promotion-relegation',
+        key: 'promotion',
+    },
+
+    {
         icon: 'menu_book',
-        label: 'League Info',
-        nest: true,
-        key: 'league_info',
-        children: [
-            {
-                icon: 'sync_alt',
-                label: 'Promotion & Relegation',
-                dest: '/promotion-relegation',
-            },
-            {
-                icon: 'menu_book',
-                label: 'League Rules',
-                dest: '/rules',
-            },
+        label: 'League Rules',
+        dest: '/rules',
+        key: 'rules',
+    },
 ];
