@@ -4,35 +4,36 @@
 
 <style>
     #page {
-        max-width: 1100px;
+        max-width: 1000px;
         margin: 0 auto;
-        padding: 40px 25px;
+        padding: 30px 20px;
     }
 
     .header {
         text-align: center;
-        margin-bottom: 40px;
+        margin-bottom: 28px;
     }
 
     .header h1 {
         margin: 0;
-        font-size: 2.3em;
+        font-size: 1.9em;
     }
 
     .header p {
-        margin-top: 10px;
+        margin: 7px 0 0;
         color: #888;
+        font-size: 0.95em;
     }
 
     .section {
-        margin-bottom: 35px;
+        margin-bottom: 25px;
     }
 
     .sectionTitle {
         background-color: var(--blueOne);
-        color: white;
-        padding: 12px 18px;
-        font-size: 1.35em;
+        color: #fff;
+        padding: 9px 15px;
+        font-size: 1.15em;
         font-weight: 600;
     }
 
@@ -40,79 +41,86 @@
         border: 1px solid var(--ddd);
         border-top: none;
         background-color: var(--f3f3f3);
-        padding: 20px;
+        padding: 16px;
     }
 
     .settingsGrid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
+        gap: 8px;
     }
 
     .setting {
-        background-color: white;
+        background-color: var(--ebebeb);
         border: 1px solid var(--ddd);
-        padding: 15px;
+        padding: 11px 12px;
     }
 
     .setting strong {
         display: block;
-        margin-bottom: 5px;
+        margin-bottom: 3px;
+        font-size: 0.9em;
     }
 
     .setting span {
-        color: #777;
+        color: #888;
+        font-size: 0.85em;
     }
 
-    ul {
+    ul,
+    ol {
         margin: 5px 0 0;
-        padding-left: 25px;
+        padding-left: 23px;
     }
 
     li {
-        margin-bottom: 8px;
-        line-height: 1.5;
+        margin-bottom: 6px;
+        line-height: 1.45;
+        font-size: 0.9em;
     }
 
     .playoffGrid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 20px;
+        gap: 12px;
     }
 
     .division {
-        background-color: white;
+        background-color: var(--ebebeb);
         border: 1px solid var(--ddd);
-        padding: 20px;
+        padding: 15px;
     }
 
     .division h3 {
-        margin-top: 0;
+        margin: 0 0 8px;
         text-align: center;
+        font-size: 1em;
     }
 
     .payoutGrid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 20px;
+        gap: 12px;
     }
 
     .payout {
-        background-color: white;
+        background-color: var(--ebebeb);
         border: 1px solid var(--ddd);
-        padding: 20px;
+        padding: 15px;
     }
 
     .payout h3 {
-        margin-top: 0;
+        margin: 0 0 8px;
         text-align: center;
+        font-size: 1em;
     }
 
     .money {
         display: flex;
         justify-content: space-between;
-        border-bottom: 1px solid #eee;
-        padding: 10px 0;
+        border-bottom: 1px solid var(--ddd);
+        padding: 7px 0;
+        font-size: 0.9em;
     }
 
     .money:last-child {
@@ -120,35 +128,51 @@
     }
 
     .formation {
-        background-color: white;
+        background-color: var(--ebebeb);
         border: 1px solid var(--ddd);
-        padding: 20px;
-        line-height: 1.6;
+        padding: 15px;
+        line-height: 1.5;
+    }
+
+    .formation p {
+        margin: 6px 0;
+        font-size: 0.9em;
     }
 
     .note {
-        margin-top: 15px;
-        padding: 15px;
-        background-color: #f5f5f5;
-        border-left: 4px solid var(--blueOne);
+        margin-top: 10px;
+        padding: 9px 11px;
+        background-color: var(--ebebeb);
+        border-left: 3px solid var(--blueOne);
+        font-size: 0.85em;
+        line-height: 1.45;
+    }
+
+    .content > p {
+        font-size: 0.9em;
+    }
+
+    .content h3 {
+        font-size: 1em;
+        margin: 15px 0 5px;
     }
 
     @media (max-width: 700px) {
         #page {
-            padding: 25px 15px;
+            padding: 22px 14px;
+        }
+
+        .header h1 {
+            font-size: 1.65em;
         }
 
         .settingsGrid {
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(2, 1fr);
         }
 
         .playoffGrid,
         .payoutGrid {
             grid-template-columns: 1fr;
-        }
-
-        .header h1 {
-            font-size: 1.8em;
         }
     }
 
@@ -450,7 +474,6 @@
                     </div>
 
                 </div>
-
 
                 <div class="payout">
 
