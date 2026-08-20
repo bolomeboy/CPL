@@ -159,6 +159,7 @@
         border-left: 3px solid var(--blueOne);
         background-color: var(--ebebeb);
         font-size: 0.88em;
+        line-height: 1.45;
     }
 
     @media (max-width: 700px) {
@@ -191,10 +192,14 @@
 
     <div class="header">
         <h1>Promotion & Relegation</h1>
+
         <p>
             The system connecting the California Primeira Liga and Segunda Liga
         </p>
     </div>
+
+
+    <!-- SEGUNDA LIGA PROMOTION -->
 
     <div class="division">
 
@@ -239,9 +244,13 @@
 
     </div>
 
+
     <div class="arrow">
         ⬆️ &nbsp; ⬇️
     </div>
+
+
+    <!-- CPL RELEGATION -->
 
     <div class="division">
 
@@ -252,6 +261,9 @@
         <div class="divisionSubheader">
             Four teams are relegated every season
         </div>
+
+
+        <!-- AUTOMATIC RELEGATION -->
 
         <div class="relegationBox">
 
@@ -276,13 +288,16 @@
 
         </div>
 
+
+        <!-- TOILET BOWL -->
+
         <div class="toiletBowl">
 
             <h2>🚽 CPL Toilet Bowl</h2>
 
             <p>
-                Teams finishing 7th–10th enter the Toilet Bowl to determine
-                the final two relegated teams.
+                Teams finishing <strong>7th–10th</strong> enter the Toilet Bowl.
+                Two additional teams will be relegated through the tournament.
             </p>
 
             <div class="bracket">
@@ -292,42 +307,62 @@
                     <h3>Week 1</h3>
 
                     <div class="matchup">
-                        7th vs 8th
+                        <strong>7th vs. 8th</strong>
                     </div>
 
                     <div class="matchup">
-                        9th vs 10th
+                        <strong>9th vs. 10th</strong>
                     </div>
 
                 </div>
 
+
                 <div class="matchupBox">
 
-                    <h3>Final Relegation Round</h3>
+                    <h3>Relegation Round</h3>
 
                     <div class="matchup">
-                        Winner of 9/10 vs Loser of 7/8
+                        Winner of 9th/10th
+                        <br>
+                        vs.
+                        <br>
+                        Loser of 7th/8th
                     </div>
 
                     <div class="matchup">
-                        Loser is relegated
+                        🏆 Winner stays in CPL
+                    </div>
+
+                    <div class="matchup">
+                        🔻 Loser is relegated
                     </div>
 
                 </div>
 
             </div>
 
+
             <div class="note">
-                <strong>Toilet Bowl:</strong>
-                The winner of 7th vs. 8th stays in the CPL. The loser of
-                9th vs. 10th is relegated. The winner of 9th vs. 10th then
-                plays the loser of 7th vs. 8th. The winner stays in the CPL
+
+                <strong>How it works:</strong>
+
+                The winner of the 7th vs. 8th matchup stays in the CPL.
+                The loser moves to the Relegation Round.
+
+                The loser of the 9th vs. 10th matchup is immediately
+                relegated, while the winner advances to the Relegation Round.
+
+                The winner of the Relegation Round stays in the CPL,
                 and the loser is relegated.
+
             </div>
 
         </div>
 
     </div>
+
+
+    <!-- 2026 FORMATION SEASON -->
 
     <div class="formation">
 
@@ -339,8 +374,9 @@
         </p>
 
         <p>
-            At the conclusion of the 2026 season, the <strong>top six teams
-            from each league</strong> will form the California Primeira Liga.
+            At the conclusion of the 2026 season, the
+            <strong>top six teams from each league</strong> will form the
+            California Primeira Liga.
             The <strong>bottom six teams from each league</strong> will form
             the Segunda Liga.
         </p>
