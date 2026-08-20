@@ -8,60 +8,61 @@
 
 <style>
     #league {
-        max-width: 1100px;
+        max-width: 1000px;
         margin: 0 auto;
-        padding: 40px 25px;
+        padding: 30px 20px;
     }
 
     .header {
         text-align: center;
-        margin-bottom: 35px;
+        margin-bottom: 28px;
     }
 
     .badge {
-        width: 110px;
-        height: 110px;
-        margin: 0 auto 15px;
+        width: 85px;
+        height: 85px;
+        margin: 0 auto 12px;
         border-radius: 50%;
-        background: var(--blueOne);
-        border: 4px solid #c5c5c5;
+        background-color: var(--blueOne);
+        border: 3px solid #c5c5c5;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
-        font-size: 28px;
+        color: #fff;
+        font-size: 23px;
         font-weight: bold;
     }
 
     h1 {
         margin: 0;
-        font-size: 2.2em;
+        font-size: 1.9em;
     }
 
     .subtitle {
-        margin-top: 8px;
+        margin-top: 6px;
         color: #888;
+        font-size: 0.9em;
     }
 
     .sectionTitle {
         background-color: var(--blueOne);
-        color: white;
-        padding: 10px 15px;
-        font-size: 1.3em;
-        font-weight: 500;
-        margin-bottom: 15px;
+        color: #fff;
+        padding: 9px 15px;
+        font-size: 1.15em;
+        font-weight: 600;
+        margin-bottom: 12px;
     }
 
     .grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 15px;
+        gap: 10px;
     }
 
     .card {
-        background: var(--f3f3f3);
+        background-color: var(--f3f3f3);
         border: 1px solid var(--ddd);
-        padding: 25px 20px;
+        padding: 17px 12px;
         text-align: center;
         text-decoration: none;
         color: inherit;
@@ -69,51 +70,71 @@
     }
 
     .card:hover {
-        transform: translateY(-3px);
+        transform: translateY(-2px);
     }
 
     .icon {
-        font-size: 28px;
-        margin-bottom: 8px;
+        font-size: 24px;
+        margin-bottom: 5px;
     }
 
     .card h3 {
-        margin: 5px 0;
+        margin: 4px 0;
+        font-size: 1em;
     }
 
     .card p {
-        margin: 5px 0;
+        margin: 4px 0 0;
         color: #888;
-        font-size: 0.9em;
+        font-size: 0.82em;
     }
 
     .relegation {
-        margin-top: 35px;
+        margin-top: 25px;
         border: 1px solid var(--ddd);
-        padding: 20px;
+        padding: 16px;
         background-color: var(--f3f3f3);
     }
 
     .relegation h2 {
-        margin-top: 0;
+        margin: 0 0 7px;
+        font-size: 1.2em;
+    }
+
+    .relegation p {
+        margin: 5px 0 10px;
+        font-size: 0.9em;
+        line-height: 1.45;
     }
 
     .relegation a {
         color: var(--blueOne);
         font-weight: bold;
+        font-size: 0.9em;
+        text-decoration: none;
+    }
+
+    .relegation a:hover {
+        text-decoration: underline;
     }
 
     @media (max-width: 700px) {
-        .grid {
-            grid-template-columns: 1fr;
+        #league {
+            padding: 22px 14px;
         }
 
-        #league {
-            padding: 25px 15px;
+        .grid {
+            grid-template-columns: repeat(2, 1fr);
         }
 
         h1 {
-            font-size: 1.8em;
+            font-size: 1.65em;
+        }
+    }
+
+    @media (max-width: 450px) {
+        .grid {
+            grid-template-columns: 1fr;
         }
     }
 </style>
@@ -121,6 +142,7 @@
 <div id="league">
 
     <div class="header">
+
         <div class="badge">
             CPL
         </div>
@@ -130,7 +152,9 @@
         <div class="subtitle">
             Upper Division • 12 Teams
         </div>
+
     </div>
+
 
     <div class="sectionTitle">
         California Primeira Liga
@@ -176,17 +200,20 @@
 
     </div>
 
+
     <div class="relegation">
+
         <h2>⬇️ Relegation</h2>
 
         <p>
             The 11th and 12th place teams are automatically relegated.
-            Two additional teams will be relegated through the CPL Toilet Bowl.
+            Two additional teams are relegated through the CPL Toilet Bowl.
         </p>
 
         <a href="/promotion-relegation">
             View Promotion & Relegation →
         </a>
+
     </div>
 
 </div>
