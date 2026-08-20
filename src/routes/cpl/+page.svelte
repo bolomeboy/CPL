@@ -4,7 +4,7 @@
 
 <svelte:head>
     <title>{cplLeagueName}</title>
-</svelte>
+</svelte:head>
 
 <style>
     #league {
