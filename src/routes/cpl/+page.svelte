@@ -19,13 +19,16 @@
     }
 
     .divisionLogo {
-        width: 125px;
-        height: 125px;
-        object-fit: contain;
-        margin: 0 auto 12px;
-        display: block;
-        filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
-    }
+    width: 125px;
+    height: 125px;
+    object-fit: contain;
+    margin: 0 auto 12px;
+    display: block;
+    filter:
+        drop-shadow(0 2px 2px rgba(0, 0, 0, 0.85))
+        drop-shadow(0 4px 5px rgba(0, 0, 0, 0.65))
+        drop-shadow(0 7px 10px rgba(0, 0, 0, 0.45));
+}
 
     h1 {
         margin: 0;
