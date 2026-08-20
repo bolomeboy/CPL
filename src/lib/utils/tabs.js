@@ -38,20 +38,4 @@ export const tabs = [
                 label: 'League Rules',
                 dest: '/rules',
             },
-        ],
-    },
-
-    {
-        icon: 'more_horiz',
-        label: 'More',
-        nest: true,
-        key: 'more',
-        children: [
-            {
-                icon: 'sports_football',
-                label: 'Go to Sleeper',
-                dest: `https://sleeper.app/leagues/${leagueID}`,
-            },
-        ],
-    },
 ];
