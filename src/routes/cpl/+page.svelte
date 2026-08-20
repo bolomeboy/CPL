@@ -4,7 +4,7 @@
 
 <svelte:head>
     <title>{cplLeagueName}</title>
-</svelte:head>
+</svelte>
 
 <style>
     #league {
@@ -18,19 +18,13 @@
         margin-bottom: 28px;
     }
 
-    .badge {
-        width: 85px;
-        height: 85px;
+    .divisionLogo {
+        width: 125px;
+        height: 125px;
+        object-fit: contain;
         margin: 0 auto 12px;
-        border-radius: 50%;
-        background-color: var(--blueOne);
-        border: 3px solid #c5c5c5;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #fff;
-        font-size: 23px;
-        font-weight: bold;
+        display: block;
+        filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
     }
 
     h1 {
@@ -123,6 +117,11 @@
             padding: 22px 14px;
         }
 
+        .divisionLogo {
+            width: 110px;
+            height: 110px;
+        }
+
         .grid {
             grid-template-columns: repeat(2, 1fr);
         }
@@ -143,9 +142,11 @@
 
     <div class="header">
 
-        <div class="badge">
-            CPL
-        </div>
+        <img
+            src="/cpl-logo.png"
+            alt="California Primeira Liga"
+            class="divisionLogo"
+        />
 
         <h1>{cplLeagueName}</h1>
 
