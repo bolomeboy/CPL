@@ -11,9 +11,15 @@ export const tabs = [
     {
         icon: 'emoji_events',
         label: 'California Primeira Liga',
+        dest: '/cpl',
         nest: true,
         key: 'cpl',
         children: [
+            {
+                icon: 'home',
+                label: 'CPL Home',
+                dest: '/cpl',
+            },
             {
                 icon: 'leaderboard',
                 label: 'Standings',
@@ -50,9 +56,15 @@ export const tabs = [
     {
         icon: 'emoji_events',
         label: 'Segunda Liga',
+        dest: '/segunda',
         nest: true,
         key: 'segunda',
         children: [
+            {
+                icon: 'home',
+                label: 'Segunda Home',
+                dest: '/segunda',
+            },
             {
                 icon: 'leaderboard',
                 label: 'Standings',
