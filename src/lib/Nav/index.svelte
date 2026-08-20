@@ -23,7 +23,11 @@
 </script>
 
 <svelte:head>
-	<title>{!page.url.pathname[1] ? 'Home' : page.url.pathname[1].toUpperCase() + page.url.pathname.slice(2)} | League Page</title>
+    <title>
+        {!page.url.pathname[1]
+            ? 'California Primeira Liga'
+            : page.url.pathname[1].toUpperCase() + page.url.pathname.slice(2) + ' | California Primeira Liga'}
+    </title>
 </svelte:head>
 
 <style>
