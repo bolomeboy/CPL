@@ -1,6 +1,6 @@
 <svelte:head>
     <title>League Rules</title>
-</svelte>
+</svelte:head>
 
 <style>
     #page {
