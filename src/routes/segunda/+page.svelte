@@ -4,7 +4,7 @@
 
 <svelte:head>
     <title>{segundaLeagueName}</title>
-</svelte>
+</svelte:head>
 
 <style>
     #league {
