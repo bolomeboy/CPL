@@ -218,19 +218,19 @@
             <div class="promotionList">
 
                 <div class="promotionSpot">
-                    🥇 Semifinalist
+                    🥇 1st Place
                 </div>
 
                 <div class="promotionSpot">
-                    🥈 Semifinalist
+                    🥈 2nd Place
                 </div>
 
                 <div class="promotionSpot">
-                    ⚽ Semifinalist
+                    🥉 3rd Place
                 </div>
 
                 <div class="promotionSpot">
-                    ⚽ Semifinalist
+                    🏈 4th Place
                 </div>
 
             </div>
