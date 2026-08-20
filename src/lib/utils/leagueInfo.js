@@ -1,14 +1,16 @@
 /*   STEP 1   */
 // Sleeper League IDs
 // Add the real IDs when the leagues are created.
+export const leagueID = ""; // temporary — current default league
 export const cplLeagueID = "";
 export const segundaLeagueID = "";
 
 // League names
+export const leagueName = "California Primeira Liga";
 export const cplLeagueName = "California Primeira Liga";
 export const segundaLeagueName = "Segunda Liga";
 export const dues = 50; // (optional) used in template constitution page
-export const dynasty = true; // true for dynasty leagues, false for redraft and keeper
+export const dynasty = false; // true for dynasty leagues, false for redraft and keeper
 export const enableBlog = false; // requires VITE_CONTENTFUL_ACCESS_TOKEN and VITE_CONTENTFUL_SPACE environment variables
 
 /*   STEP 2   */
