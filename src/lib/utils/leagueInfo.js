@@ -15,16 +15,60 @@ export const enableBlog = false; // requires VITE_CONTENTFUL_ACCESS_TOKEN and VI
 
 /*   STEP 2   */
 export const homepageText = `
-  <p>The Dynasty of California (The DOC) is a 12-team dynasty fantasy football league built on competition, strategy, and a lot of personality. Managers are constantly trading players and future draft picks, making bold moves in pursuit of the next championship.</p>
-  <p>The league is highly active, with trades, debates, and plenty of smack talk throughout the season. While the competition is intense, the league is ultimately about having fun, staying engaged, and building rivalries that carry from year to year.</p>
-  <p>Most of the league members share Portuguese roots, which adds its own unique culture and camaraderie to the league.</p>
+  <p>
+    Welcome to the <strong>California Primeira Liga (CPL)</strong> — a competitive
+    fantasy football league built around competition, strategy, rivalries, and
+    long-term league history.
+  </p>
+
+  <p>
+    The league features two 12-team divisions: the
+    <strong>California Primeira Liga</strong>, our top division, and the
+    <strong>Segunda Liga</strong>, where teams compete for the chance to move up
+    to the CPL.
+  </p>
+
+  <p>
+    Beginning with the league's promotion and relegation system, every season
+    matters. Teams are competing not only for championships, but also for
+    promotion, survival, and a place in league history.
+  </p>
+
+  <p>
+    The CPL is about more than just fantasy football. It's about building
+    rivalries, making trades, talking trash, and creating a league that gets
+    better every season.
+  </p>
+
   <hr />
-  <h4>Championship History 🏆:</h4>
-  <h6>🏈 2025 - Champion: Elk Grove Gallos (Bolo)</h6>
-  <p>fill in</p>
-  <p>Championship MVP - Trey McBride - 28.60 points</p>
+
+  <h4>🏆 The League</h4>
+
+  <p>
+    <strong>California Primeira Liga</strong><br />
+    The top division. The best teams compete for the CPL championship while
+    fighting to avoid relegation.
+  </p>
+
+  <p>
+    <strong>Segunda Liga</strong><br />
+    The second division. Teams compete for the Segunda championship and the
+    opportunity to earn promotion into the CPL.
+  </p>
+
+   <p>
+    <strong>🔄 Promotion & Relegation</strong><br />
+    Each season, the competition between the two divisions stays active.
+    <strong>Four teams are promoted</strong> from the Segunda Liga to the CPL,
+    while <strong>four CPL teams are relegated</strong> to the Segunda Liga.
+    Every season brings a new fight for the championship, promotion, and survival.
+  </p>
+
   <hr />
-  <p>Established 2025</p>
+
+  <p>
+    <strong>Established 2026</strong>
+  </p>
 `;
 
 /*   STEP 3   */
