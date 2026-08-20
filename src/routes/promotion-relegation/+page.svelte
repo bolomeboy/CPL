@@ -1,5 +1,4 @@
 <script>
-    // Promotion and relegation rules
     const promotionSpots = 4;
     const automaticRelegationSpots = 2;
     const toiletBowlSpots = 2;
@@ -11,36 +10,36 @@
 
 <style>
     #page {
-        max-width: 1100px;
+        max-width: 1000px;
         margin: 0 auto;
-        padding: 40px 25px;
+        padding: 30px 20px;
     }
 
     .header {
         text-align: center;
-        margin-bottom: 40px;
+        margin-bottom: 28px;
     }
 
     .header h1 {
         margin: 0;
-        font-size: 2.3em;
+        font-size: 1.9em;
     }
 
     .header p {
-        margin-top: 10px;
+        margin: 7px 0 0;
         color: #888;
-        font-size: 1.05em;
+        font-size: 0.95em;
     }
 
     .division {
-        margin-bottom: 40px;
+        margin-bottom: 28px;
     }
 
     .divisionHeader {
         background-color: var(--blueOne);
-        color: white;
-        padding: 12px 18px;
-        font-size: 1.4em;
+        color: #fff;
+        padding: 9px 15px;
+        font-size: 1.15em;
         font-weight: 600;
         text-align: center;
     }
@@ -48,175 +47,142 @@
     .divisionSubheader {
         text-align: center;
         color: #888;
-        margin: 10px 0 20px;
+        margin: 7px 0 14px;
+        font-size: 0.9em;
     }
 
-    .rulesGrid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 15px;
-    }
-
-    .ruleCard {
-        background-color: var(--f3f3f3);
+    .promotionBox,
+    .relegationBox,
+    .toiletBowl,
+    .formation {
         border: 1px solid var(--ddd);
-        padding: 20px;
-        text-align: center;
-    }
-
-    .ruleIcon {
-        font-size: 32px;
-        margin-bottom: 10px;
-    }
-
-    .ruleCard h3 {
-        margin: 5px 0 10px;
-    }
-
-    .ruleCard p {
-        margin: 0;
-        color: #777;
-        line-height: 1.5;
+        background-color: var(--f3f3f3);
+        padding: 18px;
     }
 
     .promotionBox {
-        border: 2px solid #4d8c5a;
-        background-color: #f3f8f4;
-        padding: 25px;
-        margin-top: 20px;
+        border-top: 3px solid #4d8c5a;
+    }
+
+    .relegationBox {
+        border-top: 3px solid #b54b4b;
+    }
+
+    .promotionBox h2,
+    .relegationBox h2,
+    .toiletBowl h2,
+    .formation h2 {
+        margin: 0 0 8px;
+        font-size: 1.25em;
         text-align: center;
     }
 
-    .promotionBox h2 {
-        margin-top: 0;
+    .promotionBox p,
+    .relegationBox p,
+    .toiletBowl p,
+    .formation p {
+        margin: 7px 0;
+        line-height: 1.45;
+        font-size: 0.92em;
     }
 
     .promotionList {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 10px;
-        margin-top: 20px;
+        gap: 8px;
+        margin-top: 15px;
     }
 
-    .promotionSpot {
-        background-color: white;
-        border: 1px solid #ccc;
-        padding: 15px;
+    .promotionSpot,
+    .relegationSpot,
+    .matchup {
+        background-color: var(--ebebeb);
+        border: 1px solid var(--ddd);
+        padding: 11px 8px;
+        text-align: center;
+        font-size: 0.9em;
         font-weight: 600;
     }
 
-    .relegationBox {
-        border: 2px solid #b54b4b;
-        background-color: #faf3f3;
-        padding: 25px;
-        margin-top: 20px;
+    .arrow {
         text-align: center;
-    }
-
-    .relegationBox h2 {
-        margin-top: 0;
+        font-size: 25px;
+        margin: 15px 0;
     }
 
     .relegationList {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-        margin-top: 20px;
-    }
-
-    .relegationSpot {
-        background-color: white;
-        border: 1px solid #ccc;
-        padding: 15px;
-        font-weight: 600;
+        gap: 8px;
+        margin-top: 15px;
     }
 
     .toiletBowl {
-        margin-top: 30px;
-        padding: 25px;
-        background-color: var(--f3f3f3);
-        border: 1px solid var(--ddd);
-    }
-
-    .toiletBowl h2 {
-        text-align: center;
-        margin-top: 0;
-    }
-
-    .toiletBowl p {
-        text-align: center;
-        color: #777;
+        margin-top: 15px;
     }
 
     .bracket {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
-        margin-top: 25px;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 15px;
+    }
+
+    .matchupBox {
+        background-color: var(--ebebeb);
+        border: 1px solid var(--ddd);
+        padding: 14px;
+    }
+
+    .matchupBox h3 {
+        margin: 0 0 8px;
+        text-align: center;
+        font-size: 1em;
     }
 
     .matchup {
-        border: 1px solid var(--ddd);
-        background-color: white;
-        padding: 20px;
-        text-align: center;
-    }
-
-    .matchup h3 {
-        margin-top: 0;
-    }
-
-    .matchup div {
-        padding: 10px;
         margin: 5px 0;
-        background-color: var(--f3f3f3);
-    }
-
-    .arrow {
-        text-align: center;
-        font-size: 32px;
-        margin: 25px 0;
+        font-weight: 500;
     }
 
     .formation {
-        margin-top: 50px;
-        padding: 25px;
-        background-color: var(--f3f3f3);
-        border: 1px solid var(--ddd);
+        margin-top: 28px;
     }
 
     .formation h2 {
-        text-align: center;
-        margin-top: 0;
+        text-align: left;
     }
 
-    .formation p {
-        line-height: 1.6;
+    .note {
+        margin-top: 12px;
+        padding: 10px 12px;
+        border-left: 3px solid var(--blueOne);
+        background-color: var(--ebebeb);
+        font-size: 0.88em;
     }
 
     @media (max-width: 700px) {
         #page {
-            padding: 25px 15px;
+            padding: 22px 14px;
         }
 
-        .rulesGrid {
-            grid-template-columns: 1fr;
+        .header h1 {
+            font-size: 1.65em;
         }
 
         .promotionList {
             grid-template-columns: repeat(2, 1fr);
         }
 
-        .relegationList {
-            grid-template-columns: 1fr;
-        }
-
         .bracket {
             grid-template-columns: 1fr;
         }
+    }
 
-        .header h1 {
-            font-size: 1.8em;
+    @media (max-width: 450px) {
+        .promotionList,
+        .relegationList {
+            grid-template-columns: 1fr;
         }
     }
 </style>
@@ -229,9 +195,6 @@
             The system connecting the California Primeira Liga and Segunda Liga
         </p>
     </div>
-
-
-    <!-- SEGUNDA PROMOTION -->
 
     <div class="division">
 
@@ -249,7 +212,7 @@
 
             <p>
                 The four teams that reach the Segunda Liga playoff
-                semifinals will be promoted to the CPL for the following season.
+                semifinals are promoted to the CPL for the following season.
             </p>
 
             <div class="promotionList">
@@ -276,13 +239,9 @@
 
     </div>
 
-
     <div class="arrow">
         ⬆️ &nbsp; ⬇️
     </div>
-
-
-    <!-- CPL RELEGATION -->
 
     <div class="division">
 
@@ -293,7 +252,6 @@
         <div class="divisionSubheader">
             Four teams are relegated every season
         </div>
-
 
         <div class="relegationBox">
 
@@ -318,9 +276,6 @@
 
         </div>
 
-
-        <!-- TOILET BOWL -->
-
         <div class="toiletBowl">
 
             <h2>🚽 CPL Toilet Bowl</h2>
@@ -332,55 +287,54 @@
 
             <div class="bracket">
 
-                <div class="matchup">
+                <div class="matchupBox">
 
                     <h3>Week 1</h3>
 
-                    <div>
+                    <div class="matchup">
                         7th vs 8th
                     </div>
 
-                    <div>
+                    <div class="matchup">
                         9th vs 10th
                     </div>
 
                 </div>
 
-
-                <div class="matchup">
+                <div class="matchupBox">
 
                     <h3>Final Relegation Round</h3>
 
-                    <div>
+                    <div class="matchup">
                         Winner of 9/10 vs Loser of 7/8
                     </div>
 
-                    <div>
-                        Final relegation spot
+                    <div class="matchup">
+                        Loser is relegated
                     </div>
 
                 </div>
 
             </div>
 
-            <p style="margin-top: 20px;">
-                The two teams that lose the Toilet Bowl process are relegated
-                to the Segunda Liga.
-            </p>
+            <div class="note">
+                <strong>Toilet Bowl:</strong>
+                The winner of 7th vs. 8th stays in the CPL. The loser of
+                9th vs. 10th is relegated. The winner of 9th vs. 10th then
+                plays the loser of 7th vs. 8th. The winner stays in the CPL
+                and the loser is relegated.
+            </div>
 
         </div>
 
     </div>
-
-
-    <!-- 2026 FORMATION -->
 
     <div class="formation">
 
         <h2>📜 2026 Formation Season</h2>
 
         <p>
-            The 2026 season is the formation season for the CPL and Segunda Liga.
+            The 2026 season is the formation season for the league system.
             The 24 managers will begin in two randomized 12-team leagues.
         </p>
 
