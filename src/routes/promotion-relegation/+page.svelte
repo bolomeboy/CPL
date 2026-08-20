@@ -271,7 +271,7 @@
 
             <p>
                 The 11th and 12th place teams in the CPL are automatically
-                relegated to the Segunda Liga.
+                relegated to the Segunda Liga for the following season.
             </p>
 
             <div class="relegationList">
@@ -296,30 +296,51 @@
             <h2>🚽 CPL Toilet Bowl</h2>
 
             <p>
-                Teams finishing <strong>7th–10th</strong> enter the Toilet Bowl.
-                Two additional teams will be relegated through the tournament.
+                Teams finishing <strong>7th–10th</strong> enter the Toilet Bowl
+                to determine the two additional relegation spots.
             </p>
 
             <div class="bracket">
 
+                <!-- WEEK 15 -->
+
                 <div class="matchupBox">
 
-                    <h3>Week 1</h3>
+                    <h3>Week 15</h3>
 
                     <div class="matchup">
                         <strong>7th vs. 8th</strong>
                     </div>
 
                     <div class="matchup">
+                        🏆 Winner stays in CPL
+                    </div>
+
+                    <div class="matchup">
+                        Loser gets another chance
+                    </div>
+
+
+                    <div class="matchup">
                         <strong>9th vs. 10th</strong>
+                    </div>
+
+                    <div class="matchup">
+                        🔻 Loser is relegated
+                    </div>
+
+                    <div class="matchup">
+                        Winner gets another chance
                     </div>
 
                 </div>
 
 
+                <!-- WEEK 16 -->
+
                 <div class="matchupBox">
 
-                    <h3>Relegation Round</h3>
+                    <h3>Week 16 — Relegation Round</h3>
 
                     <div class="matchup">
                         Winner of 9th/10th
@@ -346,14 +367,17 @@
 
                 <strong>How it works:</strong>
 
-                The winner of the 7th vs. 8th matchup stays in the CPL.
-                The loser moves to the Relegation Round.
+                The winner of the 7th vs. 8th matchup is safe and remains
+                in the CPL. The loser gets another chance to avoid relegation
+                in the Relegation Round.
 
-                The loser of the 9th vs. 10th matchup is immediately
-                relegated, while the winner advances to the Relegation Round.
+                The 9th vs. 10th matchup is win-or-go-home. The loser is
+                immediately relegated to the Segunda Liga, while the winner
+                advances to the Relegation Round.
 
-                The winner of the Relegation Round stays in the CPL,
-                and the loser is relegated.
+                In the Relegation Round, the winner stays in the CPL for
+                the following season and the loser is relegated to the
+                Segunda Liga.
 
             </div>
 
@@ -376,8 +400,8 @@
         <p>
             At the conclusion of the 2026 season, the
             <strong>top six teams from each league</strong> will form the
-            California Primeira Liga.
-            The <strong>bottom six teams from each league</strong> will form
+            California Primeira Liga, while the
+            <strong>bottom six teams from each league</strong> will form
             the Segunda Liga.
         </p>
 
