@@ -85,7 +85,7 @@
 </style>
 
 <nav>
-	<a href="/"><img id="logo" alt="California Primeira Liga logo" src="/cpl-logo.png" /></a>
+	<a href="/"><img id="logo" alt="California Primeira Liga logo" src="/cpl-main-logo.png" /></a>
 
 	<div class="container">
 		<IconButton
