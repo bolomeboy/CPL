@@ -11,7 +11,7 @@
 
     .header {
         text-align: center;
-        margin-bottom: 28px;
+        margin-bottom: 30px;
     }
 
     .header h1 {
@@ -26,7 +26,7 @@
     }
 
     .section {
-        margin-bottom: 25px;
+        margin-bottom: 28px;
     }
 
     .sectionTitle {
@@ -41,120 +41,108 @@
         border: 1px solid var(--ddd);
         border-top: none;
         background-color: var(--f3f3f3);
-        padding: 16px;
+        padding: 18px;
     }
 
-    .settingsGrid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
+    .content p {
+        margin: 6px 0 12px;
+        font-size: 0.92em;
+        line-height: 1.5;
     }
 
-    .setting {
-        background-color: var(--ebebeb);
-        border: 1px solid var(--ddd);
-        padding: 11px 12px;
+    .content h3 {
+        margin: 18px 0 7px;
+        font-size: 1em;
     }
 
-    .setting strong {
-        display: block;
-        margin-bottom: 3px;
-        font-size: 0.9em;
-    }
-
-    .setting span {
-        color: #888;
-        font-size: 0.85em;
+    .content h3:first-child {
+        margin-top: 0;
     }
 
     ul,
     ol {
-        margin: 5px 0 0;
+        margin: 6px 0 12px;
         padding-left: 23px;
     }
 
     li {
-        margin-bottom: 6px;
+        margin-bottom: 7px;
         line-height: 1.45;
-        font-size: 0.9em;
+        font-size: 0.92em;
     }
 
-    .playoffGrid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
+    .settings {
+        line-height: 1.65;
+        font-size: 0.92em;
     }
 
-    .division {
-        background-color: var(--ebebeb);
-        border: 1px solid var(--ddd);
-        padding: 15px;
+    .settings strong {
+        font-weight: 600;
     }
 
-    .division h3 {
-        margin: 0 0 8px;
-        text-align: center;
-        font-size: 1em;
+    .divider {
+        border: none;
+        border-top: 1px solid var(--ddd);
+        margin: 18px 0;
     }
 
-    .payoutGrid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
+    .playoffSection {
+        margin-bottom: 18px;
     }
 
-    .payout {
-        background-color: var(--ebebeb);
-        border: 1px solid var(--ddd);
-        padding: 15px;
+    .playoffSection:last-child {
+        margin-bottom: 0;
     }
 
-    .payout h3 {
-        margin: 0 0 8px;
-        text-align: center;
-        font-size: 1em;
-    }
-
-    .money {
-        display: flex;
-        justify-content: space-between;
-        border-bottom: 1px solid var(--ddd);
-        padding: 7px 0;
-        font-size: 0.9em;
-    }
-
-    .money:last-child {
-        border-bottom: none;
-    }
-
-    .formation {
-        background-color: var(--ebebeb);
-        border: 1px solid var(--ddd);
-        padding: 15px;
-        line-height: 1.5;
-    }
-
-    .formation p {
-        margin: 6px 0;
-        font-size: 0.9em;
+    .playoffSection h3 {
+        margin-bottom: 6px;
     }
 
     .note {
-        margin-top: 10px;
-        padding: 9px 11px;
+        margin-top: 12px;
+        padding: 11px 13px;
         background-color: var(--ebebeb);
         border-left: 3px solid var(--blueOne);
-        font-size: 0.85em;
-        line-height: 1.45;
+        font-size: 0.88em;
+        line-height: 1.5;
     }
 
-    .content > p {
-        font-size: 0.9em;
+    .payoutTable {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+        font-size: 0.92em;
     }
 
-    .content h3 {
-        font-size: 1em;
-        margin: 15px 0 5px;
+    .payoutTable th,
+    .payoutTable td {
+        padding: 9px 10px;
+        border-bottom: 1px solid var(--ddd);
+        text-align: left;
+    }
+
+    .payoutTable th {
+        font-weight: 600;
+        background-color: var(--ebebeb);
+    }
+
+    .payoutTable td:last-child,
+    .payoutTable th:last-child {
+        text-align: right;
+    }
+
+    .payoutTable tr:last-child td {
+        border-bottom: none;
+    }
+
+    .divisionTitle {
+        font-weight: 600;
+        margin-top: 16px;
+        margin-bottom: 6px;
+    }
+
+    .formationList {
+        margin-top: 8px;
     }
 
     @media (max-width: 700px) {
@@ -166,28 +154,36 @@
             font-size: 1.65em;
         }
 
-        .settingsGrid {
-            grid-template-columns: repeat(2, 1fr);
+        .content {
+            padding: 15px;
         }
 
-        .playoffGrid,
-        .payoutGrid {
-            grid-template-columns: 1fr;
+        .payoutTable {
+            font-size: 0.88em;
         }
     }
 
     @media (max-width: 450px) {
-        .settingsGrid {
-            grid-template-columns: 1fr;
+        .payoutTable th,
+        .payoutTable td {
+            padding: 8px 7px;
         }
     }
 </style>
 
+
 <div id="page">
 
+    <!-- HEADER -->
+
     <div class="header">
+
         <h1>League Rules</h1>
-        <p>California Primeira Liga & Segunda Liga</p>
+
+        <p>
+            California Primeira Liga & Segunda Liga
+        </p>
+
     </div>
 
 
@@ -196,74 +192,40 @@
     <div class="section">
 
         <div class="sectionTitle">
-            🏈 Roster & Scoring Settings
+            🏈 Roster & Scoring
         </div>
 
         <div class="content">
 
-            <div class="settingsGrid">
+            <p class="settings">
+                <strong>Lineup:</strong>
+                1 QB • 2 RB • 2 WR • 1 TE • 2 FLEX (RB/WR/TE)
+            </p>
 
-                <div class="setting">
-                    <strong>Quarterback</strong>
-                    <span>1 QB</span>
-                </div>
+            <p class="settings">
+                <strong>Roster:</strong>
+                7 Bench • 1 IR
+            </p>
 
-                <div class="setting">
-                    <strong>Running Back</strong>
-                    <span>2 RB</span>
-                </div>
+            <p class="settings">
+                <strong>Scoring:</strong>
+                Full PPR • 6 points per passing TD
+            </p>
 
-                <div class="setting">
-                    <strong>Wide Receiver</strong>
-                    <span>2 WR</span>
-                </div>
+            <p class="settings">
+                <strong>Waivers:</strong>
+                $100 FAAB
+            </p>
 
-                <div class="setting">
-                    <strong>Tight End</strong>
-                    <span>1 TE</span>
-                </div>
+            <p class="settings">
+                <strong>League Median:</strong>
+                Applied every week
+            </p>
 
-                <div class="setting">
-                    <strong>Flex</strong>
-                    <span>2 FLEX (RB/WR/TE)</span>
-                </div>
-
-                <div class="setting">
-                    <strong>Bench</strong>
-                    <span>7 players</span>
-                </div>
-
-                <div class="setting">
-                    <strong>IR</strong>
-                    <span>1 spot</span>
-                </div>
-
-                <div class="setting">
-                    <strong>Scoring</strong>
-                    <span>Full PPR</span>
-                </div>
-
-                <div class="setting">
-                    <strong>Passing TD</strong>
-                    <span>6 points</span>
-                </div>
-
-                <div class="setting">
-                    <strong>Waivers</strong>
-                    <span>$100 FAAB</span>
-                </div>
-
-                <div class="setting">
-                    <strong>League Median</strong>
-                    <span>Applied every week</span>
-                </div>
-
-                <div class="setting">
-                    <strong>League Type</strong>
-                    <span>Redraft</span>
-                </div>
-
-            </div>
+            <p class="settings">
+                <strong>League Type:</strong>
+                Redraft
+            </p>
 
             <div class="note">
                 <strong>IR Eligibility:</strong>
@@ -292,27 +254,29 @@
 
         <div class="content">
 
-            <div class="playoffGrid">
+            <div class="playoffSection">
 
-                <div class="division">
-                    <h3>California Primeira Liga</h3>
+                <h3>California Primeira Liga</h3>
 
-                    <ul>
-                        <li>6 teams qualify for the playoffs.</li>
-                        <li>Seeds 1 and 2 receive a first-round bye.</li>
-                        <li>Playoff matchups are reseeded each round.</li>
-                    </ul>
-                </div>
+                <ul>
+                    <li>6 teams qualify for the playoffs.</li>
+                    <li>Seeds 1 and 2 receive a first-round bye.</li>
+                    <li>Playoff matchups are reseeded each round.</li>
+                </ul>
 
-                <div class="division">
-                    <h3>Segunda Liga</h3>
+            </div>
 
-                    <ul>
-                        <li>6 teams qualify for the playoffs.</li>
-                        <li>Seeds 1 and 2 receive a first-round bye.</li>
-                        <li>Playoff matchups are reseeded each round.</li>
-                    </ul>
-                </div>
+            <hr class="divider">
+
+            <div class="playoffSection">
+
+                <h3>Segunda Liga</h3>
+
+                <ul>
+                    <li>6 teams qualify for the playoffs.</li>
+                    <li>Seeds 1 and 2 receive a first-round bye.</li>
+                    <li>Playoff matchups are reseeded each round.</li>
+                </ul>
 
             </div>
 
@@ -321,7 +285,7 @@
     </div>
 
 
-    <!-- PROMOTION / RELEGATION -->
+    <!-- PROMOTION & RELEGATION -->
 
     <div class="section">
 
@@ -331,32 +295,37 @@
 
         <div class="content">
 
-            <h3>Segunda → CPL</h3>
+            <h3>Segunda Liga → CPL</h3>
 
             <ul>
                 <li>
                     The four teams that reach the Segunda Liga playoff
-                    semifinals are promoted to the CPL.
+                    semifinals are promoted to the CPL for the following season.
                 </li>
             </ul>
 
-            <h3>CPL → Segunda</h3>
+
+            <h3>CPL → Segunda Liga</h3>
 
             <ul>
                 <li>11th place is automatically relegated.</li>
                 <li>12th place is automatically relegated.</li>
                 <li>Teams finishing 7th–10th enter the CPL Toilet Bowl.</li>
                 <li>
-                    Two teams from the Toilet Bowl are relegated,
-                    creating four total relegations.
+                    Two additional teams are relegated through the
+                    Toilet Bowl, creating four total relegations.
                 </li>
             </ul>
 
+
             <div class="note">
+
                 <strong>Important:</strong>
-                Promotion is determined by playoff success in Segunda,
-                while CPL relegation is determined by regular-season
-                placement and the Toilet Bowl.
+
+                Promotion is determined by playoff success in the
+                Segunda Liga, while CPL relegation is determined by
+                regular-season placement and the Toilet Bowl.
+
             </div>
 
         </div>
@@ -374,23 +343,45 @@
 
         <div class="content">
 
+            <p>
+                Teams finishing <strong>7th–10th</strong> enter the
+                Toilet Bowl to determine the two additional relegation spots.
+            </p>
+
             <ol>
-                <li>7th place plays 8th place.</li>
-                <li>9th place plays 10th place.</li>
-                <li>The winner of 7th vs. 8th remains in the CPL.</li>
-                <li>The loser of 9th vs. 10th is relegated.</li>
+
                 <li>
-                    The winner of 9th vs. 10th plays the loser
-                    of 7th vs. 8th.
+                    <strong>7th vs. 8th:</strong>
+                    The winner stays in the CPL. The loser gets another
+                    chance to avoid relegation.
                 </li>
-                <li>The winner of that game remains in the CPL.</li>
-                <li>The loser is relegated.</li>
+
+                <li>
+                    <strong>9th vs. 10th:</strong>
+                    The loser is relegated to the Segunda Liga.
+                    The winner advances to the Relegation Round.
+                </li>
+
+                <li>
+                    <strong>Relegation Round:</strong>
+                    The loser of 7th vs. 8th plays the winner of
+                    9th vs. 10th.
+                </li>
+
+                <li>
+                    The winner of the Relegation Round stays in the CPL.
+                    The loser is relegated to the Segunda Liga.
+                </li>
+
             </ol>
 
             <div class="note">
+
                 <strong>Result:</strong>
+
                 Four CPL teams are relegated each season:
                 11th place, 12th place, and the two Toilet Bowl losers.
+
             </div>
 
         </div>
@@ -408,30 +399,30 @@
 
         <div class="content">
 
-            <div class="formation">
+            <p>
+                The 2026 season is the formation season for the league
+                system. The 24 managers will begin in two randomized
+                12-team leagues.
+            </p>
 
-                <p>
-                    The 2026 season is the formation season for the league
-                    system. The 24 managers will begin in two randomized
-                    12-team leagues.
-                </p>
+            <ul class="formationList">
 
-                <p>
-                    At the conclusion of the 2026 season, the top six teams
-                    from each league will form the California Primeira Liga.
-                </p>
+                <li>
+                    The top six teams from each league will form the
+                    <strong>California Primeira Liga</strong>.
+                </li>
 
-                <p>
+                <li>
                     The bottom six teams from each league will form the
-                    Segunda Liga.
-                </p>
+                    <strong>Segunda Liga</strong>.
+                </li>
 
-                <p>
+                <li>
                     Beginning in 2027, the promotion and relegation system
                     will be used every season.
-                </p>
+                </li>
 
-            </div>
+            </ul>
 
         </div>
 
@@ -452,62 +443,82 @@
                 <strong>Buy-In:</strong> $50 per team
             </p>
 
-            <div class="payoutGrid">
 
-                <div class="payout">
+            <h3>CPL</h3>
 
-                    <h3>🥇 CPL</h3>
+            <table class="payoutTable">
 
-                    <div class="money">
-                        <strong>1st</strong>
-                        <span>$500</span>
-                    </div>
+                <thead>
+                    <tr>
+                        <th>Place</th>
+                        <th>Payout</th>
+                    </tr>
+                </thead>
 
-                    <div class="money">
-                        <strong>2nd</strong>
-                        <span>$120</span>
-                    </div>
+                <tbody>
+                    <tr>
+                        <td>🥇 1st</td>
+                        <td>$500</td>
+                    </tr>
 
-                    <div class="money">
-                        <strong>3rd</strong>
-                        <span>$100</span>
-                    </div>
+                    <tr>
+                        <td>🥈 2nd</td>
+                        <td>$120</td>
+                    </tr>
 
-                </div>
+                    <tr>
+                        <td>🥉 3rd</td>
+                        <td>$100</td>
+                    </tr>
+                </tbody>
 
-                <div class="payout">
+            </table>
 
-                    <h3>🥈 Segunda Liga</h3>
 
-                    <div class="money">
-                        <strong>1st</strong>
-                        <span>$300</span>
-                    </div>
+            <h3>Segunda Liga</h3>
 
-                    <div class="money">
-                        <strong>2nd</strong>
-                        <span>$100</span>
-                    </div>
+            <table class="payoutTable">
 
-                    <div class="money">
-                        <strong>3rd</strong>
-                        <span>$50</span>
-                    </div>
+                <thead>
+                    <tr>
+                        <th>Place</th>
+                        <th>Payout</th>
+                    </tr>
+                </thead>
 
-                    <div class="money">
-                        <strong>4th</strong>
-                        <span>$30</span>
-                    </div>
+                <tbody>
+                    <tr>
+                        <td>🥇 1st</td>
+                        <td>$300</td>
+                    </tr>
 
-                </div>
+                    <tr>
+                        <td>🥈 2nd</td>
+                        <td>$100</td>
+                    </tr>
 
-            </div>
+                    <tr>
+                        <td>🥉 3rd</td>
+                        <td>$50</td>
+                    </tr>
+
+                    <tr>
+                        <td>4th</td>
+                        <td>$30</td>
+                    </tr>
+                </tbody>
+
+            </table>
+
 
             <div class="note">
+
                 <strong>CPL Incentive:</strong>
+
                 $10 from each Segunda Liga buy-in is added to the
                 CPL championship pot to provide an additional incentive
                 for competing in the top division.
+
             </div>
 
         </div>
