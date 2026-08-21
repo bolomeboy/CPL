@@ -79,12 +79,14 @@
 
     .promotionBox p,
     .relegationBox p,
-    .toiletBowl p,
+    .toiletBowlIntro,
     .formation p {
         margin: 7px 0;
         line-height: 1.45;
         font-size: 0.92em;
     }
+
+    /* PROMOTION */
 
     .promotionList {
         display: grid;
@@ -94,8 +96,7 @@
     }
 
     .promotionSpot,
-    .relegationSpot,
-    .matchup {
+    .relegationSpot {
         background-color: var(--ebebeb);
         border: 1px solid var(--ddd);
         padding: 11px 8px;
@@ -104,11 +105,15 @@
         font-weight: 600;
     }
 
+    /* DIVISION ARROW */
+
     .arrow {
         text-align: center;
         font-size: 25px;
         margin: 15px 0;
     }
+
+    /* AUTOMATIC RELEGATION */
 
     .relegationList {
         display: grid;
@@ -117,33 +122,77 @@
         margin-top: 15px;
     }
 
+    /* TOILET BOWL */
+
     .toiletBowl {
         margin-top: 15px;
+    }
+
+    .toiletBowlIntro {
+        margin: 7px 0 18px;
     }
 
     .bracket {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 12px;
+        gap: 20px;
         margin-top: 15px;
     }
 
     .matchupBox {
         background-color: var(--ebebeb);
         border: 1px solid var(--ddd);
-        padding: 14px;
+        padding: 18px;
     }
 
     .matchupBox h3 {
-        margin: 0 0 8px;
+        margin: 0 0 18px;
         text-align: center;
-        font-size: 1em;
+        font-size: 1.05em;
     }
 
-    .matchup {
-        margin: 5px 0;
-        font-weight: 500;
+    .matchupSection {
+        padding: 12px 0;
+        border-bottom: 1px solid var(--ddd);
     }
+
+    .matchupSection:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .matchupTitle {
+        font-size: 1.05em;
+        font-weight: 700;
+        margin-bottom: 8px;
+        text-align: center;
+    }
+
+    .matchupResult {
+        margin: 4px 0;
+        font-size: 0.9em;
+        line-height: 1.4;
+        text-align: center;
+    }
+
+    .survives {
+        font-weight: 600;
+    }
+
+    .relegated {
+        font-weight: 600;
+    }
+
+    .note {
+        margin-top: 18px;
+        padding: 12px 14px;
+        border-left: 3px solid var(--blueOne);
+        background-color: var(--ebebeb);
+        font-size: 0.88em;
+        line-height: 1.45;
+    }
+
+    /* FORMATION */
 
     .formation {
         margin-top: 28px;
@@ -153,14 +202,18 @@
         text-align: left;
     }
 
-    .note {
-        margin-top: 12px;
-        padding: 10px 12px;
-        border-left: 3px solid var(--blueOne);
-        background-color: var(--ebebeb);
-        font-size: 0.88em;
+    .formation ul {
+        margin: 8px 0 0;
+        padding-left: 22px;
+    }
+
+    .formation li {
+        margin: 6px 0;
+        font-size: 0.92em;
         line-height: 1.45;
     }
+
+    /* MOBILE */
 
     @media (max-width: 700px) {
         #page {
@@ -188,14 +241,19 @@
     }
 </style>
 
+
 <div id="page">
 
+    <!-- PAGE HEADER -->
+
     <div class="header">
+
         <h1>Promotion & Relegation</h1>
 
         <p>
             The system connecting the California Primeira Liga and Segunda Liga
         </p>
+
     </div>
 
 
@@ -245,6 +303,8 @@
     </div>
 
 
+    <!-- DIVISION ARROW -->
+
     <div class="arrow">
         ⬆️ &nbsp; ⬇️
     </div>
@@ -271,7 +331,7 @@
 
             <p>
                 The 11th and 12th place teams in the CPL are automatically
-                relegated to the Segunda Liga for the following season.
+                relegated to the Segunda Liga.
             </p>
 
             <div class="relegationList">
@@ -295,10 +355,11 @@
 
             <h2>🚽 CPL Toilet Bowl</h2>
 
-            <p>
+            <p class="toiletBowlIntro">
                 Teams finishing <strong>7th–10th</strong> enter the Toilet Bowl
                 to determine the two additional relegation spots.
             </p>
+
 
             <div class="bracket">
 
@@ -308,29 +369,38 @@
 
                     <h3>Week 15</h3>
 
-                    <div class="matchup">
-                        <strong>7th vs. 8th</strong>
+
+                    <div class="matchupSection">
+
+                        <div class="matchupTitle">
+                            7th vs. 8th
+                        </div>
+
+                        <div class="matchupResult survives">
+                            🏆 Winner stays in the CPL
+                        </div>
+
+                        <div class="matchupResult">
+                            Loser gets another chance
+                        </div>
+
                     </div>
 
-                    <div class="matchup">
-                        🏆 Winner stays in CPL
-                    </div>
 
-                    <div class="matchup">
-                        Loser gets another chance
-                    </div>
+                    <div class="matchupSection">
 
+                        <div class="matchupTitle">
+                            9th vs. 10th
+                        </div>
 
-                    <div class="matchup">
-                        <strong>9th vs. 10th</strong>
-                    </div>
+                        <div class="matchupResult relegated">
+                            🔻 Loser is relegated
+                        </div>
 
-                    <div class="matchup">
-                        🔻 Loser is relegated
-                    </div>
+                        <div class="matchupResult">
+                            Winner gets another chance
+                        </div>
 
-                    <div class="matchup">
-                        Winner gets another chance
                     </div>
 
                 </div>
@@ -342,20 +412,25 @@
 
                     <h3>Week 16 — Relegation Round</h3>
 
-                    <div class="matchup">
-                        Winner of 9th/10th
-                        <br>
-                        vs.
-                        <br>
-                        Loser of 7th/8th
-                    </div>
 
-                    <div class="matchup">
-                        🏆 Winner stays in CPL
-                    </div>
+                    <div class="matchupSection">
 
-                    <div class="matchup">
-                        🔻 Loser is relegated
+                        <div class="matchupTitle">
+                            Loser of 7th/8th
+                            <br>
+                            vs.
+                            <br>
+                            Winner of 9th/10th
+                        </div>
+
+                        <div class="matchupResult survives">
+                            🏆 Winner stays in the CPL
+                        </div>
+
+                        <div class="matchupResult relegated">
+                            🔻 Loser is relegated
+                        </div>
+
                     </div>
 
                 </div>
@@ -363,21 +438,22 @@
             </div>
 
 
+            <!-- TOILET BOWL EXPLANATION -->
+
             <div class="note">
 
                 <strong>How it works:</strong>
 
-                The winner of the 7th vs. 8th matchup is safe and remains
-                in the CPL. The loser gets another chance to avoid relegation
-                in the Relegation Round.
+                The winner of the 7th vs. 8th matchup stays in the CPL
+                for the following season, while the loser gets another
+                chance to avoid relegation.
 
-                The 9th vs. 10th matchup is win-or-go-home. The loser is
-                immediately relegated to the Segunda Liga, while the winner
-                advances to the Relegation Round.
+                The 9th vs. 10th matchup is win-or-go-home. The loser
+                is immediately relegated to the Segunda Liga, while the
+                winner advances to the Relegation Round.
 
-                In the Relegation Round, the winner stays in the CPL for
-                the following season and the loser is relegated to the
-                Segunda Liga.
+                In the Relegation Round, the winner stays in the CPL
+                and the loser is relegated to the Segunda Liga.
 
             </div>
 
@@ -397,18 +473,25 @@
             The 24 managers will begin in two randomized 12-team leagues.
         </p>
 
-        <p>
-            At the conclusion of the 2026 season, the
-            <strong>top six teams from each league</strong> will form the
-            California Primeira Liga, while the
-            <strong>bottom six teams from each league</strong> will form
-            the Segunda Liga.
-        </p>
+        <ul>
 
-        <p>
-            Beginning in 2027, the promotion and relegation system will be
-            used every season.
-        </p>
+            <li>
+                At the conclusion of the 2026 season, the
+                <strong>top six teams from each league</strong> will form
+                the California Primeira Liga.
+            </li>
+
+            <li>
+                The <strong>bottom six teams from each league</strong>
+                will form the Segunda Liga.
+            </li>
+
+            <li>
+                Beginning in 2027, the promotion and relegation system
+                will be used every season.
+            </li>
+
+        </ul>
 
     </div>
 
