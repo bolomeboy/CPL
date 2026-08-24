@@ -159,7 +159,7 @@
         <h1>{cplLeagueName}</h1>
 
         <div class="subtitle">
-            Upper Division • 12 Teams
+            CPL Red Division • 12 Teams
         </div>
 
     </div>
