@@ -1,14 +1,25 @@
 /*   STEP 1   */
 // Sleeper League IDs
-// Add the real IDs when the leagues are created.
-export const leagueID = ""; // temporary — current default league
-export const cplLeagueID = "";
-export const segundaLeagueID = "";
+// 2026 Inaugural Season
+
+// Default league used by the existing single-league pages.
+// For now, CPL Red is the default.
+export const leagueID = "1397459939433164800";
+
+// Keep the existing variable names so the rest of the
+// website continues working without import errors.
+export const cplLeagueID = "1397459939433164800";      // CPL Red
+export const segundaLeagueID = "1396264220969930752";  // CPL Green
+
 
 // League names
 export const leagueName = "California Primeira Liga";
-export const cplLeagueName = "California Primeira Liga";
-export const segundaLeagueName = "Segunda Liga";
+
+export const cplLeagueName = "CPL Red";
+
+export const segundaLeagueName = "CPL Green";
+
+
 export const dues = 50; // (optional) used in template constitution page
 export const dynasty = false; // true for dynasty leagues, false for redraft and keeper
 export const enableBlog = false; // requires VITE_CONTENTFUL_ACCESS_TOKEN and VITE_CONTENTFUL_SPACE environment variables
