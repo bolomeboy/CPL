@@ -151,8 +151,8 @@
     <div class="header">
 
         <img
-            src="/cpl-logo.png"
-            alt="California Primeira Liga"
+            src="/CPL-Red-logo.png"
+            alt="CPL Red"
             class="divisionLogo"
         />
 
