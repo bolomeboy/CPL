@@ -159,7 +159,7 @@
         <h1>{segundaLeagueName}</h1>
 
         <div class="subtitle">
-            Second Division • 12 Teams
+            CPL Green Division • 12 Teams
         </div>
 
     </div>
