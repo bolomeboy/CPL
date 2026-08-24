@@ -151,8 +151,8 @@
     <div class="header">
 
         <img
-            src="/segunda-logo.png"
-            alt="Segunda Liga"
+            src="/CPL-Green-logo.png"
+            alt="CPL Green"
             class="divisionLogo"
         />
 
