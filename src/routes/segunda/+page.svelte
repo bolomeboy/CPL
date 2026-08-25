@@ -91,33 +91,22 @@
         font-size: 0.82em;
     }
 
-    .promotion {
+    .road {
         margin-top: 25px;
         border: 1px solid var(--ddd);
         padding: 16px;
         background-color: var(--f3f3f3);
     }
 
-    .promotion h2 {
+    .road h2 {
         margin: 0 0 7px;
         font-size: 1.2em;
     }
 
-    .promotion p {
-        margin: 5px 0 10px;
+    .road p {
+        margin: 5px 0;
         font-size: 0.9em;
         line-height: 1.45;
-    }
-
-    .promotion a {
-        color: var(--blueOne);
-        font-weight: bold;
-        font-size: 0.9em;
-        text-decoration: none;
-    }
-
-    .promotion a:hover {
-        text-decoration: underline;
     }
 
     @media (max-width: 700px) {
@@ -166,7 +155,7 @@
 
 
     <div class="sectionTitle">
-        Segunda Liga
+        CPL Green
     </div>
 
     <div class="grid">
@@ -174,7 +163,7 @@
         <a class="card" href="/segunda/standings">
             <div class="icon">🏆</div>
             <h3>Standings</h3>
-            <p>Current Segunda standings</p>
+            <p>Current CPL Green standings</p>
         </a>
 
         <a class="card" href="/segunda/matchups">
@@ -186,7 +175,7 @@
         <a class="card" href="/segunda/rosters">
             <div class="icon">👥</div>
             <h3>Rosters</h3>
-            <p>Segunda team rosters</p>
+            <p>CPL Green team rosters</p>
         </a>
 
         <a class="card" href="/segunda/transactions">
@@ -198,30 +187,29 @@
         <a class="card" href="/segunda/champions">
             <div class="icon">🥇</div>
             <h3>Champions</h3>
-            <p>Segunda championship history</p>
+            <p>CPL Green championship history</p>
         </a>
 
         <a class="card" href="/segunda/records">
             <div class="icon">📊</div>
             <h3>Records</h3>
-            <p>Segunda all-time records</p>
+            <p>CPL Green all-time records</p>
         </a>
 
     </div>
 
 
-    <div class="promotion">
+    <div class="road">
 
-        <h2>⬆️ Promotion</h2>
+        <h2>🏁 Road to 2027</h2>
 
         <p>
-            The top four teams from the Segunda Liga playoffs will be
-            promoted to the California Primeira Liga for the following season.
+            The 2026 season will determine the future structure of the CPL.
+            At the end of the season, the <strong>top 6 teams</strong> will
+            enter the <strong>California Primeira Liga</strong> for 2027,
+            while the <strong>bottom 6 teams</strong> will enter the
+            <strong>Segunda Liga</strong>.
         </p>
-
-        <a href="/promotion-relegation">
-            View Promotion & Relegation →
-        </a>
 
     </div>
 
