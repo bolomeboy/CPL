@@ -1,14 +1,22 @@
-import { getUpcomingDraft, getPreviousDrafts, getLeagueTeamManagers, loadPlayers } from '$lib/utils/helper';
+import {
+    getCplDrafts,
+    getCplPreviousDrafts
+} from '$lib/utils/helper';
+
+import {
+    getLeagueTeamManagers,
+    loadPlayers
+} from '$lib/utils/helper';
 
 export async function load({ fetch }) {
-    const upcomingDraftData = getUpcomingDraft();
-    const previousDraftsData = getPreviousDrafts();
+    const cplDraftsData = getCplDrafts();
+    const cplPreviousDraftsData = getCplPreviousDrafts();
     const leagueTeamManagersData = getLeagueTeamManagers();
     const playersData = loadPlayers(fetch);
 
     return {
-        upcomingDraftData,
-        previousDraftsData,
+        cplDraftsData,
+        cplPreviousDraftsData,
         leagueTeamManagersData,
         playersData,
     };
