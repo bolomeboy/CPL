@@ -4,7 +4,7 @@
 
 <svelte:head>
     <title>{cplLeagueName}</title>
-</svelte:head>
+</svelte>
 
 <style>
     #league {
@@ -19,21 +19,21 @@
     }
 
     .divisionLogo {
-    width: 125px;
-    height: 125px;
-    object-fit: contain;
-    margin: 0 auto 12px;
-    display: block;
+        width: 125px;
+        height: 125px;
+        object-fit: contain;
+        margin: 0 auto 12px;
+        display: block;
 
-    filter:
-        drop-shadow(1px 0 0 #333)
-        drop-shadow(-1px 0 0 #333)
-        drop-shadow(0 1px 0 #333)
-        drop-shadow(0 -1px 0 #333)
-        drop-shadow(2px 0 2px rgba(0, 0, 0, 0.75))
-        drop-shadow(-2px 0 2px rgba(0, 0, 0, 0.75))
-        drop-shadow(0 3px 4px rgba(0, 0, 0, 0.65));
-}
+        filter:
+            drop-shadow(1px 0 0 #333)
+            drop-shadow(-1px 0 0 #333)
+            drop-shadow(0 1px 0 #333)
+            drop-shadow(0 -1px 0 #333)
+            drop-shadow(2px 0 2px rgba(0, 0, 0, 0.75))
+            drop-shadow(-2px 0 2px rgba(0, 0, 0, 0.75))
+            drop-shadow(0 3px 4px rgba(0, 0, 0, 0.65));
+    }
 
     h1 {
         margin: 0;
@@ -91,33 +91,22 @@
         font-size: 0.82em;
     }
 
-    .relegation {
+    .road {
         margin-top: 25px;
         border: 1px solid var(--ddd);
         padding: 16px;
         background-color: var(--f3f3f3);
     }
 
-    .relegation h2 {
+    .road h2 {
         margin: 0 0 7px;
         font-size: 1.2em;
     }
 
-    .relegation p {
-        margin: 5px 0 10px;
+    .road p {
+        margin: 5px 0;
         font-size: 0.9em;
         line-height: 1.45;
-    }
-
-    .relegation a {
-        color: var(--blueOne);
-        font-weight: bold;
-        font-size: 0.9em;
-        text-decoration: none;
-    }
-
-    .relegation a:hover {
-        text-decoration: underline;
     }
 
     @media (max-width: 700px) {
@@ -166,7 +155,7 @@
 
 
     <div class="sectionTitle">
-        California Primeira Liga
+        CPL Red
     </div>
 
     <div class="grid">
@@ -174,7 +163,7 @@
         <a class="card" href="/cpl/standings">
             <div class="icon">🏆</div>
             <h3>Standings</h3>
-            <p>Current CPL standings</p>
+            <p>Current CPL Red standings</p>
         </a>
 
         <a class="card" href="/cpl/matchups">
@@ -186,7 +175,7 @@
         <a class="card" href="/cpl/rosters">
             <div class="icon">👥</div>
             <h3>Rosters</h3>
-            <p>CPL team rosters</p>
+            <p>CPL Red team rosters</p>
         </a>
 
         <a class="card" href="/cpl/transactions">
@@ -198,30 +187,29 @@
         <a class="card" href="/cpl/champions">
             <div class="icon">🥇</div>
             <h3>Champions</h3>
-            <p>CPL championship history</p>
+            <p>CPL Red championship history</p>
         </a>
 
         <a class="card" href="/cpl/records">
             <div class="icon">📊</div>
             <h3>Records</h3>
-            <p>CPL all-time records</p>
+            <p>CPL Red all-time records</p>
         </a>
 
     </div>
 
 
-    <div class="relegation">
+    <div class="road">
 
-        <h2>⬇️ Relegation</h2>
+        <h2>🏁 Road to 2027</h2>
 
         <p>
-            The 11th and 12th place teams are automatically relegated.
-            Two additional teams are relegated through the CPL Toilet Bowl.
+            The 2026 season will determine the future structure of the CPL.
+            At the end of the season, the <strong>top 6 teams</strong> will
+            enter the <strong>California Primeira Liga</strong> for 2027,
+            while the <strong>bottom 6 teams</strong> will enter the
+            <strong>Segunda Liga</strong>.
         </p>
-
-        <a href="/promotion-relegation">
-            View Promotion & Relegation →
-        </a>
 
     </div>
 
