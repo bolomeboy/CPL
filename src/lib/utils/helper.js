@@ -40,6 +40,8 @@ export {
     waitForAll,
     getUpcomingDraft,
     getPreviousDrafts,
+    getCplDrafts,
+    getCplPreviousDrafts,
     getLeagueRecords,
     cleanName,
     round,
