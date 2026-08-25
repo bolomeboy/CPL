@@ -29,50 +29,54 @@ export const homepageText = `
   <p>
     Welcome to the <strong>California Primeira Liga (CPL)</strong> — a competitive
     fantasy football league built around competition, strategy, rivalries, and
-    long-term league history.
+    creating a league history that lasts.
   </p>
 
   <p>
-    The league features two 12-team divisions: the
-    <strong>California Primeira Liga</strong>, our top division, and the
-    <strong>Segunda Liga</strong>, where teams compete for the chance to move up
-    to the CPL.
+    The <strong>2026 season marks the inaugural year of the CPL</strong>. This
+    season, our 24 teams are split between two leagues:
+    <strong>CPL Red</strong> 🔴 and <strong>CPL Green</strong> 🟢.
+    While both leagues will compete for their own championships, this season
+    is about more than just winning — it will help shape the future of the league.
   </p>
 
   <p>
-    Beginning with the league's promotion and relegation system, every season
-    matters. Teams are competing not only for championships, but also for
-    promotion, survival, and a place in league history.
+    Starting in 2027, the CPL will officially become a two-division system
+    featuring the <strong>California Primeira Liga</strong> and
+    <strong>Segunda Liga</strong>, with promotion and relegation determining
+    where teams compete each season.
   </p>
 
   <p>
     The CPL is about more than just fantasy football. It's about building
-    rivalries, making trades, talking trash, and creating a league that gets
-    better every season.
+    rivalries, making trades, talking trash, competing for championships,
+    and creating a league with a history worth remembering.
   </p>
 
   <hr />
 
-  <h4>🏆 The League</h4>
+  <h4>🏆 The 2026 Inaugural Season</h4>
 
   <p>
-    <strong>California Primeira Liga</strong><br />
-    The top division. The best teams compete for the CPL championship while
-    fighting to avoid relegation.
+    <strong>🔴 CPL Red</strong><br />
+    One of two leagues competing in the inaugural 2026 season. Teams will
+    battle throughout the season for the CPL Red championship and their place
+    in league history.
   </p>
 
   <p>
-    <strong>Segunda Liga</strong><br />
-    The second division. Teams compete for the Segunda championship and the
-    opportunity to earn promotion into the CPL.
+    <strong>🟢 CPL Green</strong><br />
+    The second league competing in the inaugural 2026 season. Teams will
+    battle for the CPL Green championship while establishing where they will
+    begin the next era of the league.
   </p>
 
-   <p>
-    <strong>🔄 Promotion & Relegation</strong><br />
-    Each season, the competition between the two divisions stays active.
-    <strong>Four teams are promoted</strong> from the Segunda Liga to the CPL,
-    while <strong>four CPL teams are relegated</strong> to the Segunda Liga.
-    Every season brings a new fight for the championship, promotion, and survival.
+  <p>
+    <strong>🏁 The Road to 2027</strong><br />
+    The 2026 season will determine the foundation of the CPL's future
+    two-division system. Beginning in 2027, teams will be placed into the
+    <strong>California Primeira Liga</strong> or <strong>Segunda Liga</strong>,
+    with promotion and relegation shaping the divisions from season to season.
   </p>
 
   <hr />
