@@ -8,14 +8,14 @@ export const tabs = [
 
     {
         icon: 'emoji_events',
-        label: 'CPL',
+        label: 'CPL Red',
         dest: '/cpl',
         key: 'cpl',
     },
 
     {
         icon: 'emoji_events',
-        label: 'Segunda',
+        label: 'CPL Green',
         dest: '/segunda',
         key: 'segunda',
     },
