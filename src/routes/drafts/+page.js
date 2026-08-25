@@ -1,9 +1,6 @@
 import {
     getCplDrafts,
-    getCplPreviousDrafts
-} from '$lib/utils/helper';
-
-import {
+    getCplPreviousDrafts,
     getLeagueTeamManagers,
     loadPlayers
 } from '$lib/utils/helper';
