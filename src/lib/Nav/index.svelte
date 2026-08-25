@@ -24,9 +24,13 @@
 
 <svelte:head>
     <title>
-        {!page.url.pathname[1]
-            ? 'California Primeira Liga'
-            : page.url.pathname[1].toUpperCase() + page.url.pathname.slice(2) + ' | California Primeira Liga'}
+        {page.url.pathname.startsWith('/cpl')
+            ? 'CPL Red'
+            : page.url.pathname.startsWith('/segunda')
+                ? 'CPL Green'
+                : !page.url.pathname[1]
+                    ? 'California Primeira Liga'
+                    : page.url.pathname[1].toUpperCase() + page.url.pathname.slice(2) + ' | California Primeira Liga'}
     </title>
 </svelte:head>
 
