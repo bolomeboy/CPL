@@ -5,66 +5,278 @@ import { waitForAll } from './multiPromise';
 import { getManagers, getTeamData } from './universalFunctions';
 import { getLeagueData } from './leagueData';
 
-export const getLeagueTeamManagers = async () => {
-    if(get(teamManagersStore) && get(teamManagersStore).currentSeason) {
-		return get(teamManagersStore);
-	}
-    let currentLeagueID = leagueID;
-	let teamManagersMap = {};
+export const getLeagueTeamManagers = async (
+    queryLeagueID = leagueID
+) => {
+
+    /*
+     * Keep Red and Green data separate.
+     * The store is keyed by league ID.
+     */
+    const storedData =
+        get(teamManagersStore);
+
+    if (
+        storedData &&
+        storedData[queryLeagueID]
+    ) {
+
+        return storedData[queryLeagueID];
+
+    }
+
+
+    let currentLeagueID =
+        queryLeagueID;
+
+
+    let teamManagersMap = {};
+
     let finalUsers = {};
+
     let currentSeason = null;
 
-    // loop through all seasons and create a [year][roster_id]: team, managers object
-	while(currentLeagueID && currentLeagueID != 0) {
-		const [usersRaw, leagueData, rostersRaw] = await waitForAll(
-            fetch(`https://api.sleeper.app/v1/league/${currentLeagueID}/users`, {compress: true}),
-			getLeagueData(currentLeagueID),
-            fetch(`https://api.sleeper.app/v1/league/${currentLeagueID}/rosters`, {compress: true}),
-        ).catch((err) => { console.error(err); });
 
-        const [users, rosters] = await waitForAll(
-            usersRaw.json(), 
-            rostersRaw.json(), 
-        ).catch((err) => { console.error(err); });
+    /*
+     * Loop through all seasons for the
+     * selected league and create:
+     *
+     * [year][roster_id] = team/managers
+     */
+    while (
+        currentLeagueID &&
+        currentLeagueID != 0
+    ) {
 
-        const year = parseInt(leagueData.season);
-        currentLeagueID = leagueData.previous_league_id;
-        if(!currentSeason) {
-            currentSeason = year;
+        const [
+            usersRaw,
+            leagueData,
+            rostersRaw
+        ] = await waitForAll(
+
+            fetch(
+                `https://api.sleeper.app/v1/league/${currentLeagueID}/users`,
+                {
+                    compress: true
+                }
+            ),
+
+            getLeagueData(
+                currentLeagueID
+            ),
+
+            fetch(
+                `https://api.sleeper.app/v1/league/${currentLeagueID}/rosters`,
+                {
+                    compress: true
+                }
+            ),
+
+        ).catch((err) => {
+
+            console.error(err);
+
+        });
+
+
+        if (
+            !usersRaw ||
+            !rostersRaw ||
+            !leagueData
+        ) {
+
+            return null;
+
         }
+
+
+        const [
+            users,
+            rosters
+        ] = await waitForAll(
+
+            usersRaw.json(),
+
+            rostersRaw.json(),
+
+        ).catch((err) => {
+
+            console.error(err);
+
+        });
+
+
+        const year =
+            parseInt(
+                leagueData.season
+            );
+
+
+        /*
+         * Move to the previous season
+         * within THIS league's history.
+         */
+        currentLeagueID =
+            leagueData.previous_league_id;
+
+
+        if (!currentSeason) {
+
+            currentSeason =
+                year;
+
+        }
+
+
         teamManagersMap[year] = {};
-        const processedUsers = processUsers(users);
 
-        // in order to not overwrite most recent data, only add new entries to finalUsers
-        for(const processedUserKey in processedUsers) {
-            if(finalUsers[processedUserKey]) continue;
-            finalUsers[processedUserKey] = processedUsers[processedUserKey];
+
+        const processedUsers =
+            processUsers(users);
+
+
+        /*
+         * Don't overwrite newer user
+         * information with older seasons.
+         */
+        for (
+            const processedUserKey
+            in processedUsers
+        ) {
+
+            if (
+                finalUsers[
+                    processedUserKey
+                ]
+            ) {
+
+                continue;
+
+            }
+
+
+            finalUsers[
+                processedUserKey
+            ] =
+                processedUsers[
+                    processedUserKey
+                ];
+
         }
-        for(const roster of rosters) {
-            teamManagersMap[year][roster.roster_id] = {
-                team: getTeamData(processedUsers, roster.owner_id),
-                managers: getManagers(roster, processedUsers),
+
+
+        /*
+         * Build the roster → team/manager map.
+         */
+        for (
+            const roster
+            of rosters
+        ) {
+
+            teamManagersMap[
+                year
+            ][
+                roster.roster_id
+            ] = {
+
+                team:
+                    getTeamData(
+                        processedUsers,
+                        roster.owner_id
+                    ),
+
+                managers:
+                    getManagers(
+                        roster,
+                        processedUsers
+                    ),
+
             };
-        }
-    }
-    const response = {
-        currentSeason,
-        teamManagersMap,
-        users: finalUsers,
-    }
-    teamManagersStore.update(() => response);
-    return response;
-}
 
-const processUsers = (rawUsers) => {
-	let finalUsers = {};
-	for(const user of rawUsers) {
-        user.user_name = user.user_name ?? user.display_name;
-		finalUsers[user.user_id] = user;
-        const manager = managers.find(m => m.managerID === user.user_id);
-        if(manager) {
-            finalUsers[user.user_id].display_name = manager.name;
         }
-	}
-	return finalUsers;
-}
+
+    }
+
+
+    const response = {
+
+        currentSeason,
+
+        teamManagersMap,
+
+        users:
+            finalUsers,
+
+        leagueID:
+            queryLeagueID,
+
+    };
+
+
+    /*
+     * Store the result under the
+     * selected league ID.
+     */
+    teamManagersStore.update(
+        (store) => {
+
+            store[
+                queryLeagueID
+            ] = response;
+
+            return store;
+
+        }
+    );
+
+
+    return response;
+
+};
+
+
+const processUsers = (
+    rawUsers
+) => {
+
+    let finalUsers = {};
+
+
+    for (
+        const user
+        of rawUsers
+    ) {
+
+        user.user_name =
+            user.user_name ??
+            user.display_name;
+
+
+        finalUsers[
+            user.user_id
+        ] = user;
+
+
+        const manager =
+            managers.find(
+                m =>
+                    m.managerID ===
+                    user.user_id
+            );
+
+
+        if (manager) {
+
+            finalUsers[
+                user.user_id
+            ].display_name =
+                manager.name;
+
+        }
+
+    }
+
+
+    return finalUsers;
+
+};
