@@ -1,8 +1,14 @@
 <script>
-	import { Drafts } from '$lib/components';
+    import { Drafts } from '$lib/components';
 
     export let data;
-    const {upcomingDraftData, previousDraftsData, leagueTeamManagersData, playersData} = data;
+
+    const {
+        cplDraftsData,
+        cplPreviousDraftsData,
+        leagueTeamManagersData,
+        playersData
+    } = data;
 </script>
 
 <style>
@@ -13,5 +19,10 @@
 </style>
 
 <div id="main">
-	<Drafts {upcomingDraftData} {previousDraftsData} {leagueTeamManagersData} {playersData} />
+    <Drafts
+        {cplDraftsData}
+        {cplPreviousDraftsData}
+        {leagueTeamManagersData}
+        {playersData}
+    />
 </div>
