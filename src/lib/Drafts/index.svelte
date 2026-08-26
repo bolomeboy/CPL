@@ -10,6 +10,7 @@
 
     export let leagueName = '';
     export let logo = '';
+    export let division = 'red';
 </script>
 
 <style>
@@ -51,6 +52,27 @@
 </style>
 
 
+{#if leagueName}
+
+    <div class="leagueHeader">
+
+        {#if logo}
+            <img
+                class="leagueLogo"
+                src={logo}
+                alt="{leagueName} logo"
+            />
+        {/if}
+
+        <h3>{leagueName}</h3>
+
+    </div>
+
+{/if}
+
+
+<!-- UPCOMING DRAFT -->
+
 {#await waitForAll(
     upcomingDraftData,
     leagueTeamManagersData,
@@ -71,22 +93,8 @@
 
 {:then [upcomingDraft, leagueTeamManagers, {players}]}
 
-    <div class="leagueHeader">
-
-        {#if logo}
-            <img
-                class="leagueLogo"
-                src={logo}
-                alt="{leagueName} logo"
-            />
-        {/if}
-
-        <h3>{leagueName}</h3>
-
-    </div>
-
     <h4>
-        {upcomingDraft.year} Draft
+        {leagueName} {upcomingDraft.year} Draft
     </h4>
 
     <Draft
@@ -94,6 +102,7 @@
         {leagueTeamManagers}
         year={upcomingDraft.year}
         {players}
+        {division}
     />
 
 {:catch error}
@@ -104,6 +113,8 @@
 
 {/await}
 
+
+<!-- PREVIOUS DRAFTS -->
 
 {#await waitForAll(
     previousDraftsData,
@@ -133,6 +144,7 @@
                 {leagueTeamManagers}
                 year={previousDraft.year}
                 {players}
+                {division}
             />
 
         {/each}
