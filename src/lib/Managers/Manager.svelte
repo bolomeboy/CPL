@@ -1,67 +1,208 @@
 <script>
     import Button, { Group, Label } from '@smui/button';
-	import LinearProgress from '@smui/linear-progress';
-    import {loadPlayers, getLeagueTransactions} from '$lib/utils/helper';
-	import Roster from '../Rosters/Roster.svelte';
-	import TransactionsPage from '../Transactions/TransactionsPage.svelte';
+    import LinearProgress from '@smui/linear-progress';
+    import { loadPlayers, getLeagueTransactions } from '$lib/utils/helper';
+    import Roster from '../Rosters/Roster.svelte';
+    import TransactionsPage from '../Transactions/TransactionsPage.svelte';
     import { goto } from '$app/navigation';
     import ManagerFantasyInfo from './ManagerFantasyInfo.svelte';
     import ManagerAwards from './ManagerAwards.svelte';
     import { onMount } from 'svelte';
-	import { getDatesActive, getRosterIDFromManagerID, getTeamNameFromTeamManagers } from '$lib/utils/helperFunctions/universalFunctions';
+    import {
+        getDatesActive,
+        getRosterIDFromManagerID,
+        getTeamNameFromTeamManagers
+    } from '$lib/utils/helperFunctions/universalFunctions';
 
-    export let manager, managers, rostersData, leagueTeamManagers, rosterPositions, transactionsData, awards, records;
+    export let manager;
+    export let managers;
+    export let managerID = null;
+    export let rosterID: null;
+    export let year = null;
+    export let division = null;
+    export let rostersData;
+    export let leagueTeamManagers;
+    export let rosterPositions;
+    export let transactionsData;
+    export let awards;
+    export let records;
 
     let transactions = transactionsData.transactions;
 
-    $: viewManager = managers[manager];
+    /*
+     * Find the manager from either:
+     *
+     * 1. The old manager array/index system
+     * 2. The new Sleeper manager ID system
+     */
 
-    $: datesActive = getDatesActive(leagueTeamManagers, viewManager.managerID);
+    $: viewManager =
+        managerID
+            ? buildSleeperManager(managerID)
+            : managers[manager];
 
-    const  startersAndReserve = rostersData.startersAndReserve;
-    let rosters = rostersData.rosters;
+    /*
+     * Build a manager object for a new Sleeper manager.
+     */
+    function buildSleeperManager(id) {
 
-    $: ({rosterID, year} = viewManager.managerID ? getRosterIDFromManagerID(leagueTeamManagers, viewManager.managerID) : {rosterID: viewManager.roster, year: null});
+        const sleeperUser =
+            leagueTeamManagers?.users?.[id];
 
-    $: teamTransactions = transactions.filter(t => t.rosters.includes(parseInt(rosterID)));
+        if (!sleeperUser) {
+            return {
+                managerID: id,
+                name: sleeperUser?.display_name || 'Unknown Manager',
+                photo: 'managers/question.jpg',
+                location: null,
+                preferredContact: null,
+                favoriteTeam: null,
+                bio: '',
+                philosophy: ''
+            };
+        }
 
-    $: roster = rosters[rosterID];
+        return {
+            managerID: id,
 
-    $: coOwners = year && rosterID ? leagueTeamManagers.teamManagersMap[year][rosterID].managers.length > 1 : roster.co_owners;
+            name:
+                sleeperUser.display_name ||
+                sleeperUser.user_name ||
+                'Unknown Manager',
 
-    $: commissioner = viewManager.managerID ? leagueTeamManagers.users[viewManager.managerID].is_owner : false;
+            photo:
+                sleeperUser.metadata?.avatar ||
+                (sleeperUser.avatar
+                    ? `https://sleepercdn.com/avatars/thumbs/${sleeperUser.avatar}`
+                    : 'managers/question.jpg'),
 
-    let players, playersInfo;
+            location: null,
+            preferredContact: null,
+            favoriteTeam: null,
+            bio: '',
+            philosophy: ''
+        };
+    }
+
+    $: datesActive =
+        viewManager?.managerID
+            ? getDatesActive(
+                leagueTeamManagers,
+                viewManager.managerID
+            )
+            : { start: null, end: null };
+
+    const startersAndReserve =
+        rostersData.startersAndReserve;
+
+    let rosters =
+        rostersData.rosters;
+
+    /*
+     * Find the roster/year for the manager.
+     */
+    $: managerRosterData =
+        viewManager?.managerID
+            ? getRosterIDFromManagerID(
+                leagueTeamManagers,
+                viewManager.managerID
+            )
+            : null;
+
+    $: finalRosterID =
+        rosterID ||
+        managerRosterData?.rosterID ||
+        viewManager?.roster;
+
+    $: finalYear =
+        year ||
+        managerRosterData?.year ||
+        null;
+
+    $: teamTransactions =
+        transactions.filter(
+            t =>
+                t.rosters.includes(
+                    parseInt(finalRosterID)
+                )
+        );
+
+    $: roster =
+        rosters[finalRosterID];
+
+    $: coOwners =
+        finalYear &&
+        finalRosterID &&
+        leagueTeamManagers.teamManagersMap?.[finalYear]?.[finalRosterID]
+            ? leagueTeamManagers.teamManagersMap[finalYear][finalRosterID].managers.length > 1
+            : roster?.co_owners?.length > 0;
+
+    $: commissioner =
+        viewManager?.managerID &&
+        leagueTeamManagers.users?.[viewManager.managerID]
+            ? leagueTeamManagers.users[viewManager.managerID].is_owner
+            : false;
+
+    let players;
+    let playersInfo;
     let loading = true;
 
     const refreshTransactions = async () => {
-        const newTransactions = await getLeagueTransactions(false, true);
-        transactions = newTransactions.transactions;
-    }
+        const newTransactions =
+            await getLeagueTransactions(false, true);
+
+        transactions =
+            newTransactions.transactions;
+    };
 
     onMount(async () => {
-        if(transactionsData.stale) {
+
+        if (transactionsData.stale) {
             refreshTransactions();
         }
-        const playerData = await loadPlayers(null);
-        playersInfo = playerData;
-        players = playerData.players;
+
+        const playerData =
+            await loadPlayers(null);
+
+        playersInfo =
+            playerData;
+
+        players =
+            playerData.players;
+
         loading = false;
 
-        if(playerData.stale) {
-            const newPlayerData = await loadPlayers(null, true);
-            playersInfo = newPlayerData;
-            players = newPlayerData.players;
-        }
-    })
+        if (playerData.stale) {
 
-    const changeManager = (newManager, noscroll = false) => {
-        if(!newManager) {
-            goto(`/managers`);
+            const newPlayerData =
+                await loadPlayers(null, true);
+
+            playersInfo =
+                newPlayerData;
+
+            players =
+                newPlayerData.players;
         }
-        manager = newManager;
-        goto(`/manager?manager=${newManager}`, {noscroll});
-    }
+    });
+
+    const changeManager = (
+        newManager,
+        noscroll = false
+    ) => {
+
+        if (newManager === null || newManager === undefined) {
+            goto('/managers');
+            return;
+        }
+
+        manager =
+            newManager;
+
+        goto(
+            `/manager?manager=${newManager}`,
+            { noscroll }
+        );
+    };
 </script>
 
 <style>
@@ -176,8 +317,6 @@
         color: #fff;
     }
 
-    /* media queries */
-
     @media (max-width: 505px) {
         :global(.selectionButtons span) {
             font-size: 0.8em;
@@ -191,7 +330,7 @@
         }
     }
 
-	@media (max-width: 450px) {
+    @media (max-width: 450px) {
 
         .basicInfo {
             height: 20px;
@@ -204,7 +343,7 @@
         .infoTeam {
             height: 30px;
         }
-	}
+    }
 
     @media (max-width: 370px) {
 
@@ -223,135 +362,336 @@
 </style>
 
 <div class="managerContainer">
+
     <div class="managerConstrained">
-        <img class="managerPhoto" src="{viewManager.photo}" alt="manager"/>
+
+        <img
+            class="managerPhoto"
+            src={viewManager.photo}
+            alt="manager"
+        />
+
         <h2>
             {viewManager.name}
-            <div class="teamSub">{coOwners ? 'Co-' : ''}Manager of <i>{getTeamNameFromTeamManagers(leagueTeamManagers, rosterID, year)}</i></div>
+
+            <div class="teamSub">
+                {coOwners ? 'Co-' : ''}
+                Manager of
+                <i>
+                    {getTeamNameFromTeamManagers(
+                        leagueTeamManagers,
+                        finalRosterID,
+                        finalYear
+                    )}
+                </i>
+            </div>
         </h2>
-        
+
         <div class="basicInfo">
-            <span class="infoChild">{viewManager.location || 'Undisclosed Location'}</span>
-            {#if viewManager.managerID && datesActive.start}
+
+            <span class="infoChild">
+                {viewManager.location || 'Undisclosed Location'}
+            </span>
+
+            {#if viewManager.managerID && datesActive?.start}
+
                 <span class="seperator">|</span>
+
                 {#if datesActive.end}
-                    <span class="infoChild">In the league from '{datesActive.start.toString().substr(2)} to '{datesActive.end.toString().substr(2)}</span>
+
+                    <span class="infoChild">
+                        In the league from
+                        '{datesActive.start.toString().substr(2)}
+                        to
+                        '{datesActive.end.toString().substr(2)}
+                    </span>
+
                 {:else}
-                    <span class="infoChild">In the league since '{datesActive.start.toString().substr(2)}</span>
+
+                    <span class="infoChild">
+                        In the league since
+                        '{datesActive.start.toString().substr(2)}
+                    </span>
+
                 {/if}
-            {:else if viewManager.fantasyStart}
-                <!-- fantasyStart is an optional field -->
-                <span class="seperator">|</span>
-                <span class="infoChild">In the league since '{viewManager.fantasyStart.toString().substr(2)}</span>
+
             {/if}
+
             {#if viewManager.preferredContact}
-                <!-- preferredContact is an optional field -->
+
                 <span class="seperator">|</span>
-                <span class="infoChild">{viewManager.preferredContact}<img class="infoChild infoContact" src="/{viewManager.preferredContact}.png" alt="favorite team"/></span>
+
+                <span class="infoChild">
+                    {viewManager.preferredContact}
+
+                    <img
+                        class="infoChild infoContact"
+                        src="/{viewManager.preferredContact}.png"
+                        alt="favorite team"
+                    />
+                </span>
+
             {/if}
-            <!-- <span class="infoChild">{viewManager.preferredContact}</span> -->
+
             {#if viewManager.favoriteTeam}
-                <!-- favoriteTeam is an optional field -->
+
                 <span class="seperator">|</span>
-                <img class="infoChild infoTeam" src="https://sleepercdn.com/images/team_logos/nfl/{viewManager.favoriteTeam}.png" alt="favorite team"/>
+
+                <img
+                    class="infoChild infoTeam"
+                    src="https://sleepercdn.com/images/team_logos/nfl/{viewManager.favoriteTeam}.png"
+                    alt="favorite team"
+                />
+
             {/if}
+
             {#if commissioner}
+
                 <span class="seperator">|</span>
+
                 <div class="infoChild commissionerBadge">
                     <span>C</span>
                 </div>
+
             {/if}
+
         </div>
 
         <div class="managerNav upper">
+
             <Group variant="outlined">
-                {#if manager == 0}
-                    <Button disabled class="selectionButtons" onclick={() => changeManager(parseInt(manager) - 1, true)} variant="outlined">
-                        <Label>Previous Manager</Label>
+
+                {#if managerID}
+
+                    <Button
+                        class="selectionButtons"
+                        onclick={() => goto('/managers')}
+                        variant="outlined"
+                    >
+                        <Label>All Managers</Label>
                     </Button>
+
                 {:else}
-                    <Button class="selectionButtons" onclick={() => changeManager(parseInt(manager) - 1, true)} variant="outlined">
-                        <Label>Previous Manager</Label>
+
+                    {#if manager == 0}
+
+                        <Button
+                            disabled
+                            class="selectionButtons"
+                            variant="outlined"
+                        >
+                            <Label>Previous Manager</Label>
+                        </Button>
+
+                    {:else}
+
+                        <Button
+                            class="selectionButtons"
+                            onclick={() =>
+                                changeManager(
+                                    parseInt(manager) - 1,
+                                    true
+                                )}
+                            variant="outlined"
+                        >
+                            <Label>Previous Manager</Label>
+                        </Button>
+
+                    {/if}
+
+                    <Button
+                        class="selectionButtons"
+                        onclick={() => goto('/managers')}
+                        variant="outlined"
+                    >
+                        <Label>All Managers</Label>
                     </Button>
+
+                    {#if manager == managers.length - 1}
+
+                        <Button
+                            disabled
+                            class="selectionButtons"
+                            variant="outlined"
+                        >
+                            <Label>Next Manager</Label>
+                        </Button>
+
+                    {:else}
+
+                        <Button
+                            class="selectionButtons"
+                            onclick={() =>
+                                changeManager(
+                                    parseInt(manager) + 1,
+                                    true
+                                )}
+                            variant="outlined"
+                        >
+                            <Label>Next Manager</Label>
+                        </Button>
+
+                    {/if}
+
                 {/if}
-                <Button class="selectionButtons" onclick={() => goto('/managers')} variant="outlined">
-                    <Label>All Managers</Label>
-                </Button>
-                {#if manager == managers.length - 1}
-                    <Button disabled class="selectionButtons" onclick={() => changeManager(parseInt(manager) + 1, true)} variant="outlined">
-                        <Label>Next Manager</Label>
-                    </Button>
-                {:else}
-                    <Button class="selectionButtons" onclick={() => changeManager(parseInt(manager) + 1, true)} variant="outlined">
-                        <Label>Next Manager</Label>
-                    </Button>
-                {/if}
+
             </Group>
+
         </div>
 
-        <p class="bio">{@html viewManager.bio}</p>
+        {#if viewManager.bio}
+            <p class="bio">
+                {@html viewManager.bio}
+            </p>
+        {/if}
 
         {#if viewManager.philosophy}
-            <!-- philosophy is an optional field -->
+
             <h3>Team Philosophy</h3>
-            <p class="philosophy">{@html viewManager.philosophy}</p>
+
+            <p class="philosophy">
+                {@html viewManager.philosophy}
+            </p>
+
         {/if}
+
     </div>
 
     {#if !loading}
-        <!-- Favorite player -->
-        <ManagerFantasyInfo {viewManager} {players} {changeManager} />
+
+        <ManagerFantasyInfo
+            {viewManager}
+            {players}
+            {changeManager}
+        />
+
     {/if}
 
-    <ManagerAwards {leagueTeamManagers} tookOver={viewManager.tookOver} {awards} {records} {rosterID} managerID={viewManager.managerID} />
+    <ManagerAwards
+        {leagueTeamManagers}
+        tookOver={viewManager.tookOver}
+        {awards}
+        {records}
+        rosterID={finalRosterID}
+        managerID={viewManager.managerID}
+    />
 
     {#if loading}
-        <!-- promise is pending -->
+
         <div class="loading">
             <p>Retrieving players...</p>
             <LinearProgress indeterminate />
         </div>
+
     {:else}
-        <Roster division="1" expanded={false} {rosterPositions} {roster} {leagueTeamManagers} {players} {startersAndReserve} />
+
+        <Roster
+            division="1"
+            expanded={false}
+            {rosterPositions}
+            {roster}
+            {leagueTeamManagers}
+            {players}
+            {startersAndReserve}
+        />
+
     {/if}
 
     <h3>Team Transactions</h3>
+
     <div class="managerConstrained">
+
         {#if loading}
-            <!-- promise is pending -->
+
             <div class="loading">
                 <p>Retrieving players...</p>
                 <LinearProgress indeterminate />
             </div>
+
         {:else}
-            <TransactionsPage {playersInfo} transactions={teamTransactions} {leagueTeamManagers} show='both' query='' page={0} perPage={5} />
+
+            <TransactionsPage
+                {playersInfo}
+                transactions={teamTransactions}
+                {leagueTeamManagers}
+                show="both"
+                query=""
+                page={0}
+                perPage={5}
+            />
+
         {/if}
+
     </div>
 
-    <div class="managerNav">
-        <Group variant="outlined">
-            {#if manager == 0}
-                <Button disabled class="selectionButtons" onclick={() => changeManager(parseInt(manager) - 1)} variant="outlined">
-                    <Label>Previous Manager</Label>
+    {#if !managerID}
+
+        <div class="managerNav">
+
+            <Group variant="outlined">
+
+                {#if manager == 0}
+
+                    <Button
+                        disabled
+                        class="selectionButtons"
+                        variant="outlined"
+                    >
+                        <Label>Previous Manager</Label>
+                    </Button>
+
+                {:else}
+
+                    <Button
+                        class="selectionButtons"
+                        onclick={() =>
+                            changeManager(
+                                parseInt(manager) - 1
+                            )}
+                        variant="outlined"
+                    >
+                        <Label>Previous Manager</Label>
+                    </Button>
+
+                {/if}
+
+                <Button
+                    class="selectionButtons"
+                    onclick={() => goto('/managers')}
+                    variant="outlined"
+                >
+                    <Label>All Managers</Label>
                 </Button>
-            {:else}
-                <Button class="selectionButtons" onclick={() => changeManager(parseInt(manager) - 1)} variant="outlined">
-                    <Label>Previous Manager</Label>
-                </Button>
-            {/if}
-            <Button class="selectionButtons" onclick={() => goto('/managers')} variant="outlined">
-                <Label>All Managers</Label>
-            </Button>
-            {#if manager == managers.length - 1}
-                <Button disabled class="selectionButtons" onclick={() => changeManager(parseInt(manager) + 1)} variant="outlined">
-                    <Label>Next Manager</Label>
-                </Button>
-            {:else}
-                <Button class="selectionButtons" onclick={() => changeManager(parseInt(manager) + 1)} variant="outlined">
-                    <Label>Next Manager</Label>
-                </Button>
-            {/if}
-        </Group>
-    </div>
+
+                {#if manager == managers.length - 1}
+
+                    <Button
+                        disabled
+                        class="selectionButtons"
+                        variant="outlined"
+                    >
+                        <Label>Next Manager</Label>
+                    </Button>
+
+                {:else}
+
+                    <Button
+                        class="selectionButtons"
+                        onclick={() =>
+                            changeManager(
+                                parseInt(manager) + 1
+                            )}
+                        variant="outlined"
+                    >
+                        <Label>Next Manager</Label>
+                    </Button>
+
+                {/if}
+
+            </Group>
+
+        </div>
+
+    {/if}
 
 </div>
