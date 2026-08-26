@@ -5,278 +5,128 @@ import { waitForAll } from './multiPromise';
 import { getManagers, getTeamData } from './universalFunctions';
 import { getLeagueData } from './leagueData';
 
-export const getLeagueTeamManagers = async (
-    queryLeagueID = leagueID
-) => {
+export const getLeagueTeamManagers = async (queryLeagueID = leagueID) => {
 
-    /*
-     * Keep Red and Green data separate.
-     * The store is keyed by league ID.
-     */
-    const storedData =
-        get(teamManagersStore);
-
+    // Only use the existing global cache for the main league.
+    // Red and Green need to be loaded separately.
     if (
-        storedData &&
-        storedData[queryLeagueID]
+        queryLeagueID === leagueID &&
+        get(teamManagersStore) &&
+        get(teamManagersStore).currentSeason
     ) {
-
-        return storedData[queryLeagueID];
-
+        return get(teamManagersStore);
     }
 
-
-    let currentLeagueID =
-        queryLeagueID;
-
+    let currentLeagueID = queryLeagueID;
 
     let teamManagersMap = {};
-
     let finalUsers = {};
-
     let currentSeason = null;
 
+    // Loop through this league's seasons and create:
+    // [year][roster_id]: team, managers
+    while (currentLeagueID && currentLeagueID != 0) {
 
-    /*
-     * Loop through all seasons for the
-     * selected league and create:
-     *
-     * [year][roster_id] = team/managers
-     */
-    while (
-        currentLeagueID &&
-        currentLeagueID != 0
-    ) {
-
-        const [
-            usersRaw,
-            leagueData,
-            rostersRaw
-        ] = await waitForAll(
-
+        const [usersRaw, leagueData, rostersRaw] = await waitForAll(
             fetch(
                 `https://api.sleeper.app/v1/league/${currentLeagueID}/users`,
-                {
-                    compress: true
-                }
+                { compress: true }
             ),
 
-            getLeagueData(
-                currentLeagueID
-            ),
+            getLeagueData(currentLeagueID),
 
             fetch(
                 `https://api.sleeper.app/v1/league/${currentLeagueID}/rosters`,
-                {
-                    compress: true
-                }
-            ),
-
+                { compress: true }
+            )
         ).catch((err) => {
-
             console.error(err);
-
         });
 
-
-        if (
-            !usersRaw ||
-            !rostersRaw ||
-            !leagueData
-        ) {
-
-            return null;
-
-        }
-
-
-        const [
-            users,
-            rosters
-        ] = await waitForAll(
-
+        const [users, rosters] = await waitForAll(
             usersRaw.json(),
-
-            rostersRaw.json(),
-
+            rostersRaw.json()
         ).catch((err) => {
-
             console.error(err);
-
         });
 
+        const year = parseInt(leagueData.season);
 
-        const year =
-            parseInt(
-                leagueData.season
-            );
-
-
-        /*
-         * Move to the previous season
-         * within THIS league's history.
-         */
-        currentLeagueID =
-            leagueData.previous_league_id;
-
+        // Move to the previous season of THIS league
+        currentLeagueID = leagueData.previous_league_id;
 
         if (!currentSeason) {
-
-            currentSeason =
-                year;
-
+            currentSeason = year;
         }
-
 
         teamManagersMap[year] = {};
 
+        const processedUsers = processUsers(users);
 
-        const processedUsers =
-            processUsers(users);
+        // Do not overwrite more recent user information
+        for (const processedUserKey in processedUsers) {
 
-
-        /*
-         * Don't overwrite newer user
-         * information with older seasons.
-         */
-        for (
-            const processedUserKey
-            in processedUsers
-        ) {
-
-            if (
-                finalUsers[
-                    processedUserKey
-                ]
-            ) {
-
+            if (finalUsers[processedUserKey]) {
                 continue;
-
             }
 
-
-            finalUsers[
-                processedUserKey
-            ] =
-                processedUsers[
-                    processedUserKey
-                ];
-
+            finalUsers[processedUserKey] =
+                processedUsers[processedUserKey];
         }
 
+        for (const roster of rosters) {
 
-        /*
-         * Build the roster → team/manager map.
-         */
-        for (
-            const roster
-            of rosters
-        ) {
+            teamManagersMap[year][roster.roster_id] = {
+                team: getTeamData(
+                    processedUsers,
+                    roster.owner_id
+                ),
 
-            teamManagersMap[
-                year
-            ][
-                roster.roster_id
-            ] = {
-
-                team:
-                    getTeamData(
-                        processedUsers,
-                        roster.owner_id
-                    ),
-
-                managers:
-                    getManagers(
-                        roster,
-                        processedUsers
-                    ),
-
+                managers: getManagers(
+                    roster,
+                    processedUsers
+                ),
             };
-
         }
-
     }
 
-
     const response = {
-
         currentSeason,
-
         teamManagersMap,
-
-        users:
-            finalUsers,
-
-        leagueID:
-            queryLeagueID,
-
+        users: finalUsers,
     };
 
-
-    /*
-     * Store the result under the
-     * selected league ID.
-     */
-    teamManagersStore.update(
-        (store) => {
-
-            store[
-                queryLeagueID
-            ] = response;
-
-            return store;
-
-        }
-    );
-
+    // Only save the main league in the existing global store.
+    // This prevents Red and Green from overwriting each other.
+    if (queryLeagueID === leagueID) {
+        teamManagersStore.update(() => response);
+    }
 
     return response;
-
 };
 
 
-const processUsers = (
-    rawUsers
-) => {
+const processUsers = (rawUsers) => {
 
     let finalUsers = {};
 
-
-    for (
-        const user
-        of rawUsers
-    ) {
+    for (const user of rawUsers) {
 
         user.user_name =
-            user.user_name ??
-            user.display_name;
+            user.user_name ?? user.display_name;
 
-
-        finalUsers[
-            user.user_id
-        ] = user;
-
+        finalUsers[user.user_id] = user;
 
         const manager =
             managers.find(
-                m =>
-                    m.managerID ===
-                    user.user_id
+                m => m.managerID === user.user_id
             );
 
-
         if (manager) {
-
-            finalUsers[
-                user.user_id
-            ].display_name =
+            finalUsers[user.user_id].display_name =
                 manager.name;
-
         }
-
     }
 
-
     return finalUsers;
-
 };
