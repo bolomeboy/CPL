@@ -3,20 +3,17 @@ import {
     segundaLeagueID
 } from '$lib/utils/leagueInfo';
 
+const FLIPCUP_ID = '1314475281792118784';
+
 export async function load() {
 
-    const redPromise = fetch(
+    const redResponse = await fetch(
         `https://api.sleeper.app/v1/league/${cplLeagueID}/users`
     );
 
-    const greenPromise = fetch(
+    const greenResponse = await fetch(
         `https://api.sleeper.app/v1/league/${segundaLeagueID}/users`
     );
-
-    const [redResponse, greenResponse] = await Promise.all([
-        redPromise,
-        greenPromise
-    ]);
 
     if (!redResponse.ok) {
         throw new Error(
@@ -33,17 +30,46 @@ export async function load() {
     const redUsers = await redResponse.json();
     const greenUsers = await greenResponse.json();
 
-    return {
-        managers: [
-            ...redUsers.map(user => ({
-                ...user,
-                division: 'red'
-            })),
+    const managers = [
+        ...redUsers.map(user => ({
+            ...user,
+            division: 'red'
+        })),
 
-            ...greenUsers.map(user => ({
-                ...user,
-                division: 'green'
-            }))
-        ]
+        ...greenUsers.map(user => ({
+            ...user,
+            division: 'green'
+        }))
+    ];
+
+    /*
+     * flipcup1 is not currently returned by the Green
+     * league users endpoint, but we already know the
+     * Sleeper user ID.
+     *
+     * Add him to the master manager list so the website
+     * has all 24 managers.
+     */
+    const flipcupExists = managers.some(
+        manager =>
+            String(manager.user_id) === FLIPCUP_ID
+    );
+
+    if (!flipcupExists) {
+
+        managers.push({
+            user_id: FLIPCUP_ID,
+            display_name: 'flipcup1',
+            user_name: 'flipcup1',
+            is_bot: false,
+            division: 'green',
+            metadata: {},
+            avatar: null
+        });
+
+    }
+
+    return {
+        managers
     };
 }
