@@ -1,4 +1,5 @@
 <script>
+    import { AllManagers } from '$lib/components';
     import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
 
@@ -15,46 +16,17 @@
 
 <style>
     .main {
-        width: 95%;
-        max-width: 900px;
-        margin: 40px auto;
-    }
-
-    h1 {
-        text-align: center;
-    }
-
-    .manager {
-        padding: 15px;
-        margin: 10px 0;
-        border: 1px solid #ddd;
-        border-radius: 8px;
+        position: relative;
+        z-index: 1;
     }
 </style>
 
 <div class="main">
 
-    <h1>Managers</h1>
-
     {#if managers && managers.length}
-
-        <p>Found {managers.length} managers.</p>
-
-        {#each managers as manager}
-            <div class="manager">
-                <strong>{manager.display_name}</strong>
-                <br />
-                <small>
-                    {manager.user_id}
-                    — {manager.division}
-                </small>
-            </div>
-        {/each}
-
-    {:else}
-
-        <p>No managers found.</p>
-
+        <AllManagers
+            {managers}
+        />
     {/if}
 
 </div>
