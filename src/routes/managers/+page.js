@@ -1,16 +1,42 @@
 import {
     getLeagueTeamManagers,
-    managers,
+    managers
 } from '$lib/utils/helper';
 
-export async function load() {
-    if(!managers.length) return {managers};
-    const leagueTeamManagersData = getLeagueTeamManagers();
+import {
+    cplLeagueID,
+    segundaLeagueID
+} from '$lib/utils/leagueInfo';
 
-    const props = {
-        managers,
-        leagueTeamManagersData
+import { waitForAll } from '$lib/utils/helper';
+
+export async function load() {
+
+    if (!managers.length) {
+        return {
+            managers
+        };
     }
 
-    return props;
+    /*
+     * Load both leagues.
+     *
+     * Red = CPL
+     * Green = Segunda
+     */
+    const redLeagueTeamManagersData =
+        getLeagueTeamManagers(cplLeagueID);
+
+    const greenLeagueTeamManagersData =
+        getLeagueTeamManagers(segundaLeagueID);
+
+    const leagueTeamManagersData = Promise.all([
+        redLeagueTeamManagersData,
+        greenLeagueTeamManagersData
+    ]);
+
+    return {
+        managers,
+        leagueTeamManagersData
+    };
 }
