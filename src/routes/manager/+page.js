@@ -5,8 +5,7 @@ import {
     getLeagueData,
     getLeagueTransactions,
     getAwards,
-    getLeagueRecords,
-    managers as managersObj
+    getLeagueRecords
 } from '$lib/utils/helper';
 
 import {
@@ -19,11 +18,6 @@ import {
  * ============================================================
  * CPL WEBSITE MANAGER NAMES
  * ============================================================
- *
- * The Sleeper username/ID stays the same.
- * These are only the names displayed on the website.
- *
- * Add/change names here whenever you want.
  */
 
 const managerNames = {
@@ -61,57 +55,175 @@ const managerNames = {
 
 /*
  * ============================================================
- * BUILD THE 24-MANAGER LIST
+ * GET ALL 24 MANAGERS
  * ============================================================
- *
- * This uses the manager list already created from Sleeper.
- * We simply add our website display name to each manager.
  */
 
-const buildManagers = () => {
+async function getAllManagers() {
 
-    return managersObj.map(manager => {
+    const [
+        redResponse,
+        greenResponse
+    ] = await Promise.all([
 
-        const id =
-            manager.managerID ||
-            manager.user_id;
+        fetch(
+            `https://api.sleeper.app/v1/league/${cplLeagueID}/users`
+        ),
 
-        return {
-            ...manager,
+        fetch(
+            `https://api.sleeper.app/v1/league/${segundaLeagueID}/users`
+        )
 
-            managerID:
-                id
-                    ? String(id)
-                    : null,
+    ]);
+
+
+    if (!redResponse.ok) {
+        throw new Error(
+            `Could not load CPL Red managers: ${redResponse.status}`
+        );
+    }
+
+
+    if (!greenResponse.ok) {
+        throw new Error(
+            `Could not load CPL Green managers: ${greenResponse.status}`
+        );
+    }
+
+
+    const redUsers =
+        await redResponse.json();
+
+    const greenUsers =
+        await greenResponse.json();
+
+
+    /*
+     * Build the 24-manager list.
+     */
+    const managers = [
+
+        ...redUsers.map(user => {
+
+            const id =
+                String(user.user_id);
+
+            return {
+                ...user,
+
+                user_id: id,
+
+                managerID: id,
+
+                division: 'red',
+
+                name:
+                    managerNames[id] ||
+                    user.display_name ||
+                    user.user_name ||
+                    'Unknown Manager'
+            };
+
+        }),
+
+
+        ...greenUsers.map(user => {
+
+            const id =
+                String(user.user_id);
+
+            return {
+                ...user,
+
+                user_id: id,
+
+                managerID: id,
+
+                division: 'green',
+
+                name:
+                    managerNames[id] ||
+                    user.display_name ||
+                    user.user_name ||
+                    'Unknown Manager'
+            };
+
+        })
+
+    ];
+
+
+    /*
+     * flipcup1 / Christian.
+     *
+     * Sleeper is currently not returning him
+     * from the Green league users endpoint.
+     */
+    if (!managers.some(
+        manager =>
+            String(manager.user_id) ===
+            '1314475281792118784'
+    )) {
+
+        managers.push({
 
             user_id:
-                manager.user_id ||
-                manager.managerID,
+                '1314475281792118784',
+
+            managerID:
+                '1314475281792118784',
+
+            display_name:
+                'flipcup1',
+
+            user_name:
+                'flipcup1',
 
             name:
-                managerNames[String(id)] ||
-                manager.display_name ||
-                manager.user_name ||
-                'Unknown Manager'
+                managerNames[
+                    '1314475281792118784'
+                ],
 
-        };
+            division:
+                'green',
 
-    });
+            is_bot:
+                false,
 
-};
+            is_owner:
+                false,
 
+            metadata: {},
+
+            avatar:
+                null
+
+        });
+
+    }
+
+
+    return managers;
+}
+
+
+/*
+ * ============================================================
+ * PAGE LOAD
+ * ============================================================
+ */
 
 export async function load({ url }) {
 
     /*
-     * Build the complete 24-manager list.
+     * Get all 24 managers.
      */
     const managers =
-        buildManagers();
+        await getAllManagers();
 
 
     /*
-     * Get the real Sleeper manager ID from the URL.
+     * Get the real Sleeper manager ID.
      */
     const managerID =
         url?.searchParams?.get('managerID');
@@ -128,7 +240,7 @@ export async function load({ url }) {
 
 
     /*
-     * Determine the manager's division.
+     * Determine division.
      */
     const divisionParam =
         url?.searchParams?.get('division');
@@ -141,10 +253,7 @@ export async function load({ url }) {
 
 
     /*
-     * Select the correct league.
-     *
-     * Red = CPL
-     * Green = Segunda
+     * Determine which league to load.
      */
     const queryLeagueID =
         division === 'green'
@@ -153,27 +262,30 @@ export async function load({ url }) {
 
 
     /*
-     * If somebody visits /manager without
-     * selecting a manager, return the manager
-     * list but don't load an individual profile.
+     * No manager selected.
      */
     if (!managerID) {
 
         return {
 
-            manager: -1,
+            manager:
+                -1,
 
-            managerID: null,
+            managerID:
+                null,
 
-            rosterID: null,
+            rosterID:
+                null,
 
-            year: null,
+            year:
+                null,
 
             division,
 
             managers,
 
-            managersInfo: null,
+            managersInfo:
+                null,
 
             queryLeagueID
 
@@ -183,50 +295,49 @@ export async function load({ url }) {
 
 
     /*
-     * Load information from the correct league.
+     * Load all information for the selected
+     * Red or Green league.
      */
-    const managersInfo = waitForAll(
+    const managersInfo =
+        waitForAll(
 
-        getLeagueRosters(
-            queryLeagueID
-        ),
+            getLeagueRosters(
+                queryLeagueID
+            ),
 
-        getLeagueTeamManagers(
-            queryLeagueID
-        ),
+            getLeagueTeamManagers(
+                queryLeagueID
+            ),
 
-        getLeagueData(
-            queryLeagueID
-        ),
+            getLeagueData(
+                queryLeagueID
+            ),
 
-        getLeagueTransactions(
-            false,
-            false,
-            queryLeagueID
-        ),
+            getLeagueTransactions(
+                false,
+                false,
+                queryLeagueID
+            ),
 
-        getAwards(
-            queryLeagueID
-        ),
+            getAwards(
+                queryLeagueID
+            ),
 
-        getLeagueRecords(
-            false,
-            queryLeagueID
-        )
+            getLeagueRecords(
+                false,
+                queryLeagueID
+            )
 
-    );
+        );
 
 
     return {
 
-        /*
-         * Real Sleeper manager ID.
-         */
+        manager:
+            -1,
+
         managerID,
 
-        /*
-         * Optional roster information.
-         */
         rosterID,
 
         year:
@@ -237,12 +348,10 @@ export async function load({ url }) {
         division,
 
         /*
-         * Keep the entire 24-manager list available
-         * to Manager.svelte so Previous/Next works.
+         * IMPORTANT:
+         * This is the complete 24-manager list.
          */
         managers,
-
-        manager: -1,
 
         managersInfo,
 
