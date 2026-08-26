@@ -66,7 +66,7 @@ export async function load({ url }) {
             rosterID: null,
             year: null,
             division,
-            managers: [],
+            managers: managersObj
             managersInfo: null,
             queryLeagueID
         };
