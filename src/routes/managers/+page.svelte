@@ -36,7 +36,6 @@
 
     {#await leagueTeamManagersData}
 
-        <!-- promise is pending -->
         <div class="loading">
             <p>Retrieving managers...</p>
             <LinearProgress indeterminate />
@@ -58,7 +57,6 @@
 
     {:catch error}
 
-        <!-- promise was rejected -->
         <p>Something went wrong: {error.message}</p>
 
     {/await}
