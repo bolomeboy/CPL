@@ -1,28 +1,9 @@
 <script>
     import ManagerRow from './ManagerRow.svelte';
-    import { cplLeagueID, segundaLeagueID } from '$lib/utils/leagueInfo';
 
     export let managers;
-    export let leagueTeamManagers;
 
     let innerWidth;
-
-    // Get the correct league data for each manager.
-    const getLeagueTeamManagersForManager = (manager) => {
-        if (!manager) {
-            return leagueTeamManagers;
-        }
-
-        /*
-         * If the manager already has division information,
-         * use it to determine the correct league.
-         */
-        if (manager.division === 'green') {
-            return leagueTeamManagers.green || leagueTeamManagers;
-        }
-
-        return leagueTeamManagers.red || leagueTeamManagers;
-    };
 </script>
 
 <svelte:window bind:innerWidth={innerWidth} />
@@ -76,13 +57,16 @@
     </div>
 
     <div class="managerConstrained">
+
         {#each managers.filter(manager => manager.division === 'red') as manager, key}
+
             <ManagerRow
                 {manager}
-                leagueTeamManagers={getLeagueTeamManagersForManager(manager)}
                 {key}
             />
+
         {/each}
+
     </div>
 
 
@@ -92,13 +76,16 @@
     </div>
 
     <div class="managerConstrained">
+
         {#each managers.filter(manager => manager.division === 'green') as manager, key}
+
             <ManagerRow
                 {manager}
-                leagueTeamManagers={getLeagueTeamManagersForManager(manager)}
                 {key}
             />
+
         {/each}
+
     </div>
 
 </div>
