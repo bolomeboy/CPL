@@ -2,6 +2,8 @@
     import ManagerRow from './ManagerRow.svelte';
 
     export let managers;
+    export let redLeagueTeamManagers;
+    export let greenLeagueTeamManagers;
 
     let innerWidth;
 </script>
@@ -51,6 +53,7 @@
 
     <h2>California Primeira Liga Managers</h2>
 
+
     <!-- RED MANAGERS -->
     <div class="divisionHeader">
         🔴 CPL Red
@@ -62,6 +65,7 @@
 
             <ManagerRow
                 {manager}
+                leagueTeamManagers={redLeagueTeamManagers}
                 {key}
             />
 
@@ -81,6 +85,7 @@
 
             <ManagerRow
                 {manager}
+                leagueTeamManagers={greenLeagueTeamManagers}
                 {key}
             />
 
