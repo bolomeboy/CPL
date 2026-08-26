@@ -3,8 +3,13 @@ import {
     segundaLeagueID
 } from '$lib/utils/leagueInfo';
 
+import { getLeagueTeamManagers } from '$lib/utils/helper';
+
 export async function load() {
 
+    /*
+     * Get the actual users directly from Sleeper.
+     */
     const redUsersResponse = await fetch(
         `https://api.sleeper.app/v1/league/${cplLeagueID}/users`
     );
@@ -28,6 +33,10 @@ export async function load() {
     const redUsers = await redUsersResponse.json();
     const greenUsers = await greenUsersResponse.json();
 
+
+    /*
+     * Build the complete manager list.
+     */
     const managers = [
         ...redUsers.map(user => ({
             ...user,
@@ -40,9 +49,10 @@ export async function load() {
         }))
     ];
 
+
     /*
-     * flipcup1 is currently not returned by the
-     * Green league users endpoint, so add him manually.
+     * flipcup1 is not currently returned by the Green
+     * league users endpoint, so add him manually.
      */
     if (!managers.some(
         manager =>
@@ -61,46 +71,22 @@ export async function load() {
         });
     }
 
-    /*
-     * Load the actual Red and Green league data.
-     */
-    const [
-        redLeagueResponse,
-        greenLeagueResponse
-    ] = await Promise.all([
-
-        fetch(
-            `/api/league-team-managers?league=${cplLeagueID}`
-        ),
-
-        fetch(
-            `/api/league-team-managers?league=${segundaLeagueID}`
-        )
-
-    ]);
 
     /*
-     * If your project does not have the API route above,
-     * we will connect these directly to the existing helper
-     * in the next step.
+     * Get the actual roster/team history for each league.
      */
+    const redLeagueTeamManagers =
+        await getLeagueTeamManagers(cplLeagueID);
 
-    let redLeagueTeamManagers = null;
-    let greenLeagueTeamManagers = null;
+    const greenLeagueTeamManagers =
+        await getLeagueTeamManagers(segundaLeagueID);
 
-    if (redLeagueResponse.ok) {
-        redLeagueTeamManagers =
-            await redLeagueResponse.json();
-    }
-
-    if (greenLeagueResponse.ok) {
-        greenLeagueTeamManagers =
-            await greenLeagueResponse.json();
-    }
 
     return {
         managers,
+
         redLeagueTeamManagers,
+
         greenLeagueTeamManagers
     };
 }
