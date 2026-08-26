@@ -1,18 +1,14 @@
 <script>
     import LinearProgress from '@smui/linear-progress';
-    import { AllManagers } from '$lib/components';
     import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
 
     export let data;
 
-    const {
-        managers,
-        leagueTeamManagersData
-    } = data;
+    const { managers } = data;
 
     onMount(() => {
-        if (!managers.length) {
+        if (!managers || !managers.length) {
             goto('/');
         }
     });
@@ -20,45 +16,48 @@
 
 <style>
     .main {
-        position: relative;
-        z-index: 1;
+        width: 95%;
+        max-width: 900px;
+        margin: 40px auto;
     }
 
-    .loading {
-        display: block;
-        width: 85%;
-        max-width: 500px;
-        margin: 80px auto;
+    h1 {
+        text-align: center;
+    }
+
+    .manager {
+        padding: 15px;
+        margin: 10px 0;
+        border: 1px solid #ddd;
+        border-radius: 8px;
     }
 </style>
 
 <div class="main">
 
-    {#await leagueTeamManagersData}
+    <h1>Managers</h1>
 
-        <div class="loading">
-            <p>Retrieving managers...</p>
-            <LinearProgress indeterminate />
-        </div>
+    {#if managers && managers.length}
 
-    {:then [redLeagueTeamManagers, greenLeagueTeamManagers]}
+        <p>
+            Found {managers.length} managers.
+        </p>
 
-        {#if managers.length}
+        {#each managers as manager}
+            <div class="manager">
+                <strong>{manager.display_name}</strong>
+                <br />
+                <small>
+                    {manager.user_id}
+                    — {manager.division}
+                </small>
+            </div>
+        {/each}
 
-            <AllManagers
-                {managers}
-                leagueTeamManagers={{
-                    red: redLeagueTeamManagers,
-                    green: greenLeagueTeamManagers
-                }}
-            />
+    {:else}
 
-        {/if}
+        <p>No managers found.</p>
 
-    {:catch error}
-
-        <p>Something went wrong: {error.message}</p>
-
-    {/await}
+    {/if}
 
 </div>
