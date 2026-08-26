@@ -3,32 +3,30 @@ import {
     segundaLeagueID
 } from '$lib/utils/leagueInfo';
 
-const FLIPCUP_ID = '1314475281792118784';
-
 export async function load() {
 
-    const redResponse = await fetch(
+    const redUsersResponse = await fetch(
         `https://api.sleeper.app/v1/league/${cplLeagueID}/users`
     );
 
-    const greenResponse = await fetch(
+    const greenUsersResponse = await fetch(
         `https://api.sleeper.app/v1/league/${segundaLeagueID}/users`
     );
 
-    if (!redResponse.ok) {
+    if (!redUsersResponse.ok) {
         throw new Error(
-            `Could not load CPL Red managers: ${redResponse.status}`
+            `Could not load CPL Red managers: ${redUsersResponse.status}`
         );
     }
 
-    if (!greenResponse.ok) {
+    if (!greenUsersResponse.ok) {
         throw new Error(
-            `Could not load CPL Green managers: ${greenResponse.status}`
+            `Could not load CPL Green managers: ${greenUsersResponse.status}`
         );
     }
 
-    const redUsers = await redResponse.json();
-    const greenUsers = await greenResponse.json();
+    const redUsers = await redUsersResponse.json();
+    const greenUsers = await greenUsersResponse.json();
 
     const managers = [
         ...redUsers.map(user => ({
@@ -43,22 +41,17 @@ export async function load() {
     ];
 
     /*
-     * flipcup1 is not currently returned by the Green
-     * league users endpoint, but we already know the
-     * Sleeper user ID.
-     *
-     * Add him to the master manager list so the website
-     * has all 24 managers.
+     * flipcup1 is currently not returned by the
+     * Green league users endpoint, so add him manually.
      */
-    const flipcupExists = managers.some(
+    if (!managers.some(
         manager =>
-            String(manager.user_id) === FLIPCUP_ID
-    );
-
-    if (!flipcupExists) {
+            String(manager.user_id) ===
+            '1314475281792118784'
+    )) {
 
         managers.push({
-            user_id: FLIPCUP_ID,
+            user_id: '1314475281792118784',
             display_name: 'flipcup1',
             user_name: 'flipcup1',
             is_bot: false,
@@ -66,10 +59,48 @@ export async function load() {
             metadata: {},
             avatar: null
         });
+    }
 
+    /*
+     * Load the actual Red and Green league data.
+     */
+    const [
+        redLeagueResponse,
+        greenLeagueResponse
+    ] = await Promise.all([
+
+        fetch(
+            `/api/league-team-managers?league=${cplLeagueID}`
+        ),
+
+        fetch(
+            `/api/league-team-managers?league=${segundaLeagueID}`
+        )
+
+    ]);
+
+    /*
+     * If your project does not have the API route above,
+     * we will connect these directly to the existing helper
+     * in the next step.
+     */
+
+    let redLeagueTeamManagers = null;
+    let greenLeagueTeamManagers = null;
+
+    if (redLeagueResponse.ok) {
+        redLeagueTeamManagers =
+            await redLeagueResponse.json();
+    }
+
+    if (greenLeagueResponse.ok) {
+        greenLeagueTeamManagers =
+            await greenLeagueResponse.json();
     }
 
     return {
-        managers
+        managers,
+        redLeagueTeamManagers,
+        greenLeagueTeamManagers
     };
 }
