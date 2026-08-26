@@ -8,32 +8,36 @@ import {
     segundaLeagueID
 } from '$lib/utils/leagueInfo';
 
-import { waitForAll } from '$lib/utils/helper';
-
 export async function load() {
 
     if (!managers.length) {
         return {
-            managers
+            managers,
+            leagueTeamManagersData: Promise.resolve([null, null])
         };
     }
 
     /*
-     * Load both leagues.
+     * Load CPL Red first, then CPL Green.
      *
-     * Red = CPL
-     * Green = Segunda
+     * Doing this sequentially prevents the shared
+     * teamManagers store/cache from causing one league
+     * to overwrite the other.
      */
-    const redLeagueTeamManagersData =
-        getLeagueTeamManagers(cplLeagueID);
+    const leagueTeamManagersData = (async () => {
 
-    const greenLeagueTeamManagersData =
-        getLeagueTeamManagers(segundaLeagueID);
+        const redLeagueTeamManagers =
+            await getLeagueTeamManagers(cplLeagueID);
 
-    const leagueTeamManagersData = Promise.all([
-        redLeagueTeamManagersData,
-        greenLeagueTeamManagersData
-    ]);
+        const greenLeagueTeamManagers =
+            await getLeagueTeamManagers(segundaLeagueID);
+
+        return [
+            redLeagueTeamManagers,
+            greenLeagueTeamManagers
+        ];
+
+    })();
 
     return {
         managers,
