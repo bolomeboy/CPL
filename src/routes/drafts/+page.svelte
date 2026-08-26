@@ -6,13 +6,10 @@
     const {
         redDraftData,
         greenDraftData,
-
         redPreviousDraftsData,
         greenPreviousDraftsData,
-
         redLeagueTeamManagersData,
         greenLeagueTeamManagersData,
-
         playersData
     } = data;
 </script>
@@ -29,6 +26,7 @@
     <Drafts
         leagueName="CPL Red"
         logo="/CPL-Red-logo.png"
+        division="red"
         upcomingDraftData={redDraftData}
         previousDraftsData={redPreviousDraftsData}
         leagueTeamManagersData={redLeagueTeamManagersData}
@@ -38,6 +36,7 @@
     <Drafts
         leagueName="CPL Green"
         logo="/CPL-Green-logo.png"
+        division="green"
         upcomingDraftData={greenDraftData}
         previousDraftsData={greenPreviousDraftsData}
         leagueTeamManagersData={greenLeagueTeamManagersData}
