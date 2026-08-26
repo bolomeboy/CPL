@@ -8,847 +8,920 @@ import { browser } from '$app/environment';
 import { getLeagueTeamManagers } from './leagueTeamManagers';
 
 
+// ============================================================
+// GET LEAGUE TRANSACTIONS
+// ============================================================
+
 export const getLeagueTransactions = async (
-	preview,
-	refresh = false,
-	queryLeagueID = leagueID
+    preview = false,
+    refresh = false,
+    queryLeagueID = leagueID
 ) => {
 
-	const transactionsStoreVal = get(transactionsStore);
+    /*
+     * Only use the existing transaction cache for the
+     * original league.
+     *
+     * Red and Green need to remain separate.
+     */
+    if (
+        queryLeagueID === leagueID &&
+        get(transactionsStore).totals
+    ) {
 
-	/*
-	 * Only use the existing global transaction cache
-	 * for the default league.
-	 */
-	if (
-		queryLeagueID === leagueID &&
-		transactionsStoreVal.totals
-	) {
-		return {
-			transactions: checkPreview(
-				preview,
-				transactionsStoreVal.transactions
-			),
-			totals: transactionsStoreVal.totals,
-			stale: false
-		};
-	}
+        const transactionsStoreVal =
+            get(transactionsStore);
 
-	/*
-	 * Red and Green need separate localStorage keys.
-	 */
-	const storageKey =
-		queryLeagueID === leagueID
-			? 'transactions'
-			: `transactions-${queryLeagueID}`;
+        return {
+            transactions:
+                checkPreview(
+                    preview,
+                    transactionsStoreVal.transactions
+                ),
 
+            totals:
+                transactionsStoreVal.totals,
 
-	/*
-	 * Check localStorage unless this is a refresh.
-	 */
-	if (!refresh && browser) {
-
-		let localTransactions =
-			await JSON.parse(
-				localStorage.getItem(storageKey)
-			);
-
-		if (localTransactions) {
-
-			localTransactions.transactions =
-				checkPreview(
-					preview,
-					localTransactions.transactions
-				);
-
-			localTransactions.stale = true;
-
-			return localTransactions;
-		}
-	}
+            stale: false
+        };
+    }
 
 
-	/*
-	 * Get the current NFL week.
-	 */
-	const nflState =
-		await getNflState().catch((err) => {
-			console.error(err);
-		});
+    /*
+     * Only use localStorage for the original league.
+     */
+    if (
+        queryLeagueID === leagueID &&
+        !refresh &&
+        browser
+    ) {
 
-	let week = 18;
-
-	if (nflState.season_type == 'regular') {
-		week = nflState.week;
-	}
-
-
-	/*
-	 * Walk through the requested league's history.
-	 *
-	 * Red follows Red.
-	 * Green follows Green.
-	 */
-	const {
-		transactionsData,
-		currentSeason
-	} = await combThroughTransactions(
-		week,
-		queryLeagueID
-	).catch((err) => {
-		console.error(err);
-	});
+        let localTransactions =
+            await JSON.parse(
+                localStorage.getItem("transactions")
+            );
 
 
-	const {
-		transactions,
-		totals
-	} = await digestTransactions({
-		transactionsData,
-		currentSeason,
-		queryLeagueID
-	});
+        if (localTransactions) {
+
+            localTransactions.transactions =
+                checkPreview(
+                    preview,
+                    localTransactions.transactions
+                );
+
+            localTransactions.stale = true;
+
+            return localTransactions;
+        }
+    }
 
 
-	const transactionPackage = {
-		transactions,
-		totals
-	};
+    /*
+     * Get current NFL week.
+     */
+    const nflState =
+        await getNflState().catch((err) => {
+            console.error(err);
+        });
 
 
-	if (browser) {
+    let week = 18;
 
-		/*
-		 * Save Red and Green separately.
-		 */
-		localStorage.setItem(
-			storageKey,
-			JSON.stringify(transactionPackage)
-		);
+    if (nflState.season_type == 'regular') {
+        week = nflState.week;
+    }
 
 
-		/*
-		 * Only update the existing global store
-		 * for the default league.
-		 */
-		if (queryLeagueID === leagueID) {
-			transactionsStore.update(
-				() => transactionPackage
-			);
-		}
-	}
+    /*
+     * Go through the requested league's history.
+     */
+    const {
+        transactionsData,
+        currentSeason
+    } = await combThroughTransactions(
+        week,
+        queryLeagueID
+    ).catch((err) => {
+        console.error(err);
+    });
 
 
-	return {
-		transactions: checkPreview(
-			preview,
-			transactions
-		),
-		totals,
-		stale: false
-	};
+    const {
+        transactions,
+        totals
+    } = await digestTransactions({
+        transactionsData,
+        currentSeason,
+        queryLeagueID
+    });
+
+
+    const transactionPackage = {
+        transactions,
+        totals
+    };
+
+
+    /*
+     * Only save the main league's transactions
+     * into the existing global cache.
+     *
+     * This prevents Green from overwriting Red.
+     */
+    if (
+        queryLeagueID === leagueID &&
+        browser
+    ) {
+
+        localStorage.setItem(
+            "transactions",
+            JSON.stringify(transactionPackage)
+        );
+
+
+        transactionsStore.update(
+            () => transactionPackage
+        );
+    }
+
+
+    return {
+        transactions:
+            checkPreview(
+                preview,
+                transactions
+            ),
+
+        totals,
+
+        stale: false
+    };
 };
 
+
+// ============================================================
+// PREVIEW TRANSACTIONS
+// ============================================================
 
 const checkPreview = (
-	preview,
-	passedTransactions
+    preview,
+    passedTransactions
 ) => {
 
-	if (preview) {
+    if (preview) {
 
-		const previewToReturn = 3;
+        const previewToReturn = 3;
 
-		const trades = [];
-		const waivers = [];
+        const trades = [];
+        const waivers = [];
 
-		let i = 0;
+        let i = 0;
 
-		while (
-			(
-				trades.length < previewToReturn ||
-				waivers.length < previewToReturn
-			) &&
-			i < passedTransactions.length
-		) {
 
-			if (
-				passedTransactions[i].type == "waiver" &&
-				waivers.length < previewToReturn
-			) {
-				waivers.push(
-					passedTransactions[i]
-				);
+        while (
+            (
+                trades.length < previewToReturn ||
+                waivers.length < previewToReturn
+            ) &&
+            i < passedTransactions.length
+        ) {
 
-			} else if (
-				passedTransactions[i].type == "trade" &&
-				trades.length < previewToReturn
-			) {
-				trades.push(
-					passedTransactions[i]
-				);
-			}
+            if (
+                passedTransactions[i].type == "waiver" &&
+                waivers.length < previewToReturn
+            ) {
 
-			i++;
-		}
+                waivers.push(
+                    passedTransactions[i]
+                );
 
-		return {
-			trades,
-			waivers
-		};
-	}
+            } else if (
+                passedTransactions[i].type == "trade" &&
+                trades.length < previewToReturn
+            ) {
 
-	return passedTransactions;
+                trades.push(
+                    passedTransactions[i]
+                );
+            }
+
+            i++;
+        }
+
+
+        return {
+            trades,
+            waivers
+        };
+    }
+
+
+    return passedTransactions;
 };
 
+
+// ============================================================
+// COMB THROUGH TRANSACTIONS
+// ============================================================
 
 const combThroughTransactions = async (
-	week,
-	currentLeagueID
+    week,
+    currentLeagueID
 ) => {
 
-	week = week > 0 ? week : 1;
-
-	const leagueIDs = [];
-
-	let currentSeason = null;
-
-
-	/*
-	 * Follow the requested league's history.
-	 */
-	while (
-		currentLeagueID &&
-		currentLeagueID != 0
-	) {
-
-		const leagueData =
-			await getLeagueData(
-				currentLeagueID
-			).catch((err) => {
-				console.error(err);
-			});
+    week =
+        week > 0
+            ? week
+            : 1;
 
 
-		leagueIDs.push(
-			currentLeagueID
-		);
+    const leagueIDs = [];
+
+    let currentSeason = null;
 
 
-		if (!currentSeason) {
-			currentSeason =
-				leagueData.season;
-		}
+    /*
+     * Walk through the requested division's
+     * previous Sleeper leagues.
+     */
+    while (
+        currentLeagueID &&
+        currentLeagueID != 0
+    ) {
+
+        const leagueData =
+            await getLeagueData(
+                currentLeagueID
+            ).catch((err) => {
+                console.error(err);
+            });
 
 
-		currentLeagueID =
-			leagueData.previous_league_id;
-	}
+        leagueIDs.push(
+            currentLeagueID
+        );
 
 
-	const transactionPromises = [];
+        if (!currentSeason) {
+            currentSeason =
+                leagueData.season;
+        }
 
 
-	for (
-		const singleLeagueID of leagueIDs
-	) {
-
-		while (week > 0) {
-
-			transactionPromises.push(
-				fetch(
-					`https://api.sleeper.app/v1/league/${singleLeagueID}/transactions/${week}`,
-					{ compress: true }
-				)
-			);
-
-			week--;
-		}
-
-		week = 18;
-	}
+        currentLeagueID =
+            leagueData.previous_league_id;
+    }
 
 
-	const transactionRess =
-		await waitForAll(
-			...transactionPromises
-		).catch((err) => {
-			console.error(err);
-		});
+    const transactionPromises = [];
 
 
-	const transactionDataPromises = [];
+    for (
+        const singleLeagueID of leagueIDs
+    ) {
+
+        while (week > 0) {
+
+            transactionPromises.push(
+                fetch(
+                    `https://api.sleeper.app/v1/league/${singleLeagueID}/transactions/${week}`,
+                    { compress: true }
+                )
+            );
+
+            week--;
+        }
+
+        week = 18;
+    }
 
 
-	for (
-		const transactionRes of transactionRess
-	) {
-
-		if (
-			transactionRes == null ||
-			!transactionRes.ok
-		) {
-			console.error(transactionRes);
-			continue;
-		}
-
-		transactionDataPromises.push(
-			transactionRes.json()
-		);
-	}
+    const transactionRess =
+        await waitForAll(
+            ...transactionPromises
+        ).catch((err) => {
+            console.error(err);
+        });
 
 
-	const transactionsDataJson =
-		await waitForAll(
-			...transactionDataPromises
-		).catch((err) => {
-			console.error(err);
-		});
+    const transactionDataPromises = [];
 
 
-	let transactionsData = [];
+    for (
+        const transactionRes of transactionRess
+    ) {
+
+        if (
+            transactionRes == null ||
+            !transactionRes.ok
+        ) {
+
+            console.error(
+                transactionRes
+            );
+
+            continue;
+        }
 
 
-	for (
-		const transactionDataJson of transactionsDataJson
-	) {
-
-		transactionsData =
-			transactionsData.concat(
-				transactionDataJson
-			);
-	}
+        transactionDataPromises.push(
+            transactionRes.json()
+        );
+    }
 
 
-	return {
-		transactionsData,
-		currentSeason
-	};
+    const transactionsDataJson =
+        await waitForAll(
+            ...transactionDataPromises
+        ).catch((err) => {
+            console.error(err);
+        });
+
+
+    let transactionsData = [];
+
+
+    for (
+        const transactionDataJson
+        of transactionsDataJson
+    ) {
+
+        transactionsData =
+            transactionsData.concat(
+                transactionDataJson
+            );
+    }
+
+
+    return {
+        transactionsData,
+        currentSeason
+    };
 };
 
+
+// ============================================================
+// DIGEST TRANSACTIONS
+// ============================================================
 
 const digestTransactions = async ({
-	transactionsData,
-	currentSeason,
-	queryLeagueID
+    transactionsData,
+    currentSeason,
+    queryLeagueID
 }) => {
 
-	const transactions = [];
-
-	const totals = {
-		allTime: {},
-		seasons: {}
-	};
+    const transactions = [];
 
 
-	/*
-	 * IMPORTANT:
-	 * Use the manager history for the SAME league.
-	 */
-	const leagueTeamManagers =
-		await getLeagueTeamManagers(
-			queryLeagueID
-		);
+    const totals = {
+        allTime: {},
+        seasons: {}
+    };
 
 
-	/*
-	 * Trades can be out of order because they are
-	 * added to Sleeper when the offer is sent.
-	 */
-	const transactionOrder =
-		transactionsData.sort(
-			(a, b) =>
-				b.status_updated -
-				a.status_updated
-		);
+    /*
+     * IMPORTANT:
+     * Get managers for the SAME division
+     * whose transactions we're processing.
+     */
+    const leagueTeamManagers =
+        await getLeagueTeamManagers(
+            queryLeagueID
+        );
 
 
-	for (
-		const transaction of transactionOrder
-	) {
-
-		let {
-			digestedTransaction,
-			season,
-			success
-		} = digestTransaction({
-			transaction,
-			currentSeason
-		});
+    /*
+     * Trades can be out of order because Sleeper
+     * stores them based on offer/update time.
+     */
+    const transactionOrder =
+        transactionsData.sort(
+            (a, b) =>
+                b.status_updated -
+                a.status_updated
+        );
 
 
-		if (!success) continue;
+    for (
+        const transaction
+        of transactionOrder
+    ) {
+
+        const {
+            digestedTransaction,
+            season,
+            success
+        } = digestTransaction({
+            transaction,
+            currentSeason
+        });
 
 
-		transactions.push(
-			digestedTransaction
-		);
+        if (!success) {
+            continue;
+        }
 
 
-		/*
-		 * Handle leagues that have not yet
-		 * converted to the next season.
-		 */
-		if (
-			!leagueTeamManagers.teamManagersMap[season]
-		) {
-
-			season--;
-
-			/*
-			 * Edge case when a league is created
-			 * in the calendar year before its
-			 * first fantasy season.
-			 */
-			if (
-				!leagueTeamManagers.teamManagersMap[season]
-			) {
-				season += 2;
-			}
-		}
+        transactions.push(
+            digestedTransaction
+        );
 
 
-		/*
-		 * Add transaction totals for each manager.
-		 */
-		for (
-			const roster of digestedTransaction.rosters
-		) {
+        /*
+         * Handle leagues that haven't converted
+         * to the next season yet.
+         */
+        if (
+            !leagueTeamManagers
+                .teamManagersMap[season]
+        ) {
 
-			const type =
-				digestedTransaction.type;
+            season--;
 
+            if (
+                !leagueTeamManagers
+                    .teamManagersMap[season]
+            ) {
 
-			/*
-			 * Make sure this season exists.
-			 */
-			if (
-				!leagueTeamManagers.teamManagersMap[season]
-			) {
-				continue;
-			}
-
-
-			/*
-			 * Add all-time totals.
-			 */
-			for (
-				const manager of
-				leagueTeamManagers
-					.teamManagersMap[season][roster]
-					.managers
-			) {
-
-				if (!totals.allTime[manager]) {
-
-					totals.allTime[manager] = {
-						trade: 0,
-						waiver: 0
-					};
-				}
-
-				totals.allTime[manager][type]++;
-			}
+                season += 2;
+            }
+        }
 
 
-			/*
-			 * Add season totals.
-			 */
-			if (
-				!totals.seasons[season]
-			) {
-				totals.seasons[season] = {};
-			}
+        /*
+         * Add transaction totals for each manager.
+         */
+        for (
+            const roster
+            of digestedTransaction.rosters
+        ) {
+
+            const type =
+                digestedTransaction.type;
 
 
-			if (
-				!totals.seasons[season][roster]
-			) {
-
-				totals.seasons[season][roster] = {
-					trade: 0,
-					waiver: 0,
-					rosterID: roster
-				};
-			}
+            const seasonManagers =
+                leagueTeamManagers
+                    .teamManagersMap[season]
+                    ?.[
+                        roster
+                    ]
+                    ?.managers || [];
 
 
-			totals.seasons[season][roster][type]++;
-		}
-	}
+            for (
+                const manager
+                of seasonManagers
+            ) {
+
+                if (
+                    !totals.allTime[manager]
+                ) {
+
+                    totals.allTime[manager] = {
+                        trade: 0,
+                        waiver: 0
+                    };
+                }
 
 
-	return {
-		transactions,
-		totals
-	};
+                totals.allTime[manager][
+                    type
+                ]++;
+            }
+
+
+            /*
+             * Season totals.
+             */
+            if (
+                !totals.seasons[season]
+            ) {
+
+                totals.seasons[season] = {};
+            }
+
+
+            if (
+                !totals.seasons[season][roster]
+            ) {
+
+                totals.seasons[season][roster] = {
+                    trade: 0,
+                    waiver: 0,
+                    rosterID: roster,
+                };
+            }
+
+
+            totals.seasons[season][
+                roster
+            ][type]++;
+        }
+    }
+
+
+    return {
+        transactions,
+        totals
+    };
 };
 
 
-const digestDate = (
-	tStamp
-) => {
+// ============================================================
+// DATE
+// ============================================================
 
-	const a = new Date(tStamp);
+const digestDate = (tStamp) => {
 
-	const months = [
-		'Jan',
-		'Feb',
-		'Mar',
-		'Apr',
-		'May',
-		'Jun',
-		'Jul',
-		'Aug',
-		'Sep',
-		'Oct',
-		'Nov',
-		'Dec'
-	];
+    const a = new Date(tStamp);
 
-	const year =
-		a.getFullYear();
+    const months = [
+        'Jan','Feb','Mar','Apr',
+        'May','Jun','Jul','Aug',
+        'Sep','Oct','Nov','Dec'
+    ];
 
-	const month =
-		months[a.getMonth()];
+    const year =
+        a.getFullYear();
 
-	const date =
-		a.getDate();
+    const month =
+        months[a.getMonth()];
 
-	const hour =
-		a.getHours();
+    const date =
+        a.getDate();
 
-	const min =
-		a.getMinutes();
+    const hour =
+        a.getHours();
+
+    const min =
+        a.getMinutes();
 
 
-	return (
-		month +
-		' ' +
-		date +
-		' ' +
-		year +
-		', ' +
-		(
-			hour % 12 == 0
-				? 12
-				: hour % 12
-		) +
-		':' +
-		min +
-		(
-			hour / 12 >= 1
-				? "PM"
-				: "AM"
-		)
-	);
+    return (
+        month +
+        ' ' +
+        date +
+        ' ' +
+        year +
+        ', ' +
+        (
+            hour % 12 == 0
+                ? 12
+                : hour % 12
+        ) +
+        ':' +
+        min +
+        (
+            hour / 12 >= 1
+                ? "PM"
+                : "AM"
+        )
+    );
 };
 
+
+// ============================================================
+// DIGEST INDIVIDUAL TRANSACTION
+// ============================================================
 
 const digestTransaction = ({
-	transaction,
-	currentSeason
+    transaction,
+    currentSeason
 }) => {
 
-	/*
-	 * Don't include failed waiver claims.
-	 */
-	if (
-		transaction.status == 'failed'
-	) {
-		return {
-			success: false
-		};
-	}
+    /*
+     * Don't include failed waiver claims.
+     */
+    if (
+        transaction.status == 'failed'
+    ) {
 
+        return {
+            success: false
+        };
+    }
 
-	const handled = [];
 
-	const transactionRosters =
-		transaction.roster_ids;
+    const handled = [];
 
-	const bid =
-		transaction.settings?.waiver_bid;
+    const transactionRosters =
+        transaction.roster_ids;
 
-	const date =
-		digestDate(
-			transaction.status_updated
-		);
+    const bid =
+        transaction.settings?.waiver_bid;
 
-	const season =
-		parseInt(
-			date.split(',')[0]
-				.split(' ')[2]
-		);
+    const date =
+        digestDate(
+            transaction.status_updated
+        );
 
+    const season =
+        parseInt(
+            date
+                .split(',')[0]
+                .split(' ')[2]
+        );
 
-	let digestedTransaction = {
 
-		id:
-			transaction.transaction_id,
+    let digestedTransaction = {
 
-		date,
+        id:
+            transaction.transaction_id,
 
-		season,
+        date,
 
-		type: "waiver",
+        season,
 
-		rosters:
-			transactionRosters,
+        type: "waiver",
 
-		moves: []
-	};
+        rosters:
+            transactionRosters,
 
+        moves: []
 
-	if (
-		transaction.type == "trade"
-	) {
-		digestedTransaction.type =
-			"trade";
-	}
+    };
 
 
-	if (
-		season != currentSeason
-	) {
-		digestedTransaction.previousOwners =
-			true;
-	}
+    if (
+        transaction.type == "trade"
+    ) {
 
+        digestedTransaction.type =
+            "trade";
+    }
 
-	const adds =
-		transaction.adds;
 
-	const drops =
-		transaction.drops;
+    if (
+        season != currentSeason
+    ) {
 
-	const draftPicks =
-		transaction.draft_picks;
+        digestedTransaction.previousOwners =
+            true;
+    }
 
 
-	for (
-		let player in adds
-	) {
+    const adds =
+        transaction.adds;
 
-		if (!player) {
-			continue;
-		}
+    const drops =
+        transaction.drops;
 
-		handled.push(player);
+    const draftPicks =
+        transaction.draft_picks;
 
-		digestedTransaction.moves.push(
-			handleAdds(
-				transactionRosters,
-				adds,
-				drops,
-				player,
-				bid
-			)
-		);
-	}
 
+    /*
+     * Added players.
+     */
+    for (
+        let player in adds
+    ) {
 
-	for (
-		let player in drops
-	) {
+        if (!player) {
+            continue;
+        }
 
-		if (
-			handled.indexOf(player) > -1
-		) {
-			continue;
-		}
 
+        handled.push(player);
 
-		if (!player) {
-			continue;
-		}
 
+        digestedTransaction.moves.push(
+            handleAdds(
+                transactionRosters,
+                adds,
+                drops,
+                player,
+                bid
+            )
+        );
+    }
 
-		let move =
-			new Array(
-				transactionRosters.length
-			).fill(null);
 
+    /*
+     * Dropped players.
+     */
+    for (
+        let player in drops
+    ) {
 
-		move[
-			transactionRosters.indexOf(
-				drops[player]
-			)
-		] = {
+        if (
+            handled.indexOf(player) > -1
+        ) {
 
-			type: "Dropped",
+            continue;
+        }
 
-			player
-		};
 
+        let move =
+            new Array(
+                transactionRosters.length
+            ).fill(null);
 
-		digestedTransaction.moves.push(
-			move
-		);
-	}
 
+        if (!player) {
+            continue;
+        }
 
-	for (
-		let pick of draftPicks
-	) {
 
-		let move =
-			new Array(
-				transactionRosters.length
-			).fill(null);
+        move[
+            transactionRosters.indexOf(
+                drops[player]
+            )
+        ] = {
 
+            type: "Dropped",
 
-		move[
-			transactionRosters.indexOf(
-				pick.owner_id
-			)
-		] = {
+            player
 
-			type: "trade",
+        };
 
-			pick: {
 
-				season:
-					pick.season,
+        digestedTransaction.moves.push(
+            move
+        );
+    }
 
-				round:
-					pick.round,
 
-				original_owner:
-					null
-			}
-		};
+    /*
+     * Draft picks.
+     */
+    for (
+        let pick of draftPicks
+    ) {
 
+        let move =
+            new Array(
+                transactionRosters.length
+            ).fill(null);
 
-		if (
-			pick.roster_id !=
-			pick.previous_owner_id
-		) {
 
-			move[
-				transactionRosters.indexOf(
-					pick.owner_id
-				)
-			].pick.original_owner =
-				pick.roster_id;
-		}
+        move[
+            transactionRosters.indexOf(
+                pick.owner_id
+            )
+        ] = {
 
+            type: "trade",
 
-		move[
-			transactionRosters.indexOf(
-				pick.previous_owner_id
-			)
-		] = "origin";
+            pick: {
 
+                season:
+                    pick.season,
 
-		digestedTransaction.moves.push(
-			move
-		);
-	}
+                round:
+                    pick.round,
 
+                original_owner:
+                    null,
 
-	for (
-		let wBudget of
-		transaction.waiver_budget
-	) {
+            },
 
-		let move =
-			new Array(
-				transactionRosters.length
-			).fill(null);
+        };
 
 
-		move[
-			transactionRosters.indexOf(
-				wBudget.receiver
-			)
-		] = {
+        if (
+            pick.roster_id !=
+            pick.previous_owner_id
+        ) {
 
-			type: "trade",
+            move[
+                transactionRosters.indexOf(
+                    pick.owner_id
+                )
+            ].pick.original_owner =
+                pick.roster_id;
+        }
 
-			budget: {
-				amount:
-					wBudget.amount
-			}
-		};
 
+        move[
+            transactionRosters.indexOf(
+                pick.previous_owner_id
+            )
+        ] = "origin";
 
-		move[
-			transactionRosters.indexOf(
-				wBudget.sender
-			)
-		] = "origin";
 
+        digestedTransaction.moves.push(
+            move
+        );
+    }
 
-		digestedTransaction.moves.push(
-			move
-		);
-	}
 
+    /*
+     * FAAB / waiver budget trades.
+     */
+    for (
+        let wBudget
+        of transaction.waiver_budget
+    ) {
 
-	return {
-		digestedTransaction,
-		season,
-		success: true
-	};
+        let move =
+            new Array(
+                transactionRosters.length
+            ).fill(null);
+
+
+        move[
+            transactionRosters.indexOf(
+                wBudget.receiver
+            )
+        ] = {
+
+            type: "trade",
+
+            budget: {
+
+                amount:
+                    wBudget.amount,
+
+            },
+
+        };
+
+
+        move[
+            transactionRosters.indexOf(
+                wBudget.sender
+            )
+        ] = "origin";
+
+
+        digestedTransaction.moves.push(
+            move
+        );
+    }
+
+
+    return {
+        digestedTransaction,
+        season,
+        success: true
+    };
 };
 
 
+// ============================================================
+// HANDLE PLAYER ADDS
+// ============================================================
+
 const handleAdds = (
-	rosters,
-	adds,
-	drops,
-	player,
-	bid
+    rosters,
+    adds,
+    drops,
+    player,
+    bid
 ) => {
 
-	let move =
-		new Array(
-			rosters.length
-		).fill(null);
+    let move =
+        new Array(
+            rosters.length
+        ).fill(null);
 
 
-	if (
-		drops &&
-		drops[player]
-	) {
+    if (
+        drops &&
+        drops[player]
+    ) {
 
-		move[
-			rosters.indexOf(
-				adds[player]
-			)
-		] = {
+        move[
+            rosters.indexOf(
+                adds[player]
+            )
+        ] = {
 
-			type: "trade",
+            type: "trade",
 
-			player
-		};
+            player
 
-
-		move[
-			rosters.indexOf(
-				drops[player]
-			)
-		] = "origin";
+        };
 
 
-		return move;
-	}
+        move[
+            rosters.indexOf(
+                drops[player]
+            )
+        ] = "origin";
 
 
-	move[
-		rosters.indexOf(
-			adds[player]
-		)
-	] = {
-
-		type: "Added",
-
-		player,
-
-		bid
-	};
+        return move;
+    }
 
 
-	return move;
+    move[
+        rosters.indexOf(
+            adds[player]
+        )
+    ] = {
+
+        type: "Added",
+
+        player,
+
+        bid
+
+    };
+
+
+    return move;
 };
