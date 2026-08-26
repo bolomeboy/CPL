@@ -4,9 +4,15 @@
     export let data;
 
     const {
-        cplDraftsData,
-        cplPreviousDraftsData,
-        leagueTeamManagersData,
+        redDraftData,
+        greenDraftData,
+
+        redPreviousDraftsData,
+        greenPreviousDraftsData,
+
+        redLeagueTeamManagersData,
+        greenLeagueTeamManagersData,
+
         playersData
     } = data;
 </script>
@@ -19,10 +25,23 @@
 </style>
 
 <div id="main">
+
     <Drafts
-        {cplDraftsData}
-        {cplPreviousDraftsData}
-        {leagueTeamManagersData}
+        leagueName="CPL Red"
+        logo="/CPL-Red-logo.png"
+        upcomingDraftData={redDraftData}
+        previousDraftsData={redPreviousDraftsData}
+        leagueTeamManagersData={redLeagueTeamManagersData}
         {playersData}
     />
+
+    <Drafts
+        leagueName="CPL Green"
+        logo="/CPL-Green-logo.png"
+        upcomingDraftData={greenDraftData}
+        previousDraftsData={greenPreviousDraftsData}
+        leagueTeamManagersData={greenLeagueTeamManagersData}
+        {playersData}
+    />
+
 </div>
