@@ -14,7 +14,6 @@ import {
     segundaLeagueID
 } from '$lib/utils/leagueInfo';
 
-
 export async function load({ url }) {
 
     if (!managersObj.length) {
@@ -24,137 +23,123 @@ export async function load({ url }) {
     const managerParam =
         url?.searchParams?.get('manager');
 
-    const manager =
-        managerParam !== null
-            ? parseInt(managerParam)
-            : -1;
+    const managerID =
+        url?.searchParams?.get('managerID');
 
+    const rosterID =
+        url?.searchParams?.get('rosterID');
+
+    const yearParam =
+        url?.searchParams?.get('year');
+
+    const divisionParam =
+        url?.searchParams?.get('division');
 
     /*
-     * Determine which division this manager belongs to.
+     * If the URL contains a Sleeper manager ID,
+     * use that to determine which league to load.
      *
-     * Red managers:
-     * 1. Dillydilly
-     * 2. Tonymedeiros
-     * 3. Blicalicker
-     * 4. Pombinhamaster
-     * 5. Jmendes27
-     * 6. Justindocanto
-     * 7. Loganlourenco
-     * 8. Cuckhold97
-     * 9. DMACE
-     * 10. Gavinsilva
-     * 11. Dalexandre
-     * 12. JDizzle
-     *
-     * Green managers:
-     * 1. Lucasfon
-     * 2. Lacobjopes
-     * 3. Emilioanaya
-     * 4. Nicholassilv
-     * 5. Mpires
-     * 6. Linguicalicker
-     * 7. Ljorge
-     * 8. Xavierg
-     * 9. Duarte3
-     * 10. OPEN
-     * 11. Grantsilva
-     *
-     * IMPORTANT:
-     * The manager array currently comes from the original
-     * league system, so we identify the division by
-     * manager name/user ID rather than assuming the array
-     * position represents the Sleeper roster.
+     * Green managers use segundaLeagueID.
+     * Red managers use cplLeagueID.
      */
 
-
-    const greenManagerNames = [
-        'Lucasfon18',
-        'lacobjopes',
-        'emilioanaya',
-        'Nicholassilv',
-        'mpires1',
-        'LinguicaLicker',
-        'LJorge',
-        'Xavierg35',
-        'Duarte3',
-        'grantsilva'
+    const greenManagerIDs = [
+        '871263782905794560',  // Lucasfon18
+        '992160347320647680',  // lacobjopes
+        '733139077938925568',  // emilioanaya
+        '1134307994403344384', // Nicholassilv
+        '858567127072870400',  // mpires1
+        '733897435939725312',  // LinguicaLicker
+        '1122218839107850240', // LJorge
+        '853030385163038720',  // Xavierg35
+        '1233993787223572480', // Duarte3
+        '594665552094486528'   // grantsilva
     ];
 
+    const redManagerIDs = [
+        '1037569461064794112', // Dillydilly71
+        '992145928494637056',  // TonyMedeiros
+        '733091325091635200',  // BlicaLicker
+        '1132795206014742528', // pombinhamaster42069
+        '1123348972917100544', // Jmendes27
+        '608428302964686848',  // justindocanto
+        '722593452524650496',  // loganlourenco
+        '733122379001241600',  // cuckhold97
+        '988192038514466816',  // DMACE11
+        '732848788863037440',  // GavinSilva
+        '865009922180509696',  // dalexandre
+        '471758701842132992'   // JDizzle09
+    ];
 
-    let selectedManager = null;
+    /*
+     * Determine which league we are viewing.
+     */
+
+    let queryLeagueID = cplLeagueID;
+    let division = 'red';
 
     if (
-        manager >= 0 &&
-        manager < managersObj.length
+        managerID &&
+        greenManagerIDs.includes(String(managerID))
     ) {
-        selectedManager =
-            managersObj[manager];
+        queryLeagueID = segundaLeagueID;
+        division = 'green';
+    } else if (
+        divisionParam === 'green'
+    ) {
+        queryLeagueID = segundaLeagueID;
+        division = 'green';
+    } else if (
+        divisionParam === 'red'
+    ) {
+        queryLeagueID = cplLeagueID;
+        division = 'red';
     }
 
+    /*
+     * If this is an existing manager from the old
+     * manager database, find their index.
+     */
+
+    let manager = -1;
+
+    if (managerParam !== null) {
+
+        const parsedManager =
+            parseInt(managerParam);
+
+        if (
+            !isNaN(parsedManager) &&
+            parsedManager >= 0 &&
+            parsedManager < managersObj.length
+        ) {
+            manager = parsedManager;
+        }
+    }
 
     /*
-     * Check whether this manager is Green.
+     * If we were given a Sleeper manager ID but it
+     * exists in the old manager database, use its index.
      */
-    const isGreen =
-        selectedManager &&
-        (
-            greenManagerNames.includes(
-                selectedManager.managerID
-            ) ||
-            greenManagerNames.includes(
-                selectedManager.name
-            ) ||
-            greenManagerNames.includes(
-                selectedManager.username
-            )
-        );
 
+    if (manager === -1 && managerID) {
+
+        const foundIndex =
+            managersObj.findIndex(
+                m =>
+                    String(m.managerID) ===
+                    String(managerID)
+            );
+
+        if (foundIndex > -1) {
+            manager = foundIndex;
+        }
+    }
 
     /*
-     * For now, use the manager index to identify
-     * the Green managers as well.
-     *
-     * This is temporary until we connect the manager
-     * records directly to Sleeper user IDs.
+     * Load all information from the correct league.
      */
-    const greenNamesLower =
-        greenManagerNames.map(
-            name => name.toLowerCase()
-        );
 
-
-    const selectedValues = selectedManager
-        ? [
-            selectedManager.name,
-            selectedManager.username,
-            selectedManager.display_name
-        ]
-        : [];
-
-
-    const selectedIsGreen =
-        selectedValues.some(
-            value =>
-                value &&
-                greenNamesLower.includes(
-                    value.toLowerCase()
-                )
-        );
-
-
-    /*
-     * Decide which Sleeper league to use.
-     */
-    const queryLeagueID =
-        selectedIsGreen
-            ? segundaLeagueID
-            : cplLeagueID;
-
-
-    /*
-     * Get all manager-page data from the SAME league.
-     */
     const managersInfo = waitForAll(
 
         getLeagueRosters(
@@ -186,28 +171,26 @@ export async function load({ url }) {
 
     );
 
+    return {
 
-    const props = {
+        manager,
 
-        manager:
-            manager >= 0 &&
-            manager < managersObj.length
-                ? manager
-                : -1,
+        managerID,
+
+        rosterID,
+
+        year:
+            yearParam
+                ? parseInt(yearParam)
+                : null,
+
+        division,
 
         managers:
             managersObj,
 
         managersInfo,
 
-        queryLeagueID,
-
-        division:
-            selectedIsGreen
-                ? 'green'
-                : 'red'
+        queryLeagueID
     };
-
-
-    return props;
 }
