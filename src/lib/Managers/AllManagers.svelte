@@ -1,10 +1,28 @@
 <script>
-    import { leagueName } from '$lib/utils/helper';
-    import ManagerRow from './ManagerRow.svelte'
+    import ManagerRow from './ManagerRow.svelte';
+    import { cplLeagueID, segundaLeagueID } from '$lib/utils/leagueInfo';
 
-    export let managers, leagueTeamManagers;
+    export let managers;
+    export let leagueTeamManagers;
 
     let innerWidth;
+
+    // Get the correct league data for each manager.
+    const getLeagueTeamManagersForManager = (manager) => {
+        if (!manager) {
+            return leagueTeamManagers;
+        }
+
+        /*
+         * If the manager already has division information,
+         * use it to determine the correct league.
+         */
+        if (manager.division === 'green') {
+            return leagueTeamManagers.green || leagueTeamManagers;
+        }
+
+        return leagueTeamManagers.red || leagueTeamManagers;
+    };
 </script>
 
 <svelte:window bind:innerWidth={innerWidth} />
@@ -28,6 +46,12 @@
         line-height: 1em;
     }
 
+    .divisionHeader {
+        text-align: center;
+        font-size: 1.8em;
+        margin: 2em 0 1em;
+    }
+
     @media (max-width: 520px) {
         h2 {
             text-align: center;
@@ -35,14 +59,45 @@
             margin: 1.5em 0 1em;
             line-height: 1em;
         }
+
+        .divisionHeader {
+            font-size: 1.4em;
+        }
     }
 </style>
 
 <div class="managerContainer">
-    <h2>{leagueName} Managers</h2>
+
+    <h2>California Primeira Liga Managers</h2>
+
+    <!-- RED MANAGERS -->
+    <div class="divisionHeader">
+        🔴 CPL Red
+    </div>
+
     <div class="managerConstrained">
-        {#each managers as manager, key}
-            <ManagerRow {manager} {leagueTeamManagers} {key} />
+        {#each managers.filter(manager => manager.division === 'red') as manager, key}
+            <ManagerRow
+                {manager}
+                leagueTeamManagers={getLeagueTeamManagersForManager(manager)}
+                {key}
+            />
+        {/each}
+    </div>
+
+
+    <!-- GREEN MANAGERS -->
+    <div class="divisionHeader">
+        🟢 CPL Green
+    </div>
+
+    <div class="managerConstrained">
+        {#each managers.filter(manager => manager.division === 'green') as manager, key}
+            <ManagerRow
+                {manager}
+                leagueTeamManagers={getLeagueTeamManagersForManager(manager)}
+                {key}
+            />
         {/each}
     </div>
 
