@@ -1,46 +1,49 @@
 import {
-    getLeagueTeamManagers,
-    managers
-} from '$lib/utils/helper';
-
-import {
     cplLeagueID,
     segundaLeagueID
 } from '$lib/utils/leagueInfo';
 
 export async function load() {
 
-    if (!managers.length) {
-        return {
-            managers,
-            leagueTeamManagersData: Promise.resolve([null, null])
-        };
+    const redPromise = fetch(
+        `https://api.sleeper.app/v1/league/${cplLeagueID}/users`
+    );
+
+    const greenPromise = fetch(
+        `https://api.sleeper.app/v1/league/${segundaLeagueID}/users`
+    );
+
+    const [redResponse, greenResponse] = await Promise.all([
+        redPromise,
+        greenPromise
+    ]);
+
+    if (!redResponse.ok) {
+        throw new Error(
+            `Could not load CPL Red managers: ${redResponse.status}`
+        );
     }
 
-    /*
-     * Load CPL Red first, then CPL Green.
-     *
-     * Doing this sequentially prevents the shared
-     * teamManagers store/cache from causing one league
-     * to overwrite the other.
-     */
-    const leagueTeamManagersData = (async () => {
+    if (!greenResponse.ok) {
+        throw new Error(
+            `Could not load CPL Green managers: ${greenResponse.status}`
+        );
+    }
 
-        const redLeagueTeamManagers =
-            await getLeagueTeamManagers(cplLeagueID);
-
-        const greenLeagueTeamManagers =
-            await getLeagueTeamManagers(segundaLeagueID);
-
-        return [
-            redLeagueTeamManagers,
-            greenLeagueTeamManagers
-        ];
-
-    })();
+    const redUsers = await redResponse.json();
+    const greenUsers = await greenResponse.json();
 
     return {
-        managers,
-        leagueTeamManagersData
+        managers: [
+            ...redUsers.map(user => ({
+                ...user,
+                division: 'red'
+            })),
+
+            ...greenUsers.map(user => ({
+                ...user,
+                division: 'green'
+            }))
+        ]
     };
 }
