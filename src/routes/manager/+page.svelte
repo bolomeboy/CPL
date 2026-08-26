@@ -7,7 +7,6 @@
     export let data;
 
     const {
-        managers,
         manager,
         managerID,
         rosterID,
@@ -17,15 +16,14 @@
     } = data;
 
     onMount(() => {
-        if (!managers.length) {
-            goto('/');
-        }
 
-        // Only redirect if we have neither an old manager
-        // index nor a new Sleeper manager ID.
-        if (manager < 0 && !managerID) {
+        /*
+         * A manager page now uses the real Sleeper ID.
+         */
+        if (!managerID) {
             goto('/managers');
         }
+
     });
 </script>
 
@@ -48,30 +46,25 @@
     {#await managersInfo}
 
         <div class="loading">
-            <p>Retrieving managers...</p>
+            <p>Retrieving manager...</p>
             <LinearProgress indeterminate />
         </div>
 
     {:then [rostersData, leagueTeamManagers, leagueData, transactionsData, awards, records]}
 
-        {#if managers.length && (manager > -1 || managerID)}
-
-            <Manager
-                {awards}
-                {records}
-                {manager}
-                {managers}
-                {managerID}
-                {rosterID}
-                {year}
-                {division}
-                {rostersData}
-                {leagueTeamManagers}
-                rosterPositions={leagueData.roster_positions}
-                {transactionsData}
-            />
-
-        {/if}
+        <Manager
+            {awards}
+            {records}
+            {manager}
+            {managerID}
+            {rosterID}
+            {year}
+            {division}
+            {rostersData}
+            {leagueTeamManagers}
+            rosterPositions={leagueData.roster_positions}
+            {transactionsData}
+        />
 
     {:catch error}
 
