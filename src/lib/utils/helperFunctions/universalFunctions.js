@@ -37,50 +37,134 @@ const max = (stats, roundOverride) => {
     return Math.ceil(num / roundOverride) * roundOverride;
 }
 
-export const gotoManager = ({leagueTeamManagers, managerID, rosterID, year}) => {
-    if(!managersObj.length) return;
-    let managersIndex = -1;
+export const gotoManager = ({
+    leagueTeamManagers,
+    managerID,
+    rosterID,
+    year,
+    division = null
+}) => {
+    if (!leagueTeamManagers) {
+        goto('/managers');
+        return;
+    }
 
-    if(!year || year > leagueTeamManagers.currentSeason) {
+    if (!year || year > leagueTeamManagers.currentSeason) {
         year = leagueTeamManagers.currentSeason;
     }
 
-    if(managerID) {
-        // modern approach
-        managersIndex = managersObj.findIndex(m => m.managerID == managerID);
+    const yearManagers =
+        leagueTeamManagers.teamManagersMap?.[year];
 
-        // support for league pages still using deprecated roster field
-        if(managersIndex < 0 && leagueTeamManagers.teamManagersMap[year] != null) {
-            for(const rID in leagueTeamManagers.teamManagersMap[year]) {
-                if(leagueTeamManagers.teamManagersMap[year][rID] == null) continue;
-                for(const mID of leagueTeamManagers.teamManagersMap[year][rID].managers) {
-                    if(mID == managerID) {
-                        managersIndex =  managersObj.findIndex(m => m.roster == rID);
-                        goto(`/manager?manager=${managersIndex}`);
-                        return;
-                    }
-                }
-            }
-        }
-    } else if(rosterID) {
-        // check for matching managerID first
-        if(leagueTeamManagers.teamManagersMap[year] != null) {
-            for(const mID of leagueTeamManagers.teamManagersMap[year][rosterID].managers) {
-                managersIndex = managersObj.findIndex(m => m.managerID == mID);
-                if(managersIndex > -1) {
-                    goto(`/manager?manager=${managersIndex}`);
-                    return;
-                }
-            }
-        }
-        
-        // support for league pages still using deprecated roster field
-        managersIndex = managersObj.findIndex(m => m.roster == rosterID);
+    if (!yearManagers) {
+        goto('/managers');
+        return;
     }
 
-    // if no manager exists for that roster, -1 will take you to the main managers page
-    goto(`/manager?manager=${managersIndex}`);
-}
+    const currentDivision =
+        division ||
+        leagueTeamManagers.division ||
+        'red';
+
+    // Manager ID was provided
+    if (managerID) {
+
+        for (const rID in yearManagers) {
+
+            const rosterData = yearManagers[rID];
+
+            if (!rosterData || !rosterData.managers) {
+                continue;
+            }
+
+            if (
+                rosterData.managers
+                    .map(String)
+                    .includes(String(managerID))
+            ) {
+
+                const managersIndex =
+                    managersObj.findIndex(
+                        manager =>
+                            String(manager.managerID) ===
+                            String(managerID)
+                    );
+
+                if (managersIndex > -1) {
+
+                    goto(
+                        `/manager?manager=${managersIndex}` +
+                        `&division=${currentDivision}` +
+                        `&year=${year}` +
+                        `&rosterID=${rID}`
+                    );
+
+                    return;
+                }
+
+                // Green manager not in the old managersObj
+                goto(
+                    `/manager?` +
+                    `managerID=${encodeURIComponent(managerID)}` +
+                    `&rosterID=${encodeURIComponent(rID)}` +
+                    `&year=${encodeURIComponent(year)}` +
+                    `&division=${encodeURIComponent(currentDivision)}`
+                );
+
+                return;
+            }
+        }
+    }
+
+    // Roster ID was provided
+    if (rosterID && yearManagers[rosterID]) {
+
+        const rosterData = yearManagers[rosterID];
+
+        if (
+            rosterData.managers &&
+            rosterData.managers.length > 0
+        ) {
+
+            const sleeperManagerID =
+                rosterData.managers[0];
+
+            const managersIndex =
+                managersObj.findIndex(
+                    manager =>
+                        String(manager.managerID) ===
+                        String(sleeperManagerID)
+                );
+
+            if (managersIndex > -1) {
+
+                goto(
+                    `/manager?manager=${managersIndex}` +
+                    `&division=${currentDivision}` +
+                    `&year=${year}` +
+                    `&rosterID=${rosterID}`
+                );
+
+                return;
+            }
+
+            // New/Green manager
+            goto(
+                `/manager?` +
+                `managerID=${encodeURIComponent(sleeperManagerID)}` +
+                `&rosterID=${encodeURIComponent(rosterID)}` +
+                `&year=${encodeURIComponent(year)}` +
+                `&division=${encodeURIComponent(currentDivision)}`
+            );
+
+            return;
+        }
+    }
+
+    goto('/managers');
+};
+
+    
 
 export const getAuthor = (leagueTeamManagers, author) => {
     for(const userID in leagueTeamManagers.users) {
