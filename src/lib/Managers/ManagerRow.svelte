@@ -1,24 +1,97 @@
 <script>
     import { goto } from "$app/navigation";
-	import { getDatesActive, getRosterIDFromManagerID, getTeamNameFromTeamManagers } from "$lib/utils/helperFunctions/universalFunctions";
-    import {dynasty} from "$lib/utils/leagueInfo"
+    import {
+        getDatesActive,
+        getRosterIDFromManagerID,
+        getTeamNameFromTeamManagers
+    } from "$lib/utils/helperFunctions/universalFunctions";
 
-    export let manager, leagueTeamManagers, key;
+    import { dynasty } from "$lib/utils/leagueInfo";
+
+    export let manager;
+    export let leagueTeamManagers;
+    export let key;
 
     let retired = false;
 
-    // manager.roster is deprecated, pages should be using managerID now
-    let rosterID = manager.roster;
+    /*
+     * New manager data comes directly from Sleeper.
+     */
+    const managerID =
+        manager?.user_id
+            ? String(manager.user_id)
+            : null;
+
+    /*
+     * Find this manager's roster in the correct
+     * Red or Green league.
+     */
+    let rosterID = null;
     let year = null;
 
-    if(manager.managerID) {
-        const dates = getDatesActive(leagueTeamManagers, manager.managerID);
-        if(dates.end) retired = true;
+    if (managerID && leagueTeamManagers) {
 
-        ({rosterID, year} = getRosterIDFromManagerID(leagueTeamManagers, manager.managerID) || {rosterID, year});
+        const dates =
+            getDatesActive(
+                leagueTeamManagers,
+                managerID
+            );
+
+        if (dates?.end) {
+            retired = true;
+        }
+
+        const rosterInfo =
+            getRosterIDFromManagerID(
+                leagueTeamManagers,
+                managerID
+            );
+
+        if (rosterInfo) {
+            rosterID = rosterInfo.rosterID;
+            year = rosterInfo.year;
+        }
     }
 
-    const commissioner = manager.managerID ? leagueTeamManagers.users[manager.managerID].is_owner : false;
+
+    /*
+     * Commissioner status comes directly from Sleeper.
+     */
+    const commissioner =
+        manager?.is_owner === true;
+
+
+    /*
+     * Sleeper avatar.
+     */
+    const avatar =
+        manager?.metadata?.avatar ||
+        (
+            manager?.avatar
+                ? `https://sleepercdn.com/avatars/thumbs/${manager.avatar}`
+                : '/managers/question.jpg'
+        );
+
+
+    /*
+     * Sleeper team name.
+     */
+    let teamName = 'Team';
+
+    if (
+        leagueTeamManagers &&
+        rosterID &&
+        year &&
+        leagueTeamManagers.teamManagersMap?.[year]?.[rosterID]
+    ) {
+
+        teamName =
+            getTeamNameFromTeamManagers(
+                leagueTeamManagers,
+                rosterID,
+                year
+            );
+    }
 </script>
 
 <style>
@@ -38,8 +111,8 @@
     }
 
     .manager:hover {
-        box-shadow: 0 0 10px 0 bar(--g999);
-        background-color: bar(--eee);
+        box-shadow: 0 0 10px 0 var(--g999);
+        background-color: var(--eee);
     }
 
     .photo {
@@ -49,6 +122,7 @@
         vertical-align: middle;
         margin-left: 1em;
         box-shadow: 0 0 2px 1px var(--bbb);
+        object-fit: cover;
     }
 
     .name {
@@ -129,7 +203,7 @@
         color: #fff;
     }
 
-	@media (max-width: 665px) {
+    @media (max-width: 665px) {
         .name {
             font-size: 0.9em;
             margin-left: 0.5em;
@@ -141,7 +215,7 @@
         }
     }
 
-	@media (max-width: 595px) {
+    @media (max-width: 595px) {
         .manager {
             padding: 0.5em 0;
             margin: 0.3em 0;
@@ -229,62 +303,104 @@
     }
 </style>
 
-<div class="manager" style="{retired ? "background-image: url(/retired.png); background-color: var(--ddd)": ""}" onclick={() => goto(`/manager?manager=${key}`)}>
+
+<div
+    class="manager"
+    style="{retired
+        ? 'background-image: url(/retired.png); background-color: var(--ddd)'
+        : ''}"
+    onclick={() =>
+        goto(
+            `/manager?managerID=${encodeURIComponent(managerID)}&division=${encodeURIComponent(manager.division)}${rosterID ? `&rosterID=${encodeURIComponent(rosterID)}` : ''}${year ? `&year=${encodeURIComponent(year)}` : ''}`
+        )
+    }
+>
+
     <div class="avatarHolder">
-        <img class="photo" src="{manager.photo}" alt="{manager.name}" />
+
+        <img
+            class="photo"
+            src={avatar}
+            alt="{manager.display_name} avatar"
+        />
+
         {#if commissioner}
+
             <div class="commissionerBadge">
                 <span>C</span>
             </div>
+
         {/if}
+
     </div>
-    <div class="name">{manager.name}</div>
-    <div class="team">{getTeamNameFromTeamManagers(leagueTeamManagers, rosterID, year)}</div>
+
+
+    <div class="name">
+        {manager.display_name}
+    </div>
+
+
+    <div class="team">
+        {teamName}
+    </div>
+
+
     <div class="spacer" />
+
+
     <div class="info">
-        <!-- Favorite team (optional) -->
+
+        <!-- Favorite team -->
         <div class="infoSlot infoTeam">
-            {#if manager.favoriteTeam}
-                <div class="infoIcon">
-                    <img class="infoImg" src="https://sleepercdn.com/images/team_logos/nfl/{manager.favoriteTeam}.png" alt="favorite team"/>
-                </div>
-            {:else}
-                <div class="infoIcon question">
-                    <img class="infoImg" src="/managers/question.jpg" alt="favorite team"/>
-                </div>
-            {/if}
+
+            <div class="infoIcon question">
+
+                <img
+                    class="infoImg"
+                    src="/managers/question.jpg"
+                    alt="favorite team"
+                />
+
+            </div>
+
         </div>
+
+
         <!-- Preferred contact -->
         <div class="infoSlot">
-            {#if manager.preferredContact}
-                <div class="infoIcon">
-                    <img class="infoImg" src="/{manager.preferredContact}.png" alt="{manager.preferredContact}"/>
-                </div>
-                <div class="infoAnswer">
-                    {manager.preferredContact}
-                </div>
-            {:else}
-                <div class="infoIcon question">
-                    <img class="infoImg" src="/managers/question.jpg" alt="favorite team"/>
-                </div>
-            {/if}
-        </div>
-        <!-- Rebuild mode (optional and only displayed for dynasty leagues) -->
-        {#if dynasty}
-            <div class="infoSlot infoRebuild">
-                {#if manager.mode}
-                    <div class="infoIcon">
-                        <img class="infoImg" src="/{manager.mode.replace(' ', '%20')}.png" alt="win now or rebuild"/>
-                    </div>
-                    <div class="infoAnswer">
-                        {manager.mode}
-                    </div>
-                {:else}
-                    <div class="infoIcon question">
-                        <img class="infoImg" src="/managers/question.jpg" alt="favorite team"/>
-                    </div>
-                {/if}
+
+            <div class="infoIcon question">
+
+                <img
+                    class="infoImg"
+                    src="/managers/question.jpg"
+                    alt="preferred contact"
+                />
+
             </div>
+
+        </div>
+
+
+        <!-- Rebuild mode -->
+        {#if dynasty}
+
+            <div class="infoSlot infoRebuild">
+
+                <div class="infoIcon question">
+
+                    <img
+                        class="infoImg"
+                        src="/managers/question.jpg"
+                        alt="rebuild mode"
+                    />
+
+                </div>
+
+            </div>
+
         {/if}
+
     </div>
+
 </div>
