@@ -5,8 +5,7 @@ import {
     getLeagueData,
     getLeagueTransactions,
     getAwards,
-    getLeagueRecords,
-    managers as managersObj
+    getLeagueRecords
 } from '$lib/utils/helper';
 
 import {
@@ -14,55 +13,69 @@ import {
     segundaLeagueID
 } from '$lib/utils/leagueInfo';
 
+
 export async function load({ url }) {
 
-    if (!managersObj.length) {
-        return false;
-    }
+    /*
+     * Get the real Sleeper manager ID from the URL.
+     */
+    const managerID =
+        url?.searchParams?.get('managerID');
 
-    const managerParam = url?.searchParams?.get('manager');
-
-    let manager = -1;
-
-    if (managerParam !== null) {
-        const parsedManager = parseInt(managerParam);
-
-        if (
-            !isNaN(parsedManager) &&
-            parsedManager >= 0 &&
-            parsedManager < managersObj.length
-        ) {
-            manager = parsedManager;
-        }
-    }
 
     /*
-     * Get the selected manager from the master 24-manager list.
+     * Get optional roster/year information.
      */
-    const selectedManager =
-        manager > -1
-            ? managersObj[manager]
-            : null;
+    const rosterID =
+        url?.searchParams?.get('rosterID');
+
+    const yearParam =
+        url?.searchParams?.get('year');
+
 
     /*
-     * Determine the correct league from the manager's
-     * division.
-     *
-     * Green = Segunda
-     * Red = CPL
+     * Determine the manager's division.
      */
+    const divisionParam =
+        url?.searchParams?.get('division');
+
     const division =
-        selectedManager?.division === 'green'
+        divisionParam === 'green'
             ? 'green'
             : 'red';
 
+
+    /*
+     * Select the correct Sleeper league.
+     */
     const queryLeagueID =
         division === 'green'
             ? segundaLeagueID
             : cplLeagueID;
 
+
     /*
-     * Load all manager information from the correct league.
+     * If there is no Sleeper manager ID,
+     * send the user back to the manager list.
+     */
+    if (!managerID) {
+
+        return {
+            manager: -1,
+            managerID: null,
+            rosterID: null,
+            year: null,
+            division,
+            managers: [],
+            managersInfo: null,
+            queryLeagueID
+        };
+
+    }
+
+
+    /*
+     * Load the manager's league data.
      */
     const managersInfo = waitForAll(
 
@@ -95,17 +108,37 @@ export async function load({ url }) {
 
     );
 
+
     return {
 
-        manager,
+        /*
+         * The actual Sleeper ID.
+         */
+        managerID,
 
-        managers: managersObj,
+        /*
+         * Keep these available for the Manager component.
+         */
+        rosterID,
+
+        year:
+            yearParam
+                ? parseInt(yearParam)
+                : null,
+
+        division,
+
+        /*
+         * We no longer depend on the old manager array.
+         */
+        manager: -1,
+
+        managers: [],
 
         managersInfo,
 
-        queryLeagueID,
-
-        division
+        queryLeagueID
 
     };
+
 }
