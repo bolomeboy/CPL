@@ -5,7 +5,8 @@ import {
     getLeagueData,
     getLeagueTransactions,
     getAwards,
-    getLeagueRecords
+    getLeagueRecords,
+    managers as managersObj
 } from '$lib/utils/helper';
 
 import {
@@ -14,7 +15,100 @@ import {
 } from '$lib/utils/leagueInfo';
 
 
+/*
+ * ============================================================
+ * CPL WEBSITE MANAGER NAMES
+ * ============================================================
+ *
+ * The Sleeper username/ID stays the same.
+ * These are only the names displayed on the website.
+ *
+ * Add/change names here whenever you want.
+ */
+
+const managerNames = {
+
+    // RED
+    '471758701842132992': 'JDizzle09',
+    '608428302964686848': 'Justin Do Canto',
+    '722593452524650496': 'Logan Lourenco',
+    '732848788863037440': 'Gavin Silva',
+    '733091325091635200': 'BlicaLicker',
+    '733122379001241600': 'Cuckhold97',
+    '865009922180509696': 'D. Alexandre',
+    '988192038514466816': 'DMACE11',
+    '992145928494637056': 'Tony Medeiros',
+    '1037569461064794112': 'Dilly Dilly',
+    '1123348972917100544': 'J. Mendes',
+    '1132795206014742528': 'Pombinha Master',
+
+    // GREEN
+    '594665552094486528': 'Grant Silva',
+    '733139077938925568': 'Bolo',
+    '733897435939725312': 'LinguicaLicker',
+    '741113728006803456': 'Rui Freitas',
+    '853030385163038720': 'Xavier',
+    '858567127072870400': 'Mpires',
+    '871263782905794560': 'Lucas Fonseca',
+    '992160347320647680': 'Lacob Lopes',
+    '1122218839107850240': 'LJorge',
+    '1134307994403344384': 'Nicholas Silva',
+    '1233993787223572480': 'Duarte',
+    '1314475281792118784': 'Christian'
+
+};
+
+
+/*
+ * ============================================================
+ * BUILD THE 24-MANAGER LIST
+ * ============================================================
+ *
+ * This uses the manager list already created from Sleeper.
+ * We simply add our website display name to each manager.
+ */
+
+const buildManagers = () => {
+
+    return managersObj.map(manager => {
+
+        const id =
+            manager.managerID ||
+            manager.user_id;
+
+        return {
+            ...manager,
+
+            managerID:
+                id
+                    ? String(id)
+                    : null,
+
+            user_id:
+                manager.user_id ||
+                manager.managerID,
+
+            name:
+                managerNames[String(id)] ||
+                manager.display_name ||
+                manager.user_name ||
+                'Unknown Manager'
+
+        };
+
+    });
+
+};
+
+
 export async function load({ url }) {
+
+    /*
+     * Build the complete 24-manager list.
+     */
+    const managers =
+        buildManagers();
+
 
     /*
      * Get the real Sleeper manager ID from the URL.
@@ -24,7 +118,7 @@ export async function load({ url }) {
 
 
     /*
-     * Get optional roster/year information.
+     * Optional roster/year information.
      */
     const rosterID =
         url?.searchParams?.get('rosterID');
@@ -39,6 +133,7 @@ export async function load({ url }) {
     const divisionParam =
         url?.searchParams?.get('division');
 
+
     const division =
         divisionParam === 'green'
             ? 'green'
@@ -46,7 +141,10 @@ export async function load({ url }) {
 
 
     /*
-     * Select the correct Sleeper league.
+     * Select the correct league.
+     *
+     * Red = CPL
+     * Green = Segunda
      */
     const queryLeagueID =
         division === 'green'
@@ -55,27 +153,37 @@ export async function load({ url }) {
 
 
     /*
-     * If there is no Sleeper manager ID,
-     * send the user back to the manager list.
+     * If somebody visits /manager without
+     * selecting a manager, return the manager
+     * list but don't load an individual profile.
      */
     if (!managerID) {
 
         return {
+
             manager: -1,
+
             managerID: null,
+
             rosterID: null,
+
             year: null,
+
             division,
-            managers: managersObj
+
+            managers,
+
             managersInfo: null,
+
             queryLeagueID
+
         };
 
     }
 
 
     /*
-     * Load the manager's league data.
+     * Load information from the correct league.
      */
     const managersInfo = waitForAll(
 
@@ -112,12 +220,12 @@ export async function load({ url }) {
     return {
 
         /*
-         * The actual Sleeper ID.
+         * Real Sleeper manager ID.
          */
         managerID,
 
         /*
-         * Keep these available for the Manager component.
+         * Optional roster information.
          */
         rosterID,
 
@@ -129,11 +237,12 @@ export async function load({ url }) {
         division,
 
         /*
-         * We no longer depend on the old manager array.
+         * Keep the entire 24-manager list available
+         * to Manager.svelte so Previous/Next works.
          */
-        manager: -1,
+        managers,
 
-        managers: [],
+        manager: -1,
 
         managersInfo,
 
