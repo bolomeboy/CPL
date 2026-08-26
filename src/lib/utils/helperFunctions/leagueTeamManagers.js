@@ -1,4 +1,9 @@
-import { leagueID, cplLeagueID, segundaLeagueID, managers } from '$lib/utils/leagueInfo';
+import {
+    leagueID,
+    cplLeagueID,
+    segundaLeagueID
+} from '$lib/utils/leagueInfo';
+
 import { get } from 'svelte/store';
 import { teamManagersStore } from '$lib/stores';
 import { waitForAll } from './multiPromise';
@@ -7,56 +12,22 @@ import { getLeagueData } from './leagueData';
 
 
 // ============================================================
-// SLEEPER USER IDS
-// ============================================================
-
-// CPL RED
-const redManagerIDs = [
-    '1037569461064794112', // Dillydilly71
-    '992145928494637056',  // TonyMedeiros
-    '733091325091635200',  // BlicaLicker
-    '1132795206014742528', // pombinhamaster42069
-    '1123348972917100544', // Jmendes27
-    '608428302964686848',  // justindocanto
-    '722593452524650496',  // loganlourenco
-    '733122379001241600',  // cuckhold97
-    '988192038514466816',  // DMACE11
-    '732848788863037440',  // GavinSilva
-    '865009922180509696',  // dalexandre
-    '471758701842132992'   // JDizzle09
-];
-
-
-// CPL GREEN
-const greenManagerIDs = [
-    '871263782905794560',  // Lucasfon18
-    '992160347320647680',  // lacobjopes
-    '733139077938925568',  // emilioanaya
-    '1134307994403344384', // Nicholassilv
-    '858567127072870400',  // mpires1
-    '733897435939725312',  // LinguicaLicker
-    '1122218839107850240', // LJorge
-    '853030385163038720',  // Xavierg35
-    '1233993787223572480', // Duarte3
-    // Christian is currently OPEN
-    '594665552094486528'   // grantsilva
-];
-
-
-// ============================================================
 // GET MANAGERS FOR A SPECIFIC LEAGUE
 // ============================================================
 
-export const getLeagueTeamManagers = async (queryLeagueID = leagueID) => {
+export const getLeagueTeamManagers = async (
+    queryLeagueID = leagueID
+) => {
 
     /*
-     * If we're requesting the original league and already
-     * have the data cached, return it.
+     * Keep the original store behavior for the main league.
+     *
+     * Red and Green are loaded independently, so Green
+     * will never overwrite Red.
      */
     if (
         queryLeagueID === leagueID &&
-        get(teamManagersStore) &&
-        get(teamManagersStore).currentSeason
+        get(teamManagersStore)?.currentSeason
     ) {
         return get(teamManagersStore);
     }
@@ -64,23 +35,18 @@ export const getLeagueTeamManagers = async (queryLeagueID = leagueID) => {
 
     let currentLeagueID = queryLeagueID;
 
-    let teamManagersMap = {};
-    let finalUsers = {};
+    const teamManagersMap = {};
+    const finalUsers = {};
+
     let currentSeason = null;
 
 
     /*
-     * Walk backwards through the Sleeper league history.
-     *
-     * Each season has its own Sleeper league ID.
+     * Walk backwards through every season of this league.
      */
     while (currentLeagueID && currentLeagueID != 0) {
 
-        const [
-            usersRaw,
-            leagueData,
-            rostersRaw
-        ] = await waitForAll(
+        const results = await waitForAll(
 
             fetch(
                 `https://api.sleeper.app/v1/league/${currentLeagueID}/users`,
@@ -95,28 +61,52 @@ export const getLeagueTeamManagers = async (queryLeagueID = leagueID) => {
             )
 
         ).catch((err) => {
-            console.error(err);
+            console.error(
+                'Error loading league managers:',
+                err
+            );
+
+            return null;
         });
+
+
+        if (!results) {
+            throw new Error(
+                `Unable to load Sleeper league ${currentLeagueID}`
+            );
+        }
 
 
         const [
-            users,
-            rosters
-        ] = await waitForAll(
+            usersRaw,
+            leagueData,
+            rostersRaw
+        ] = results;
 
-            usersRaw.json(),
-            rostersRaw.json()
 
-        ).catch((err) => {
-            console.error(err);
-        });
+        if (
+            !usersRaw ||
+            !usersRaw.ok ||
+            !rostersRaw ||
+            !rostersRaw.ok ||
+            !leagueData
+        ) {
+            throw new Error(
+                `Unable to load data for Sleeper league ${currentLeagueID}`
+            );
+        }
+
+
+        const users = await usersRaw.json();
+        const rosters = await rostersRaw.json();
 
 
         const year = parseInt(leagueData.season);
 
-        currentLeagueID = leagueData.previous_league_id;
 
-
+        /*
+         * The first league we load is the current season.
+         */
         if (!currentSeason) {
             currentSeason = year;
         }
@@ -126,57 +116,58 @@ export const getLeagueTeamManagers = async (queryLeagueID = leagueID) => {
 
 
         /*
-         * Convert Sleeper users into our user map.
+         * Convert Sleeper users into a user map.
          */
         const processedUsers = processUsers(users);
 
 
         /*
-         * Keep the most recent version of each Sleeper user.
+         * Keep the newest version of each user.
          */
-        for (const processedUserKey in processedUsers) {
+        for (const userID in processedUsers) {
 
-            if (finalUsers[processedUserKey]) {
-                continue;
+            if (!finalUsers[userID]) {
+                finalUsers[userID] =
+                    processedUsers[userID];
             }
-
-            finalUsers[processedUserKey] =
-                processedUsers[processedUserKey];
         }
 
 
         /*
-         * Connect each Sleeper roster to its managers.
+         * Connect every Sleeper roster to its managers.
          */
         for (const roster of rosters) {
 
             teamManagersMap[year][roster.roster_id] = {
 
-                team:
-                    getTeamData(
-                        processedUsers,
-                        roster.owner_id
-                    ),
+                team: getTeamData(
+                    processedUsers,
+                    roster.owner_id
+                ),
 
-                managers:
-                    getManagers(
-                        roster,
-                        processedUsers
-                    ),
+                managers: getManagers(roster)
 
             };
 
         }
 
+
+        /*
+         * Move to the previous season.
+         */
+        currentLeagueID =
+            leagueData.previous_league_id;
     }
 
 
     /*
-     * Determine which division this league belongs to.
+     * Determine the division.
      */
     let division = 'red';
 
-    if (queryLeagueID === segundaLeagueID) {
+    if (
+        queryLeagueID === segundaLeagueID
+    ) {
         division = 'green';
     }
 
@@ -191,15 +182,17 @@ export const getLeagueTeamManagers = async (queryLeagueID = leagueID) => {
 
         division,
 
-        leagueID: queryLeagueID,
+        leagueID: queryLeagueID
 
     };
 
 
     /*
-     * Only cache the main league in the existing store.
+     * Only save the original league to the
+     * existing global store.
      *
-     * This prevents Green from overwriting Red data.
+     * Green gets its own returned object and does
+     * not overwrite the Red data.
      */
     if (queryLeagueID === leagueID) {
 
@@ -218,15 +211,15 @@ export const getLeagueTeamManagers = async (queryLeagueID = leagueID) => {
 // PROCESS SLEEPER USERS
 // ============================================================
 
-const processUsers = (rawUsers) => {
+const processUsers = (rawUsers = []) => {
 
-    let finalUsers = {};
+    const finalUsers = {};
 
 
     for (const user of rawUsers) {
 
         /*
-         * Sleeper username is the source of truth.
+         * Sleeper is the source of truth.
          */
         user.user_name =
             user.user_name ??
@@ -234,34 +227,9 @@ const processUsers = (rawUsers) => {
 
 
         /*
-         * Keep the actual Sleeper user ID as the key.
+         * Use the actual Sleeper user ID.
          */
         finalUsers[user.user_id] = user;
-
-
-        /*
-         * If the existing league manager database has
-         * information for this Sleeper user, preserve
-         * the website's manager information.
-         */
-        const manager = managers.find(
-            m => m.managerID === user.user_id
-        );
-
-
-        if (manager) {
-
-            /*
-             * Keep the custom website name if one exists.
-             * The actual Sleeper username remains available
-             * as user.user_name / display_name.
-             */
-            if (manager.name) {
-                finalUsers[user.user_id].website_name =
-                    manager.name;
-            }
-
-        }
 
     }
 
