@@ -17,7 +17,7 @@
     export let manager;
     export let managers;
     export let managerID = null;
-    export let rosterID: null;
+    export let rosterID = null;
     export let year = null;
     export let division = null;
     export let rostersData;
