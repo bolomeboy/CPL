@@ -3,40 +3,33 @@ import {
     segundaLeagueID
 } from '$lib/utils/leagueInfo';
 
-import { getLeagueTeamManagers } from '$lib/utils/helper';
+const FLIPCUP_ID = '1314475281792118784';
 
 export async function load() {
 
-    /*
-     * Get the actual users directly from Sleeper.
-     */
-    const redUsersResponse = await fetch(
+    const redResponse = await fetch(
         `https://api.sleeper.app/v1/league/${cplLeagueID}/users`
     );
 
-    const greenUsersResponse = await fetch(
+    const greenResponse = await fetch(
         `https://api.sleeper.app/v1/league/${segundaLeagueID}/users`
     );
 
-    if (!redUsersResponse.ok) {
+    if (!redResponse.ok) {
         throw new Error(
-            `Could not load CPL Red managers: ${redUsersResponse.status}`
+            `Could not load CPL Red managers: ${redResponse.status}`
         );
     }
 
-    if (!greenUsersResponse.ok) {
+    if (!greenResponse.ok) {
         throw new Error(
-            `Could not load CPL Green managers: ${greenUsersResponse.status}`
+            `Could not load CPL Green managers: ${greenResponse.status}`
         );
     }
 
-    const redUsers = await redUsersResponse.json();
-    const greenUsers = await greenUsersResponse.json();
+    const redUsers = await redResponse.json();
+    const greenUsers = await greenResponse.json();
 
-
-    /*
-     * Build the complete manager list.
-     */
     const managers = [
         ...redUsers.map(user => ({
             ...user,
@@ -49,19 +42,12 @@ export async function load() {
         }))
     ];
 
-
-    /*
-     * flipcup1 is not currently returned by the Green
-     * league users endpoint, so add him manually.
-     */
     if (!managers.some(
         manager =>
-            String(manager.user_id) ===
-            '1314475281792118784'
+            String(manager.user_id) === FLIPCUP_ID
     )) {
-
         managers.push({
-            user_id: '1314475281792118784',
+            user_id: FLIPCUP_ID,
             display_name: 'flipcup1',
             user_name: 'flipcup1',
             is_bot: false,
@@ -71,22 +57,7 @@ export async function load() {
         });
     }
 
-
-    /*
-     * Get the actual roster/team history for each league.
-     */
-    const redLeagueTeamManagers =
-        await getLeagueTeamManagers(cplLeagueID);
-
-    const greenLeagueTeamManagers =
-        await getLeagueTeamManagers(segundaLeagueID);
-
-
     return {
-        managers,
-
-        redLeagueTeamManagers,
-
-        greenLeagueTeamManagers
+        managers
     };
 }
