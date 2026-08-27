@@ -109,9 +109,16 @@
      */
 
     $: viewManager =
-        managerID
-            ? buildSleeperManager(String(managerID))
-            : managers?.[manager];
+    managerID
+        ? (
+            managers?.find(
+                m =>
+                    String(m.managerID) ===
+                    String(managerID)
+            ) ||
+            buildSleeperManager(String(managerID))
+        )
+        : managers?.[manager];
 
 
     /*
