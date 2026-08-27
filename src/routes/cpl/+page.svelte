@@ -153,51 +153,49 @@
 
     </div>
 
-
     <div class="sectionTitle">
         CPL Red
     </div>
 
     <div class="grid">
 
-        <a class="card" href="/cpl/standings">
+        <a class="card" href="/standings?division=red">
             <div class="icon">🏆</div>
             <h3>Standings</h3>
             <p>Current CPL Red standings</p>
         </a>
 
-        <a class="card" href="/cpl/matchups">
+        <a class="card" href="/matchups?division=red">
             <div class="icon">🏈</div>
             <h3>Matchups</h3>
             <p>Weekly scores and results</p>
         </a>
 
-        <a class="card" href="/cpl/rosters">
+        <a class="card" href="/rosters?division=red">
             <div class="icon">👥</div>
             <h3>Rosters</h3>
             <p>CPL Red team rosters</p>
         </a>
 
-        <a class="card" href="/cpl/transactions">
+        <a class="card" href="/transactions?division=red">
             <div class="icon">🔄</div>
             <h3>Transactions</h3>
             <p>Waivers and transactions</p>
         </a>
 
-        <a class="card" href="/cpl/champions">
+        <a class="card" href="/awards?division=red">
             <div class="icon">🥇</div>
             <h3>Champions</h3>
             <p>CPL Red championship history</p>
         </a>
 
-        <a class="card" href="/cpl/records">
+        <a class="card" href="/records?division=red">
             <div class="icon">📊</div>
             <h3>Records</h3>
             <p>CPL Red all-time records</p>
         </a>
 
     </div>
-
 
     <div class="road">
 
