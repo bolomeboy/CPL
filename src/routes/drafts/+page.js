@@ -1,5 +1,4 @@
 import {
-    getUpcomingDraft,
     getPreviousDrafts,
     getLeagueTeamManagers,
     loadPlayers
@@ -10,39 +9,57 @@ import {
     segundaLeagueID
 } from '$lib/utils/leagueInfo';
 
+
 export async function load({ fetch }) {
 
-    const redDraftData =
-        getUpcomingDraft(cplLeagueID);
-
-    const greenDraftData =
-        getUpcomingDraft(segundaLeagueID);
+    /*
+     * ============================================================
+     * CPL RED
+     * ============================================================
+     */
 
     const redPreviousDraftsData =
         getPreviousDrafts(cplLeagueID);
 
-    const greenPreviousDraftsData =
-        getPreviousDrafts(segundaLeagueID);
-
     const redLeagueTeamManagersData =
         getLeagueTeamManagers(cplLeagueID);
+
+
+    /*
+     * ============================================================
+     * CPL GREEN
+     * ============================================================
+     */
+
+    const greenPreviousDraftsData =
+        getPreviousDrafts(segundaLeagueID);
 
     const greenLeagueTeamManagersData =
         getLeagueTeamManagers(segundaLeagueID);
 
+
+    /*
+     * ============================================================
+     * PLAYERS
+     * ============================================================
+     */
+
     const playersData =
         loadPlayers(fetch);
 
+
     return {
-        redDraftData,
-        greenDraftData,
 
         redPreviousDraftsData,
+
         greenPreviousDraftsData,
 
         redLeagueTeamManagersData,
+
         greenLeagueTeamManagersData,
 
-        playersData,
+        playersData
+
     };
+
 }
