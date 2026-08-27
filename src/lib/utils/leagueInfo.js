@@ -447,7 +447,7 @@ export const managers = [
         username: "emilioanaya",
         name: "Bolo",
         division: "green",
-        location: Elk Grove, California,
+        location: "Elk Grove, California",
         bio: "",
         photo: null,
         fantasyStart: null,
