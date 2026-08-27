@@ -1,34 +1,29 @@
 <script>
     import { goto } from "$app/navigation";
+
     import {
         getDatesActive,
         getRosterIDFromManagerID,
         getTeamNameFromTeamManagers
     } from "$lib/utils/helperFunctions/universalFunctions";
 
-    import { dynasty } from "$lib/utils/leagueInfo";
-
     export let manager;
     export let leagueTeamManagers;
-    export let key;
 
     let retired = false;
 
-    /*
-     * New manager data comes directly from Sleeper.
-     */
     const managerID =
+        manager?.managerID ||
         manager?.user_id
-            ? String(manager.user_id)
+            ? String(manager.managerID || manager.user_id)
             : null;
 
-    /*
-     * Find this manager's roster in the correct
-     * Red or Green league.
-     */
     let rosterID = null;
     let year = null;
 
+    /*
+     * Find the manager's current roster.
+     */
     if (managerID && leagueTeamManagers) {
 
         const dates =
@@ -55,16 +50,32 @@
 
 
     /*
-     * Commissioner status comes directly from Sleeper.
+     * Determine whether this manager is commissioner.
      */
     const commissioner =
-        manager?.is_owner === true;
+        manager?.is_owner === true ||
+        leagueTeamManagers?.users?.[managerID]?.is_owner === true;
 
 
     /*
-     * Sleeper avatar.
+     * Find the team name.
      */
-    const avatar =
+    const teamName =
+        rosterID !== null &&
+        year !== null
+            ? getTeamNameFromTeamManagers(
+                leagueTeamManagers,
+                rosterID,
+                year
+            )
+            : 'Team';
+
+
+    /*
+     * Manager photo.
+     */
+    const managerPhoto =
+        manager?.photo ||
         manager?.metadata?.avatar ||
         (
             manager?.avatar
@@ -74,24 +85,29 @@
 
 
     /*
-     * Sleeper team name.
+     * CPL division logo.
+     *
+     * IMPORTANT:
+     * Change these filenames if your actual logo files
+     * have different names in /static.
      */
-    let teamName = 'Team';
+    const divisionLogo =
+        manager?.division === 'green'
+            ? '/CPL-Green-logo.png'
+            : '/CPL-Red-logo.png';
 
-    if (
-        leagueTeamManagers &&
-        rosterID &&
-        year &&
-        leagueTeamManagers.teamManagersMap?.[year]?.[rosterID]
-    ) {
 
-        teamName =
-            getTeamNameFromTeamManagers(
-                leagueTeamManagers,
-                rosterID,
-                year
-            );
+    /*
+     * Open the manager's individual page.
+     */
+    function openManager() {
+
+        goto(
+            `/manager?managerID=${encodeURIComponent(managerID)}&division=${encodeURIComponent(manager.division)}`
+        );
+
     }
+
 </script>
 
 <style>
@@ -136,7 +152,6 @@
 
     .team {
         text-align: center;
-        display: inline-block;
         font-style: italic;
         line-height: 1.2em;
         color: var(--g555);
@@ -172,14 +187,8 @@
 
     .infoImg {
         height: 30px;
-    }
-
-    .infoAnswer {
-        font-size: 0.8em;
-        color: var(--g555);
-        width: 63px;
-        text-align: center;
-        line-height: 1.2em;
+        width: 30px;
+        object-fit: contain;
     }
 
     .avatarHolder {
@@ -204,6 +213,7 @@
     }
 
     @media (max-width: 665px) {
+
         .name {
             font-size: 0.9em;
             margin-left: 0.5em;
@@ -213,9 +223,11 @@
             font-size: 0.8em;
             margin-left: 0.5em;
         }
+
     }
 
     @media (max-width: 595px) {
+
         .manager {
             padding: 0.5em 0;
             margin: 0.3em 0;
@@ -235,7 +247,6 @@
         }
 
         .infoSlot {
-            text-align: center;
             margin: 0 0.4em;
             width: 56px;
         }
@@ -247,15 +258,13 @@
 
         .infoImg {
             height: 25px;
+            width: 25px;
         }
 
-        .infoAnswer {
-            font-size: 0.7em;
-            width: 56px;
-        }
     }
 
     @media (max-width: 475px) {
+
         .name {
             font-size: 0.8em;
             margin-left: 0.4em;
@@ -272,7 +281,6 @@
         }
 
         .infoSlot {
-            text-align: center;
             margin: 0 0.4em;
             width: 49px;
         }
@@ -284,22 +292,17 @@
 
         .infoImg {
             height: 22px;
+            width: 22px;
         }
 
-        .infoAnswer {
-            font-size: 0.6em;
-            width: 49px;
-        }
     }
 
     @media (max-width: 370px) {
+
         .infoTeam {
             display: none;
         }
-    }
 
-    .question {
-        background-color: #fff;
     }
 </style>
 
@@ -309,28 +312,18 @@
     style="{retired
         ? 'background-image: url(/retired.png); background-color: var(--ddd)'
         : ''}"
-    onclick={() =>
-        goto(
-            `/manager?managerID=${encodeURIComponent(managerID)}&division=${encodeURIComponent(manager.division)}${rosterID ? `&rosterID=${encodeURIComponent(rosterID)}` : ''}${year ? `&year=${encodeURIComponent(year)}` : ''}`
-        )
-    }
+    onclick={openManager}
 >
+
+    <!-- Manager photo -->
 
     <div class="avatarHolder">
 
         <img
-    class="photo"
-    src={
-        manager.photo ||
-        manager.metadata?.avatar ||
-        (
-            manager.avatar
-                ? `https://sleepercdn.com/avatars/thumbs/${manager.avatar}`
-                : "/managers/question.jpg"
-        )
-    }
-    alt={manager.name}
-/>
+            class="photo"
+            src={managerPhoto}
+            alt={manager.name}
+        />
 
         {#if commissioner}
 
@@ -343,71 +336,44 @@
     </div>
 
 
+    <!-- CUSTOM MANAGER NAME -->
+
     <div class="name">
-        {manager.display_name}
+        {manager.name}
     </div>
 
+
+    <!-- TEAM NAME -->
 
     <div class="team">
         {teamName}
     </div>
 
 
-    <div class="spacer" />
+    <div class="spacer"></div>
 
+
+    <!-- CPL DIVISION -->
 
     <div class="info">
 
-        <!-- Favorite team -->
-        <div class="infoSlot infoTeam">
-
-            <div class="infoIcon question">
-
-                <img
-                    class="infoImg"
-                    src="/managers/question.jpg"
-                    alt="favorite team"
-                />
-
-            </div>
-
-        </div>
-
-
-        <!-- Preferred contact -->
         <div class="infoSlot">
 
-            <div class="infoIcon question">
+            <div class="infoIcon">
 
                 <img
                     class="infoImg"
-                    src="/managers/question.jpg"
-                    alt="preferred contact"
+                    src={divisionLogo}
+                    alt={
+                        manager.division === 'green'
+                            ? 'CPL Green'
+                            : 'CPL Red'
+                    }
                 />
 
             </div>
 
         </div>
-
-
-        <!-- Rebuild mode -->
-        {#if dynasty}
-
-            <div class="infoSlot infoRebuild">
-
-                <div class="infoIcon question">
-
-                    <img
-                        class="infoImg"
-                        src="/managers/question.jpg"
-                        alt="rebuild mode"
-                    />
-
-                </div>
-
-            </div>
-
-        {/if}
 
     </div>
 
