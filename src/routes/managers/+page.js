@@ -10,9 +10,6 @@ const FLIPCUP_ID = '1314475281792118784';
 
 export async function load() {
 
-    /*
-     * Get all current Sleeper users from both leagues.
-     */
     const [
         redUsersResponse,
         greenUsersResponse
@@ -28,7 +25,6 @@ export async function load() {
 
     ]);
 
-
     if (!redUsersResponse.ok) {
         throw new Error(
             `Could not load CPL Red managers: ${redUsersResponse.status}`
@@ -41,7 +37,6 @@ export async function load() {
         );
     }
 
-
     const redUsers =
         await redUsersResponse.json();
 
@@ -50,10 +45,9 @@ export async function load() {
 
 
     /*
-     * Build the raw Sleeper manager list.
+     * Combine the current Sleeper users.
      */
-    const sleeperManagers = [
-
+    const sleeperUsers = [
         ...redUsers.map(user => ({
             ...user,
             division: 'red'
@@ -63,126 +57,87 @@ export async function load() {
             ...user,
             division: 'green'
         }))
-
     ];
 
 
     /*
-     * flipcup1 is not currently returned by the
-     * Green league users endpoint.
+     * Add Christian manually because he is not
+     * currently returned by the Green league.
      */
     if (
-        !sleeperManagers.some(
-            manager =>
-                String(manager.user_id) === FLIPCUP_ID
+        !sleeperUsers.some(
+            user =>
+                String(user.user_id) === FLIPCUP_ID
         )
     ) {
 
-        sleeperManagers.push({
-
+        sleeperUsers.push({
             user_id: FLIPCUP_ID,
-
             user_name: 'flipcup1',
-
             display_name: 'flipcup1',
-
-            is_bot: false,
-
             division: 'green',
-
+            is_bot: false,
             metadata: {},
-
             avatar: null
-
         });
 
     }
 
 
     /*
-     * Combine Sleeper information with the
-     * custom manager profiles from leagueInfo.js.
+     * IMPORTANT:
      *
-     * leagueInfo.js controls:
+     * leagueInfo.js is now the master list.
      *
-     * name
-     * location
-     * bio
-     * photo
-     * fantasyStart
-     * favoriteTeam
-     * rival
-     * favoritePlayer
-     * valuePosition
-     * rookieOrVets
-     * philosophy
-     * tradingScale
-     * preferredContact
+     * This guarantees that the custom name,
+     * location, photo, favorite team, etc.
+     * are used instead of the Sleeper username.
      */
-    const managers = sleeperManagers.map(sleeperManager => {
+    const managers = managerProfiles.map(profile => {
 
-        const managerID =
-            String(sleeperManager.user_id);
-
-
-        const profile =
-            managerProfiles.find(
-                manager =>
-                    String(manager.managerID) === managerID
+        const sleeperUser =
+            sleeperUsers.find(
+                user =>
+                    String(user.user_id) ===
+                    String(profile.managerID)
             );
 
 
-        /*
-         * If we have a profile in leagueInfo.js,
-         * use that profile as the main manager data.
-         */
-        if (profile) {
-
-            return {
-
-                ...sleeperManager,
-
-                ...profile,
-
-                managerID,
-
-                user_id: managerID,
-
-                division:
-                    profile.division ||
-                    sleeperManager.division,
-
-                /*
-                 * Keep the real Sleeper information
-                 * available too.
-                 */
-                sleeperUsername:
-                    sleeperManager.user_name,
-
-                sleeperDisplayName:
-                    sleeperManager.display_name
-
-            };
-
-        }
-
-
-        /*
-         * Fallback for a Sleeper manager that doesn't
-         * have a profile yet.
-         */
         return {
 
-            ...sleeperManager,
+            /*
+             * Custom website profile comes first.
+             */
+            ...profile,
 
-            managerID,
+            /*
+             * Add Sleeper information without
+             * overwriting the custom profile.
+             */
+            user_id:
+                String(profile.managerID),
 
-            user_id: managerID,
+            sleeperUsername:
+                sleeperUser?.user_name ||
+                profile.username,
 
-            name:
-                sleeperManager.display_name ||
-                sleeperManager.user_name ||
-                'Unknown Manager'
+            sleeperDisplayName:
+                sleeperUser?.display_name ||
+                profile.username,
+
+            sleeperAvatar:
+                sleeperUser?.avatar ||
+                null,
+
+            metadata:
+                sleeperUser?.metadata ||
+                {},
+
+            /*
+             * Keep division from your profile.
+             */
+            division:
+                profile.division
 
         };
 
@@ -190,8 +145,7 @@ export async function load() {
 
 
     /*
-     * Load the complete roster/team history
-     * for both divisions.
+     * Load Red and Green team/roster information.
      */
     const [
         redLeagueTeamManagers,
