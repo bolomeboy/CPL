@@ -104,7 +104,7 @@ export const managers = [
     {
         managerID: "1037569461064794112",
         username: "dillydilly71",
-        name: "dillydilly71",
+        name: "Dylan",
         division: "red",
         location: null,
         bio: "",
@@ -128,7 +128,7 @@ export const managers = [
     {
         managerID: "992145928494637056",
         username: "TonyMedeiros",
-        name: "TonyMedeiros",
+        name: "Tony",
         division: "red",
         location: null,
         bio: "",
@@ -152,7 +152,7 @@ export const managers = [
     {
         managerID: "733091325091635200",
         username: "BlicaLicker",
-        name: "BlicaLicker",
+        name: "Izzy",
         division: "red",
         location: null,
         bio: "",
@@ -200,7 +200,7 @@ export const managers = [
     {
         managerID: "1123348972917100544",
         username: "Jmendes27",
-        name: "Jmendes27",
+        name: "Jonathan",
         division: "red",
         location: null,
         bio: "",
@@ -224,7 +224,7 @@ export const managers = [
     {
         managerID: "608428302964686848",
         username: "justindocanto",
-        name: "justindocanto",
+        name: "Justin",
         division: "red",
         location: null,
         bio: "",
@@ -248,7 +248,7 @@ export const managers = [
     {
         managerID: "722593452524650496",
         username: "loganlourenco",
-        name: "loganlourenco",
+        name: "Logan",
         division: "red",
         location: null,
         bio: "",
@@ -272,7 +272,7 @@ export const managers = [
     {
         managerID: "733122379001241600",
         username: "cuckhold97",
-        name: "cuckhold97",
+        name: "Kevin",
         division: "red",
         location: null,
         bio: "",
@@ -296,7 +296,7 @@ export const managers = [
     {
         managerID: "988192038514466816",
         username: "DMACE11",
-        name: "DMACE11",
+        name: "Darin",
         division: "red",
         location: null,
         bio: "",
@@ -320,7 +320,7 @@ export const managers = [
     {
         managerID: "732848788863037440",
         username: "GavinSilva",
-        name: "GavinSilva",
+        name: "Gavin",
         division: "red",
         location: null,
         bio: "",
@@ -344,7 +344,7 @@ export const managers = [
     {
         managerID: "865009922180509696",
         username: "dalexandre",
-        name: "dalexandre",
+        name: "Daniel",
         division: "red",
         location: null,
         bio: "",
@@ -368,7 +368,7 @@ export const managers = [
     {
         managerID: "471758701842132992",
         username: "JDizzle09",
-        name: "JDizzle09",
+        name: "JD",
         division: "red",
         location: null,
         bio: "",
@@ -397,7 +397,7 @@ export const managers = [
     {
         managerID: "871263782905794560",
         username: "Lucasfon18",
-        name: "Lucasfon18",
+        name: "Lucas",
         division: "green",
         location: null,
         bio: "",
@@ -421,7 +421,7 @@ export const managers = [
     {
         managerID: "992160347320647680",
         username: "lacobjopes",
-        name: "lacobjopes",
+        name: "Jacob",
         division: "green",
         location: null,
         bio: "",
@@ -445,9 +445,9 @@ export const managers = [
     {
         managerID: "733139077938925568",
         username: "emilioanaya",
-        name: "emilioanaya",
+        name: "Bolo",
         division: "green",
-        location: null,
+        location: Elk Grove, California,
         bio: "",
         photo: null,
         fantasyStart: null,
@@ -469,7 +469,7 @@ export const managers = [
     {
         managerID: "1134307994403344384",
         username: "Nicholassilv",
-        name: "Nicholassilv",
+        name: "Nicholas",
         division: "green",
         location: null,
         bio: "",
@@ -493,7 +493,7 @@ export const managers = [
     {
         managerID: "858567127072870400",
         username: "mpires1",
-        name: "mpires1",
+        name: "Michael",
         division: "green",
         location: null,
         bio: "",
@@ -517,7 +517,7 @@ export const managers = [
     {
         managerID: "733897435939725312",
         username: "LinguicaLicker",
-        name: "LinguicaLicker",
+        name: "Tiago",
         division: "green",
         location: null,
         bio: "",
@@ -541,7 +541,7 @@ export const managers = [
     {
         managerID: "1122218839107850240",
         username: "LJorge",
-        name: "LJorge",
+        name: "Luke",
         division: "green",
         location: null,
         bio: "",
@@ -565,7 +565,7 @@ export const managers = [
     {
         managerID: "853030385163038720",
         username: "Xavierg35",
-        name: "Xavierg35",
+        name: "Xavier",
         division: "green",
         location: null,
         bio: "",
@@ -589,7 +589,7 @@ export const managers = [
     {
         managerID: "1233993787223572480",
         username: "Duarte3",
-        name: "Duarte3",
+        name: "Paul",
         division: "green",
         location: null,
         bio: "",
@@ -613,7 +613,7 @@ export const managers = [
     {
         managerID: "594665552094486528",
         username: "grantsilva",
-        name: "grantsilva",
+        name: "Grant",
         division: "green",
         location: null,
         bio: "",
@@ -637,7 +637,7 @@ export const managers = [
     {
         managerID: "741113728006803456",
         username: "freitasrui",
-        name: "freitasrui",
+        name: "Rui",
         division: "green",
         location: null,
         bio: "",
@@ -661,7 +661,7 @@ export const managers = [
     {
         managerID: "1314475281792118784",
         username: "flipcup1",
-        name: "flipcup1",
+        name: "Christian",
         division: "green",
         location: null,
         bio: "",
