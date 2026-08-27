@@ -12,11 +12,9 @@
     } = data;
 
     onMount(() => {
-
         if (!managers || !managers.length) {
             goto('/');
         }
-
     });
 </script>
 
