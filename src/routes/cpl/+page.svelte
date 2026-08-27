@@ -183,6 +183,12 @@
             <p>Waivers and transactions</p>
         </a>
 
+        <a class="card" href="/power-rankings?division=red">
+            <div class="icon">📈</div>
+            <h3>Power Rankings</h3>
+            <p>CPL Red power rankings</p>
+        </a>
+
         <a class="card" href="/awards?division=red">
             <div class="icon">🥇</div>
             <h3>Champions</h3>
