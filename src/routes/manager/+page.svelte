@@ -12,14 +12,12 @@
         rosterID,
         year,
         division,
+        managers,
         managersInfo
     } = data;
 
     onMount(() => {
 
-        /*
-         * A manager page now uses the real Sleeper ID.
-         */
         if (!managerID) {
             goto('/managers');
         }
@@ -43,33 +41,38 @@
 
 <div class="main">
 
-    {#await managersInfo}
+    {#if managersInfo}
 
-        <div class="loading">
-            <p>Retrieving manager...</p>
-            <LinearProgress indeterminate />
-        </div>
+        {#await managersInfo}
 
-    {:then [rostersData, leagueTeamManagers, leagueData, transactionsData, awards, records]}
+            <div class="loading">
+                <p>Retrieving manager...</p>
+                <LinearProgress indeterminate />
+            </div>
 
-        <Manager
-            {awards}
-            {records}
-            {manager}
-            {managerID}
-            {rosterID}
-            {year}
-            {division}
-            {rostersData}
-            {leagueTeamManagers}
-            rosterPositions={leagueData.roster_positions}
-            {transactionsData}
-        />
+        {:then [rostersData, leagueTeamManagers, leagueData, transactionsData, awards, records]}
 
-    {:catch error}
+            <Manager
+                {awards}
+                {records}
+                {manager}
+                {managerID}
+                {rosterID}
+                {year}
+                {division}
+                {managers}
+                {rostersData}
+                {leagueTeamManagers}
+                rosterPositions={leagueData.roster_positions}
+                {transactionsData}
+            />
 
-        <p>Something went wrong: {error.message}</p>
+        {:catch error}
 
-    {/await}
+            <p>Something went wrong: {error.message}</p>
+
+        {/await}
+
+    {/if}
 
 </div>
