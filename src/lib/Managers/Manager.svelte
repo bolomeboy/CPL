@@ -38,56 +38,68 @@
 
     function buildSleeperManager(id) {
 
-        const sleeperUser =
-            leagueTeamManagers?.users?.[id];
+    const sleeperUser =
+        leagueTeamManagers?.users?.[id];
 
-        if (!sleeperUser) {
+    const profile =
+        managers?.find(
+            manager =>
+                String(manager.managerID) === String(id)
+        );
 
-            return {
-                managerID: id,
-                name: 'Unknown Manager',
-                photo: '/managers/question.jpg',
-                location: null,
-                preferredContact: null,
-                favoriteTeam: null,
-                bio: '',
-                philosophy: '',
-                tookOver: null
-            };
+    return {
 
-        }
+        ...(profile || {}),
 
-        return {
+        managerID: String(id),
 
-            managerID: id,
+        name:
+            profile?.name ||
+            sleeperUser?.display_name ||
+            sleeperUser?.user_name ||
+            'Unknown Manager',
 
-            name:
-                sleeperUser.display_name ||
-                sleeperUser.user_name ||
-                'Unknown Manager',
-
-            photo:
-                sleeperUser.metadata?.avatar ||
+        photo:
+            profile?.photo ||
+            (
+                sleeperUser?.metadata?.avatar ||
                 (
-                    sleeperUser.avatar
+                    sleeperUser?.avatar
                         ? `https://sleepercdn.com/avatars/thumbs/${sleeperUser.avatar}`
                         : '/managers/question.jpg'
-                ),
+                )
+            ),
 
-            /*
-             * These can be filled in later with your
-             * custom CPL manager profile information.
-             */
-            location: null,
-            preferredContact: null,
-            favoriteTeam: null,
-            bio: '',
-            philosophy: '',
-            tookOver: null
+        location:
+            profile?.location || null,
 
-        };
+        fantasyStart:
+            profile?.fantasyStart || null,
 
-    }
+        favoriteTeam:
+            profile?.favoriteTeam || null,
+
+        preferredContact:
+            profile?.preferredContact || null,
+
+        bio:
+            profile?.bio || '',
+
+        philosophy:
+            profile?.philosophy || '',
+
+        rival:
+            profile?.rival || null,
+
+        mode:
+            profile?.mode || null,
+
+        tookOver:
+            profile?.tookOver || null
+
+    };
+
+}
 
 
     /*
