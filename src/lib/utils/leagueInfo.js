@@ -278,7 +278,7 @@ export const managers = [
         bio: "",
         photo: null,
         fantasyStart: null,
-        favoriteTeam: null,
+        favoriteTeam: "mia",
         mode: null,
         rival: {
             name: null,
