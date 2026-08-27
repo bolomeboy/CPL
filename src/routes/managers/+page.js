@@ -126,8 +126,12 @@ export async function load() {
                 profile.username,
 
             sleeperAvatar:
-                sleeperUser?.avatar ||
-                null,
+    sleeperUser?.metadata?.avatar ||
+    (
+        sleeperUser?.avatar
+            ? `https://sleepercdn.com/avatars/thumbs/${sleeperUser.avatar}`
+            : null
+    ),
 
             metadata:
                 sleeperUser?.metadata ||
