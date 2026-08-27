@@ -319,10 +319,18 @@
     <div class="avatarHolder">
 
         <img
-            class="photo"
-            src={avatar}
-            alt="{manager.display_name} avatar"
-        />
+    class="photo"
+    src={
+        manager.photo ||
+        manager.metadata?.avatar ||
+        (
+            manager.avatar
+                ? `https://sleepercdn.com/avatars/thumbs/${manager.avatar}`
+                : "/managers/question.jpg"
+        )
+    }
+    alt={manager.name}
+/>
 
         {#if commissioner}
 
