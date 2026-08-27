@@ -318,75 +318,118 @@
 
 
     /*
-     * ============================================================
-     * MANAGER NAVIGATION
-     * ============================================================
-     *
-     * Uses the complete 24-manager list.
-     *
-     * Works across CPL Red AND CPL Green.
-     *
-     * We check both managerID and user_id so either
-     * type of manager object will work.
-     */
+ * ============================================================
+ * MANAGER NAVIGATION
+ * ============================================================
+ *
+ * Navigation uses the complete CPL manager list.
+ *
+ * Order:
+ * CPL Red managers
+ * then
+ * CPL Green managers
+ *
+ * This allows Previous / Next to move across
+ * divisions instead of stopping at the end
+ * of Red or Green.
+ */
 
 
-    $: currentManagerIndex =
-        managers?.findIndex(
-            m =>
-                String(
-                    m.managerID ||
-                    m.user_id
-                ) ===
-                String(
-                    viewManager?.managerID ||
-                    managerID
-                )
-        ) ?? -1;
+/*
+ * Get a reliable ID from a manager object.
+ */
+function getManagerID(manager) {
+
+    return manager?.managerID ||
+           manager?.user_id ||
+           null;
+
+}
 
 
-    $: previousManager =
-        currentManagerIndex > 0
-            ? managers[currentManagerIndex - 1]
-            : null;
-
-
-    $: nextManager =
-        currentManagerIndex >= 0 &&
-        currentManagerIndex <
-            managers.length - 1
-            ? managers[currentManagerIndex + 1]
-            : null;
-
-
-    function changeManager(
-        newManager,
-        noscroll = false
-    ) {
-
-        if (!newManager) {
-            return;
-        }
-
-
-        const newManagerID =
-            newManager.managerID ||
-            newManager.user_id;
-
-
-        if (!newManagerID) {
-            return;
-        }
-
-
-        goto(
-            `/manager?managerID=${encodeURIComponent(newManagerID)}&division=${encodeURIComponent(newManager.division || 'red')}`,
-            {
-                noscroll
-            }
+/*
+ * Build a clean list of managers.
+ *
+ * Remove any managers that don't have an ID.
+ */
+$: navigationManagers =
+    (managers || [])
+        .filter(manager =>
+            getManagerID(manager) !== null
         );
 
+
+/*
+ * Find the manager currently being viewed.
+ */
+$: currentManagerIndex =
+    navigationManagers.findIndex(
+        manager =>
+            String(
+                getManagerID(manager)
+            ) ===
+            String(
+                managerID ||
+                viewManager?.managerID
+            )
+    );
+
+
+/*
+ * Previous manager.
+ */
+$: previousManager =
+    currentManagerIndex > 0
+        ? navigationManagers[
+            currentManagerIndex - 1
+        ]
+        : null;
+
+
+/*
+ * Next manager.
+ */
+$: nextManager =
+    currentManagerIndex >= 0 &&
+    currentManagerIndex <
+        navigationManagers.length - 1
+        ? navigationManagers[
+            currentManagerIndex + 1
+        ]
+        : null;
+
+
+/*
+ * Go to another manager.
+ */
+function changeManager(
+    newManager,
+    noscroll = false
+) {
+
+    const newManagerID =
+        getManagerID(newManager);
+
+
+    if (!newManagerID) {
+        return;
     }
+
+
+    const newDivision =
+        newManager?.division === 'green'
+            ? 'green'
+            : 'red';
+
+
+    goto(
+        `/manager?managerID=${encodeURIComponent(String(newManagerID))}&division=${newDivision}`,
+        {
+            noscroll
+        }
+    );
+
+}
 
 </script>
 
