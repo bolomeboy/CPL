@@ -15,6 +15,7 @@
         getTeamNameFromTeamManagers
     } from '$lib/utils/helperFunctions/universalFunctions';
 
+
     export let manager;
     export let managers = [];
     export let managerID = null;
@@ -28,78 +29,83 @@
     export let awards;
     export let records;
 
-    let transactions = transactionsData.transactions;
+
+    let transactions =
+        transactionsData?.transactions || [];
+
 
     /*
      * ============================================================
-     * BUILD MANAGER FROM SLEEPER
+     * BUILD MANAGER
      * ============================================================
      */
 
     function buildSleeperManager(id) {
 
-    const sleeperUser =
-        leagueTeamManagers?.users?.[id];
+        const sleeperUser =
+            leagueTeamManagers?.users?.[id];
 
-    const profile =
-        managers?.find(
-            manager =>
-                String(manager.managerID) === String(id)
-        );
+        const profile =
+            managers?.find(
+                manager =>
+                    String(manager.managerID) ===
+                    String(id)
+            );
 
-    return {
+        return {
 
-        ...(profile || {}),
+            ...(profile || {}),
 
-        managerID: String(id),
+            managerID:
+                String(id),
 
-        name:
-            profile?.name ||
-            sleeperUser?.display_name ||
-            sleeperUser?.user_name ||
-            'Unknown Manager',
+            name:
+                profile?.name ||
+                sleeperUser?.display_name ||
+                sleeperUser?.user_name ||
+                'Unknown Manager',
 
-        photo:
-            profile?.photo ||
-            (
-                sleeperUser?.metadata?.avatar ||
+            photo:
+                profile?.photo ||
                 (
-                    sleeperUser?.avatar
-                        ? `https://sleepercdn.com/avatars/thumbs/${sleeperUser.avatar}`
-                        : '/managers/question.jpg'
-                )
-            ),
+                    sleeperUser?.metadata?.avatar ||
+                    (
+                        sleeperUser?.avatar
+                            ? `https://sleepercdn.com/avatars/thumbs/${sleeperUser.avatar}`
+                            : '/managers/question.jpg'
+                    )
+                ),
 
-        location:
-            profile?.location || null,
+            location:
+                profile?.location || null,
 
-        fantasyStart:
-            profile?.fantasyStart || null,
+            fantasyStart:
+                profile?.fantasyStart || null,
 
-        favoriteTeam:
-            profile?.favoriteTeam || null,
+            favoriteTeam:
+                profile?.favoriteTeam || null,
 
-        preferredContact:
-            profile?.preferredContact || null,
+            preferredContact:
+                profile?.preferredContact || null,
 
-        bio:
-            profile?.bio || '',
+            bio:
+                profile?.bio || '',
 
-        philosophy:
-            profile?.philosophy || '',
+            philosophy:
+                profile?.philosophy || '',
 
-        rival:
-            profile?.rival || null,
+            rival:
+                profile?.rival || null,
 
-        mode:
-            profile?.mode || null,
+            mode:
+                profile?.mode || null,
 
-        tookOver:
-            profile?.tookOver || null
+            tookOver:
+                profile?.tookOver || null
 
-    };
+        };
 
-}
+    }
 
 
     /*
@@ -109,21 +115,23 @@
      */
 
     $: viewManager =
-    managerID
-        ? (
-            managers?.find(
-                m =>
-                    String(m.managerID) ===
+        managerID
+            ? (
+                managers?.find(
+                    m =>
+                        String(m.managerID) ===
+                        String(managerID)
+                ) ||
+                buildSleeperManager(
                     String(managerID)
-            ) ||
-            buildSleeperManager(String(managerID))
-        )
-        : managers?.[manager];
+                )
+            )
+            : managers?.[manager];
 
 
     /*
      * ============================================================
-     * FIND MANAGER ROSTER
+     * FIND ROSTER
      * ============================================================
      */
 
@@ -194,16 +202,20 @@
      */
 
     $: coOwners =
-        finalYear &&
-        finalRosterID &&
-        leagueTeamManagers
-            ?.teamManagersMap
-            ?.[finalYear]
-            ?.[finalRosterID]
-            ?.managers
-            ?.length > 1
+        (
+            finalYear &&
+            finalRosterID &&
+            leagueTeamManagers
+                ?.teamManagersMap
+                ?.[finalYear]
+                ?.[finalRosterID]
+                ?.managers
+                ?.length > 1
+        )
         ||
-        roster?.co_owners?.length > 0;
+        (
+            roster?.co_owners?.length > 0
+        );
 
 
     /*
@@ -268,12 +280,14 @@
 
     onMount(async () => {
 
-        if (transactionsData.stale) {
+        if (transactionsData?.stale) {
             refreshTransactions();
         }
 
+
         const playerData =
             await loadPlayers(null);
+
 
         playersInfo =
             playerData;
@@ -305,29 +319,30 @@
 
     /*
      * ============================================================
-     * 24-MANAGER NAVIGATION
+     * MANAGER NAVIGATION
      * ============================================================
      *
-     * We now navigate using the REAL Sleeper user ID.
+     * Uses the complete 24-manager list.
+     *
+     * Works across CPL Red AND CPL Green.
+     *
+     * We check both managerID and user_id so either
+     * type of manager object will work.
      */
-
-    function getManagerIndex() {
-
-        if (!managerID || !managers?.length) {
-            return -1;
-        }
-
-        return managers.findIndex(
-            m =>
-                String(m.user_id) ===
-                String(managerID)
-        );
-
-    }
 
 
     $: currentManagerIndex =
-        getManagerIndex();
+        managers?.findIndex(
+            m =>
+                String(
+                    m.managerID ||
+                    m.user_id
+                ) ===
+                String(
+                    viewManager?.managerID ||
+                    managerID
+                )
+        ) ?? -1;
 
 
     $: previousManager =
@@ -338,20 +353,34 @@
 
     $: nextManager =
         currentManagerIndex >= 0 &&
-        currentManagerIndex < managers.length - 1
+        currentManagerIndex <
+            managers.length - 1
             ? managers[currentManagerIndex + 1]
             : null;
 
 
-    function changeManager(newManager, noscroll = false) {
+    function changeManager(
+        newManager,
+        noscroll = false
+    ) {
 
         if (!newManager) {
-            goto('/managers');
             return;
         }
 
+
+        const newManagerID =
+            newManager.managerID ||
+            newManager.user_id;
+
+
+        if (!newManagerID) {
+            return;
+        }
+
+
         goto(
-            `/manager?managerID=${encodeURIComponent(newManager.user_id)}&division=${encodeURIComponent(newManager.division)}`,
+            `/manager?managerID=${encodeURIComponent(newManagerID)}&division=${encodeURIComponent(newManager.division || 'red')}`,
             {
                 noscroll
             }
@@ -363,16 +392,19 @@
 
 
 <style>
+
     .managerContainer {
         width: 100%;
         margin: 2em 0 5em;
     }
+
 
     .managerConstrained {
         width: 97%;
         max-width: 800px;
         margin: 0 auto 4em;
     }
+
 
     .managerPhoto {
         display: block;
@@ -385,6 +417,7 @@
         object-fit: cover;
     }
 
+
     h2 {
         text-align: center;
         font-size: 2.8em;
@@ -392,12 +425,14 @@
         line-height: 1em;
     }
 
+
     h3 {
         text-align: center;
         font-size: 1.5em;
         margin: 1.5em 0 0.5em;
         font-weight: 200;
     }
+
 
     .basicInfo {
         display: flex;
@@ -407,14 +442,17 @@
         margin: 2em 0;
     }
 
+
     .basicInfo span {
         color: #888;
         font-size: 0.9em;
     }
 
+
     .infoChild {
         font-style: italic;
     }
+
 
     .infoContact {
         height: 20px;
@@ -422,19 +460,23 @@
         padding-left: 1em;
     }
 
+
     .infoTeam {
         height: 48px;
     }
+
 
     .bio {
         margin: 2em 1.5em 2em;
         text-indent: 4em;
     }
 
+
     .philosophy {
         margin: 2em 1.5em 2em;
         text-indent: 4em;
     }
+
 
     .loading {
         display: block;
@@ -443,20 +485,24 @@
         margin: 80px auto;
     }
 
+
     .teamSub {
         font-size: 0.4em;
         line-height: 1em;
         color: #666;
     }
 
+
     .managerNav {
         margin: 4em 0 2em;
         text-align: center;
     }
 
+
     .upper {
         margin-top: 0;
     }
+
 
     .commissionerBadge {
         display: flex;
@@ -470,23 +516,31 @@
         border: 1px solid var(--blueOne);
     }
 
+
     .commissionerBadge span {
         font-style: normal;
         color: #fff;
     }
 
+
     @media (max-width: 505px) {
+
         :global(.selectionButtons span) {
             font-size: 0.8em;
         }
+
     }
 
+
     @media (max-width: 435px) {
+
         :global(.selectionButtons span) {
             line-height: 1.2em;
             font-size: 0.8em;
         }
+
     }
+
 
     @media (max-width: 450px) {
 
@@ -494,9 +548,11 @@
             height: 20px;
         }
 
+
         .basicInfo span {
             font-size: 0.75em;
         }
+
 
         .infoTeam {
             height: 30px;
@@ -504,27 +560,33 @@
 
     }
 
+
     @media (max-width: 370px) {
 
         .basicInfo {
             height: 18px;
         }
 
+
         .basicInfo span {
             font-size: 0.6em;
         }
+
 
         .infoTeam {
             height: 24px;
         }
 
     }
+
 </style>
 
 
 <div class="managerContainer">
 
+
     <div class="managerConstrained">
+
 
         <img
             class="managerPhoto"
@@ -540,6 +602,7 @@
             <div class="teamSub">
 
                 {coOwners ? 'Co-' : ''}
+
                 Manager of
 
                 <i>
@@ -567,17 +630,28 @@
 
         <div class="basicInfo">
 
-            <span class="infoChild">
 
-                {viewManager?.location ||
-                    'Undisclosed Location'}
+            {#if viewManager?.location}
 
-            </span>
+                <span class="infoChild">
+                    {viewManager.location}
+                </span>
+
+            {:else}
+
+                <span class="infoChild">
+                    Undisclosed Location
+                </span>
+
+            {/if}
 
 
             {#if datesActive?.start}
 
-                <span class="seperator">|</span>
+                <span class="seperator">
+                    |
+                </span>
+
 
                 {#if datesActive.end}
 
@@ -615,28 +689,11 @@
             {/if}
 
 
-            {#if viewManager?.preferredContact}
-
-                <span class="seperator">|</span>
-
-                <span class="infoChild">
-
-                    {viewManager.preferredContact}
-
-                    <img
-                        class="infoChild infoContact"
-                        src="/{viewManager.preferredContact}.png"
-                        alt="preferred contact"
-                    />
-
-                </span>
-
-            {/if}
-
-
             {#if viewManager?.favoriteTeam}
 
-                <span class="seperator">|</span>
+                <span class="seperator">
+                    |
+                </span>
 
                 <img
                     class="infoChild infoTeam"
@@ -649,15 +706,20 @@
 
             {#if commissioner}
 
-                <span class="seperator">|</span>
+                <span class="seperator">
+                    |
+                </span>
 
                 <div class="infoChild commissionerBadge">
 
-                    <span>C</span>
+                    <span>
+                        C
+                    </span>
 
                 </div>
 
             {/if}
+
 
         </div>
 
@@ -670,6 +732,7 @@
 
             <Group variant="outlined">
 
+
                 {#if previousManager}
 
                     <Button
@@ -681,9 +744,11 @@
                             )}
                         variant="outlined"
                     >
+
                         <Label>
                             Previous Manager
                         </Label>
+
                     </Button>
 
                 {:else}
@@ -693,9 +758,11 @@
                         class="selectionButtons"
                         variant="outlined"
                     >
+
                         <Label>
                             Previous Manager
                         </Label>
+
                     </Button>
 
                 {/if}
@@ -707,9 +774,11 @@
                         goto('/managers')}
                     variant="outlined"
                 >
+
                     <Label>
                         All Managers
                     </Label>
+
                 </Button>
 
 
@@ -724,9 +793,11 @@
                             )}
                         variant="outlined"
                     >
+
                         <Label>
                             Next Manager
                         </Label>
+
                     </Button>
 
                 {:else}
@@ -736,12 +807,15 @@
                         class="selectionButtons"
                         variant="outlined"
                     >
+
                         <Label>
                             Next Manager
                         </Label>
+
                     </Button>
 
                 {/if}
+
 
             </Group>
 
@@ -772,6 +846,7 @@
             </p>
 
         {/if}
+
 
     </div>
 
@@ -831,6 +906,7 @@
 
     <div class="managerConstrained">
 
+
         {#if loading}
 
             <div class="loading">
@@ -857,6 +933,7 @@
 
         {/if}
 
+
     </div>
 
 
@@ -868,6 +945,7 @@
 
         <Group variant="outlined">
 
+
             {#if previousManager}
 
                 <Button
@@ -878,9 +956,11 @@
                         )}
                     variant="outlined"
                 >
+
                     <Label>
                         Previous Manager
                     </Label>
+
                 </Button>
 
             {:else}
@@ -890,9 +970,11 @@
                     class="selectionButtons"
                     variant="outlined"
                 >
+
                     <Label>
                         Previous Manager
                     </Label>
+
                 </Button>
 
             {/if}
@@ -904,9 +986,11 @@
                     goto('/managers')}
                 variant="outlined"
             >
+
                 <Label>
                     All Managers
                 </Label>
+
             </Button>
 
 
@@ -920,9 +1004,11 @@
                         )}
                     variant="outlined"
                 >
+
                     <Label>
                         Next Manager
                     </Label>
+
                 </Button>
 
             {:else}
@@ -932,6 +1018,7 @@
                     class="selectionButtons"
                     variant="outlined"
                 >
+
                     <Label>
                         Next Manager
                     </Label>
@@ -939,8 +1026,10 @@
 
             {/if}
 
+
         </Group>
 
     </div>
+
 
 </div>
