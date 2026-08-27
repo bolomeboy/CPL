@@ -153,51 +153,49 @@
 
     </div>
 
-
     <div class="sectionTitle">
         CPL Green
     </div>
 
     <div class="grid">
 
-        <a class="card" href="/segunda/standings">
+        <a class="card" href="/standings?division=green">
             <div class="icon">🏆</div>
             <h3>Standings</h3>
             <p>Current CPL Green standings</p>
         </a>
 
-        <a class="card" href="/segunda/matchups">
+        <a class="card" href="/matchups?division=green">
             <div class="icon">🏈</div>
             <h3>Matchups</h3>
             <p>Weekly scores and results</p>
         </a>
 
-        <a class="card" href="/segunda/rosters">
+        <a class="card" href="/rosters?division=green">
             <div class="icon">👥</div>
             <h3>Rosters</h3>
             <p>CPL Green team rosters</p>
         </a>
 
-        <a class="card" href="/segunda/transactions">
+        <a class="card" href="/transactions?division=green">
             <div class="icon">🔄</div>
             <h3>Transactions</h3>
             <p>Waivers and transactions</p>
         </a>
 
-        <a class="card" href="/segunda/champions">
+        <a class="card" href="/awards?division=green">
             <div class="icon">🥇</div>
             <h3>Champions</h3>
             <p>CPL Green championship history</p>
         </a>
 
-        <a class="card" href="/segunda/records">
+        <a class="card" href="/records?division=green">
             <div class="icon">📊</div>
             <h3>Records</h3>
             <p>CPL Green all-time records</p>
         </a>
 
     </div>
-
 
     <div class="road">
 
