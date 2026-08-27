@@ -12,27 +12,42 @@ import {
 export async function load({ url }) {
 
     /*
-     * Determine which league the user is viewing
+     * Determine division from the URL.
      *
-     * /cpl/standings      → CPL Red
-     * /segunda/standings  → CPL Green
+     * /standings?division=red
+     * /standings?division=green
      */
 
-    const isGreen =
-        url.pathname.startsWith('/segunda');
+    const division =
+        url?.searchParams?.get('division') === 'green'
+            ? 'green'
+            : 'red';
 
+
+    /*
+     * Select the correct Sleeper league.
+     */
 
     const selectedLeagueID =
-        isGreen
+        division === 'green'
             ? segundaLeagueID
             : cplLeagueID;
 
+
+    /*
+     * Load standings from the selected league.
+     */
 
     const standingsData =
         await getLeagueStandings(
             selectedLeagueID
         );
 
+
+    /*
+     * Load team/manager information
+     * from the same league.
+     */
 
     const leagueTeamManagersData =
         getLeagueTeamManagers(
@@ -46,5 +61,8 @@ export async function load({ url }) {
 
         leagueTeamManagersData,
 
+        division
+
     };
+
 }
