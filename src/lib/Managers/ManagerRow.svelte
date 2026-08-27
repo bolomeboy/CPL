@@ -50,7 +50,7 @@
 
 
     /*
-     * Determine whether this manager is commissioner.
+     * Commissioner
      */
     const commissioner =
         manager?.is_owner === true ||
@@ -58,7 +58,7 @@
 
 
     /*
-     * Find the team name.
+     * Team name
      */
     const teamName =
         rosterID !== null &&
@@ -72,7 +72,7 @@
 
 
     /*
-     * Manager photo.
+     * Manager photo
      */
     const managerPhoto =
         manager?.photo ||
@@ -85,11 +85,7 @@
 
 
     /*
-     * CPL division logo.
-     *
-     * IMPORTANT:
-     * Change these filenames if your actual logo files
-     * have different names in /static.
+     * CPL division logo
      */
     const divisionLogo =
         manager?.division === 'green'
@@ -98,7 +94,7 @@
 
 
     /*
-     * Open the manager's individual page.
+     * Open manager profile
      */
     function openManager() {
 
@@ -110,7 +106,9 @@
 
 </script>
 
+
 <style>
+
     .manager {
         display: flex;
         justify-content: left;
@@ -126,10 +124,12 @@
         cursor: pointer;
     }
 
+
     .manager:hover {
         box-shadow: 0 0 10px 0 var(--g999);
         background-color: var(--eee);
     }
+
 
     .photo {
         height: 40px;
@@ -141,6 +141,7 @@
         object-fit: cover;
     }
 
+
     .name {
         text-align: center;
         display: inline-block;
@@ -149,6 +150,7 @@
         margin-left: 1em;
         font-weight: 700;
     }
+
 
     .team {
         text-align: center;
@@ -159,19 +161,24 @@
         margin-left: 1em;
     }
 
+
     .spacer {
         flex-grow: 1;
     }
 
+
     .info {
         display: flex;
+        align-items: center;
     }
+
 
     .infoSlot {
         text-align: center;
         margin: 0 0.5em;
         width: 63px;
     }
+
 
     .infoIcon {
         display: inline-flex;
@@ -185,16 +192,19 @@
         background-color: var(--fff);
     }
 
+
     .infoImg {
         height: 30px;
         width: 30px;
         object-fit: contain;
     }
 
+
     .avatarHolder {
         display: inline-flex;
         position: relative;
     }
+
 
     .commissionerBadge {
         display: flex;
@@ -212,6 +222,7 @@
         color: #fff;
     }
 
+
     @media (max-width: 665px) {
 
         .name {
@@ -225,6 +236,7 @@
         }
 
     }
+
 
     @media (max-width: 595px) {
 
@@ -263,6 +275,7 @@
 
     }
 
+
     @media (max-width: 475px) {
 
         .name {
@@ -297,6 +310,7 @@
 
     }
 
+
     @media (max-width: 370px) {
 
         .infoTeam {
@@ -304,6 +318,7 @@
         }
 
     }
+
 </style>
 
 
@@ -315,7 +330,8 @@
     onclick={openManager}
 >
 
-    <!-- Manager photo -->
+
+    <!-- MANAGER PHOTO -->
 
     <div class="avatarHolder">
 
@@ -353,9 +369,33 @@
     <div class="spacer"></div>
 
 
-    <!-- CPL DIVISION -->
+    <!-- INFO -->
 
     <div class="info">
+
+
+        <!-- FAVORITE NFL TEAM -->
+
+        {#if manager.favoriteTeam}
+
+            <div class="infoSlot">
+
+                <div class="infoIcon">
+
+                    <img
+                        class="infoImg"
+                        src="https://sleepercdn.com/images/team_logos/nfl/{manager.favoriteTeam}.png"
+                        alt="Favorite NFL team"
+                    />
+
+                </div>
+
+            </div>
+
+        {/if}
+
+
+        <!-- CPL DIVISION -->
 
         <div class="infoSlot">
 
@@ -374,6 +414,7 @@
             </div>
 
         </div>
+
 
     </div>
 
