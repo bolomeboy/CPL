@@ -3,7 +3,6 @@
     import LinearProgress from '@smui/linear-progress';
     import Draft from './Draft.svelte';
 
-    export let upcomingDraftData;
     export let previousDraftsData;
     export let leagueTeamManagersData;
     export let playersData;
@@ -49,6 +48,11 @@
     .divider {
         margin: 40px 0;
     }
+
+    .nothingYet {
+        text-align: center;
+        margin: 50px 0;
+    }
 </style>
 
 
@@ -57,11 +61,13 @@
     <div class="leagueHeader">
 
         {#if logo}
+
             <img
                 class="leagueLogo"
                 src={logo}
                 alt="{leagueName} logo"
             />
+
         {/if}
 
         <h3>{leagueName}</h3>
@@ -71,50 +77,9 @@
 {/if}
 
 
-<!-- UPCOMING DRAFT -->
-
-{#await waitForAll(
-    upcomingDraftData,
-    leagueTeamManagersData,
-    playersData
-)}
-
-    <div class="loading">
-
-        <p>
-            Retrieving {leagueName} draft...
-        </p>
-
-        <br />
-
-        <LinearProgress indeterminate />
-
-    </div>
-
-{:then [upcomingDraft, leagueTeamManagers, {players}]}
-
-    <h4>
-        {leagueName} {upcomingDraft.year} Draft
-    </h4>
-
-    <Draft
-        draftData={upcomingDraft}
-        {leagueTeamManagers}
-        year={upcomingDraft.year}
-        {players}
-        {division}
-    />
-
-{:catch error}
-
-    <p>
-        Something went wrong: {error.message}
-    </p>
-
-{/await}
-
-
-<!-- PREVIOUS DRAFTS -->
+<!-- ========================================================= -->
+<!-- PREVIOUS / COMPLETED DRAFTS ONLY -->
+<!-- ========================================================= -->
 
 {#await waitForAll(
     previousDraftsData,
@@ -122,14 +87,22 @@
     playersData
 )}
 
+    <div class="loading">
+
+        <p>
+            Retrieving {leagueName} drafts...
+        </p>
+
+        <LinearProgress indeterminate />
+
+    </div>
+
 {:then [previousDrafts, leagueTeamManagers, {players}]}
 
     {#if previousDrafts.length}
 
-        <hr class="divider" />
-
         <h4>
-            {leagueName} Previous Drafts
+            {leagueName} Draft History
         </h4>
 
         {#each previousDrafts as previousDraft}
@@ -147,7 +120,19 @@
                 {division}
             />
 
+            {#if previousDraft !== previousDrafts[previousDrafts.length - 1]}
+
+                <hr class="divider" />
+
+            {/if}
+
         {/each}
+
+    {:else}
+
+        <p class="nothingYet">
+            No completed drafts yet.
+        </p>
 
     {/if}
 
