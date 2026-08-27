@@ -6,9 +6,13 @@
     export let redLeagueTeamManagers;
     export let greenLeagueTeamManagers;
 
+
     /*
-     * Find the custom CPL profile for a Sleeper manager.
+     * ============================================================
+     * FIND CUSTOM CPL PROFILE
+     * ============================================================
      */
+
     const getProfile = (manager) => {
 
         const id = String(
@@ -20,13 +24,28 @@
             profile =>
                 String(profile.managerID) === id
         );
+
     };
 
 
     /*
-     * Combine the Sleeper manager with the
-     * custom profile from leagueInfo.js.
+     * ============================================================
+     * COMBINE SLEEPER DATA + CPL PROFILE
+     * ============================================================
+     *
+     * Sleeper provides:
+     * - username
+     * - avatar
+     * - user ID
+     *
+     * leagueInfo.js provides:
+     * - custom name
+     * - location
+     * - favorite team
+     * - division
+     * - etc.
      */
+
     const buildManager = (manager) => {
 
         const profile = getProfile(manager);
@@ -36,44 +55,91 @@
         }
 
         return {
+
             ...manager,
+
             ...profile,
 
+            managerID:
+                String(profile.managerID),
+
             /*
-             * These are always controlled by
-             * the CPL profile.
+             * THIS is the name shown on the website.
              */
-            managerID: String(profile.managerID),
-            name: profile.name,
-            username: profile.username,
-            division: profile.division,
-            location: profile.location,
-            bio: profile.bio,
-            photo: profile.photo,
-            fantasyStart: profile.fantasyStart,
-            favoriteTeam: profile.favoriteTeam,
-            mode: profile.mode,
-            rival: profile.rival,
-            favoritePlayer: profile.favoritePlayer,
-            valuePosition: profile.valuePosition,
-            rookieOrVets: profile.rookieOrVets,
-            philosophy: profile.philosophy,
-            tradingScale: profile.tradingScale,
-            preferredContact: profile.preferredContact
+            name:
+                profile.name,
+
+            /*
+             * Keep Sleeper username available,
+             * but do NOT use it as the displayed name.
+             */
+            username:
+                profile.username,
+
+            division:
+                profile.division,
+
+            location:
+                profile.location,
+
+            bio:
+                profile.bio,
+
+            /*
+             * If a custom photo exists, use it.
+             * Otherwise ManagerRow will use Sleeper's avatar.
+             */
+            photo:
+                profile.photo || manager.photo,
+
+            fantasyStart:
+                profile.fantasyStart,
+
+            favoriteTeam:
+                profile.favoriteTeam,
+
+            mode:
+                profile.mode,
+
+            rival:
+                profile.rival,
+
+            favoritePlayer:
+                profile.favoritePlayer,
+
+            valuePosition:
+                profile.valuePosition,
+
+            rookieOrVets:
+                profile.rookieOrVets,
+
+            philosophy:
+                profile.philosophy,
+
+            tradingScale:
+                profile.tradingScale,
+
+            preferredContact:
+                profile.preferredContact
+
         };
+
     };
 
 
     /*
-     * Build the final 24-manager list.
+     * Build the final manager list.
      */
     $: finalManagers =
         (managers || []).map(buildManager);
 
 
     /*
-     * Get the correct league's roster/team data.
+     * ============================================================
+     * GET CORRECT LEAGUE DATA
+     * ============================================================
      */
+
     const getLeagueData = (manager) => {
 
         if (manager.division === 'green') {
@@ -81,10 +147,14 @@
         }
 
         return redLeagueTeamManagers;
+
     };
+
 </script>
 
+
 <style>
+
     .managerContainer {
         width: 100%;
         margin: 2em 0 5em;
@@ -121,12 +191,15 @@
         }
 
     }
+
 </style>
 
 
 <div class="managerContainer">
 
-    <h2>California Primeira Liga Managers</h2>
+    <h2>
+        California Primeira Liga Managers
+    </h2>
 
 
     <!-- ===================================================== -->
@@ -139,7 +212,9 @@
 
     <div class="managerConstrained">
 
-        {#each finalManagers.filter(manager => manager.division === 'red') as manager}
+        {#each finalManagers.filter(
+            manager => manager.division === 'red'
+        ) as manager}
 
             <ManagerRow
                 {manager}
@@ -161,7 +236,9 @@
 
     <div class="managerConstrained">
 
-        {#each finalManagers.filter(manager => manager.division === 'green') as manager}
+        {#each finalManagers.filter(
+            manager => manager.division === 'green'
+        ) as manager}
 
             <ManagerRow
                 {manager}
