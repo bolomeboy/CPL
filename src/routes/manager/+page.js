@@ -10,53 +10,20 @@ import {
 
 import {
     cplLeagueID,
-    segundaLeagueID
+    segundaLeagueID,
+    managers as managerProfiles
 } from '$lib/utils/leagueInfo';
-
-
-/*
- * ============================================================
- * CPL WEBSITE MANAGER NAMES
- * ============================================================
- */
-
-const managerNames = {
-
-    // RED
-    '471758701842132992': 'JD',
-    '608428302964686848': 'Justin',
-    '722593452524650496': 'Logan',
-    '732848788863037440': 'Gavin',
-    '733091325091635200': 'Izzy',
-    '733122379001241600': 'Kevin',
-    '865009922180509696': 'Daniel',
-    '988192038514466816': 'Darin',
-    '992145928494637056': 'Tony',
-    '1037569461064794112': 'Dylan',
-    '1123348972917100544': 'Jonathan',
-    '1132795206014742528': 'Brandon',
-
-    // GREEN
-    '594665552094486528': 'Grant',
-    '733139077938925568': 'Bolo',
-    '733897435939725312': 'Tiago',
-    '741113728006803456': 'Rui',
-    '853030385163038720': 'Xavier',
-    '858567127072870400': 'Michael',
-    '871263782905794560': 'Lucas',
-    '992160347320647680': 'Jacob',
-    '1122218839107850240': 'Luke',
-    '1134307994403344384': 'Nicholas',
-    '1233993787223572480': 'Paul',
-    '1314475281792118784': 'Christian'
-
-};
 
 
 /*
  * ============================================================
  * GET ALL 24 MANAGERS
  * ============================================================
+ *
+ * The manager profiles in leagueInfo.js are the source
+ * for custom names, locations, photos, favorite teams, etc.
+ *
+ * Sleeper is used for the actual user IDs and league data.
  */
 
 async function getAllManagers() {
@@ -83,7 +50,6 @@ async function getAllManagers() {
         );
     }
 
-
     if (!greenResponse.ok) {
         throw new Error(
             `Could not load CPL Green managers: ${greenResponse.status}`
@@ -99,111 +65,101 @@ async function getAllManagers() {
 
 
     /*
-     * Build the 24-manager list.
+     * Combine both leagues.
      */
-    const managers = [
+    const sleeperManagers = [
 
-        ...redUsers.map(user => {
+        ...redUsers.map(user => ({
+            ...user,
+            division: 'red'
+        })),
 
-            const id =
-                String(user.user_id);
-
-            return {
-                ...user,
-
-                user_id: id,
-
-                managerID: id,
-
-                division: 'red',
-
-                name:
-                    managerNames[id] ||
-                    user.display_name ||
-                    user.user_name ||
-                    'Unknown Manager'
-            };
-
-        }),
-
-
-        ...greenUsers.map(user => {
-
-            const id =
-                String(user.user_id);
-
-            return {
-                ...user,
-
-                user_id: id,
-
-                managerID: id,
-
-                division: 'green',
-
-                name:
-                    managerNames[id] ||
-                    user.display_name ||
-                    user.user_name ||
-                    'Unknown Manager'
-            };
-
-        })
+        ...greenUsers.map(user => ({
+            ...user,
+            division: 'green'
+        }))
 
     ];
 
 
     /*
-     * flipcup1 / Christian.
-     *
-     * Sleeper is currently not returning him
-     * from the Green league users endpoint.
+     * Add Christian manually because Sleeper isn't
+     * returning him from the Green users endpoint.
      */
-    if (!managers.some(
+    if (!sleeperManagers.some(
         manager =>
             String(manager.user_id) ===
             '1314475281792118784'
     )) {
 
-        managers.push({
+        sleeperManagers.push({
 
-            user_id:
-                '1314475281792118784',
+            user_id: '1314475281792118784',
 
-            managerID:
-                '1314475281792118784',
+            display_name: 'flipcup1',
 
-            display_name:
-                'flipcup1',
+            user_name: 'flipcup1',
 
-            user_name:
-                'flipcup1',
+            division: 'green',
 
-            name:
-                managerNames[
-                    '1314475281792118784'
-                ],
+            is_bot: false,
 
-            division:
-                'green',
-
-            is_bot:
-                false,
-
-            is_owner:
-                false,
+            is_owner: false,
 
             metadata: {},
 
-            avatar:
-                null
+            avatar: null
 
         });
 
     }
 
 
-    return managers;
+    /*
+     * Match Sleeper managers to the profiles
+     * in leagueInfo.js.
+     */
+    return sleeperManagers.map(sleeperManager => {
+
+        const id =
+            String(sleeperManager.user_id);
+
+
+        const profile =
+            managerProfiles.find(
+                manager =>
+                    String(manager.managerID) === id
+            );
+
+
+        /*
+         * Profile information from leagueInfo.js
+         * overrides the Sleeper display name.
+         */
+        return {
+
+            ...sleeperManager,
+
+            ...(profile || {}),
+
+            managerID: id,
+
+            user_id: id,
+
+            division:
+                profile?.division ||
+                sleeperManager.division,
+
+            name:
+                profile?.name ||
+                sleeperManager.display_name ||
+                sleeperManager.user_name ||
+                'Unknown Manager'
+
+        };
+
+    });
+
 }
 
 
@@ -216,44 +172,57 @@ async function getAllManagers() {
 export async function load({ url }) {
 
     /*
-     * Get all 24 managers.
+     * Get the complete 24-manager list.
      */
     const managers =
         await getAllManagers();
 
 
     /*
-     * Get the real Sleeper manager ID.
+     * Manager ID from the URL.
+     *
+     * Example:
+     *
+     * /manager?managerID=733139077938925568
      */
     const managerID =
         url?.searchParams?.get('managerID');
 
 
     /*
-     * Optional roster/year information.
+     * Find the selected manager's position
+     * in the complete 24-manager list.
      */
-    const rosterID =
-        url?.searchParams?.get('rosterID');
-
-    const yearParam =
-        url?.searchParams?.get('year');
+    const managerIndex =
+        managerID
+            ? managers.findIndex(
+                manager =>
+                    String(manager.managerID) ===
+                    String(managerID)
+            )
+            : -1;
 
 
     /*
-     * Determine division.
+     * Find the selected manager.
      */
-    const divisionParam =
-        url?.searchParams?.get('division');
+    const selectedManager =
+        managerIndex >= 0
+            ? managers[managerIndex]
+            : null;
 
 
+    /*
+     * Determine division from the actual
+     * selected manager.
+     */
     const division =
-        divisionParam === 'green'
-            ? 'green'
-            : 'red';
+        selectedManager?.division ||
+        'red';
 
 
     /*
-     * Determine which league to load.
+     * Select the correct Sleeper league.
      */
     const queryLeagueID =
         division === 'green'
@@ -262,30 +231,67 @@ export async function load({ url }) {
 
 
     /*
-     * No manager selected.
+     * Optional roster information.
+     */
+    const rosterID =
+        url?.searchParams?.get('rosterID');
+
+
+    const yearParam =
+        url?.searchParams?.get('year');
+
+
+    /*
+     * If no manager was selected,
+     * don't load individual-manager data.
      */
     if (!managerID) {
 
         return {
 
-            manager:
-                -1,
+            manager: -1,
 
-            managerID:
-                null,
+            managerID: null,
 
-            rosterID:
-                null,
+            rosterID: null,
 
-            year:
-                null,
+            year: null,
 
             division,
 
             managers,
 
-            managersInfo:
-                null,
+            managersInfo: null,
+
+            queryLeagueID
+
+        };
+
+    }
+
+
+    /*
+     * If the manager ID isn't found,
+     * send back the manager list information
+     * rather than loading the wrong league.
+     */
+    if (managerIndex === -1) {
+
+        return {
+
+            manager: -1,
+
+            managerID,
+
+            rosterID: null,
+
+            year: null,
+
+            division,
+
+            managers,
+
+            managersInfo: null,
 
             queryLeagueID
 
@@ -296,7 +302,7 @@ export async function load({ url }) {
 
     /*
      * Load all information for the selected
-     * Red or Green league.
+     * manager's league.
      */
     const managersInfo =
         waitForAll(
@@ -333,8 +339,14 @@ export async function load({ url }) {
 
     return {
 
+        /*
+         * This is the position of the manager
+         * in the complete 24-manager list.
+         *
+         * Previous/Next can use this.
+         */
         manager:
-            -1,
+            managerIndex,
 
         managerID,
 
@@ -348,8 +360,7 @@ export async function load({ url }) {
         division,
 
         /*
-         * IMPORTANT:
-         * This is the complete 24-manager list.
+         * The complete 24-manager list.
          */
         managers,
 
