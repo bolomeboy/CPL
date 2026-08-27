@@ -1,14 +1,86 @@
 <script>
     import ManagerRow from './ManagerRow.svelte';
+    import { managers as managerProfiles } from '$lib/utils/leagueInfo';
 
     export let managers;
     export let redLeagueTeamManagers;
     export let greenLeagueTeamManagers;
 
+    /*
+     * Find the custom CPL profile for a Sleeper manager.
+     */
+    const getProfile = (manager) => {
+
+        const id = String(
+            manager.managerID ||
+            manager.user_id
+        );
+
+        return managerProfiles.find(
+            profile =>
+                String(profile.managerID) === id
+        );
+    };
+
+
+    /*
+     * Combine the Sleeper manager with the
+     * custom profile from leagueInfo.js.
+     */
+    const buildManager = (manager) => {
+
+        const profile = getProfile(manager);
+
+        if (!profile) {
+            return manager;
+        }
+
+        return {
+            ...manager,
+            ...profile,
+
+            /*
+             * These are always controlled by
+             * the CPL profile.
+             */
+            managerID: String(profile.managerID),
+            name: profile.name,
+            username: profile.username,
+            division: profile.division,
+            location: profile.location,
+            bio: profile.bio,
+            photo: profile.photo,
+            fantasyStart: profile.fantasyStart,
+            favoriteTeam: profile.favoriteTeam,
+            mode: profile.mode,
+            rival: profile.rival,
+            favoritePlayer: profile.favoritePlayer,
+            valuePosition: profile.valuePosition,
+            rookieOrVets: profile.rookieOrVets,
+            philosophy: profile.philosophy,
+            tradingScale: profile.tradingScale,
+            preferredContact: profile.preferredContact
+        };
+    };
+
+
+    /*
+     * Build the final 24-manager list.
+     */
+    $: finalManagers =
+        (managers || []).map(buildManager);
+
+
+    /*
+     * Get the correct league's roster/team data.
+     */
     const getLeagueData = (manager) => {
-        return manager.division === 'green'
-            ? greenLeagueTeamManagers
-            : redLeagueTeamManagers;
+
+        if (manager.division === 'green') {
+            return greenLeagueTeamManagers;
+        }
+
+        return redLeagueTeamManagers;
     };
 </script>
 
@@ -38,6 +110,7 @@
     }
 
     @media (max-width: 520px) {
+
         h2 {
             font-size: 2em;
             margin: 1.5em 0 1em;
@@ -46,21 +119,27 @@
         .divisionHeader {
             font-size: 1.4em;
         }
+
     }
 </style>
+
 
 <div class="managerContainer">
 
     <h2>California Primeira Liga Managers</h2>
 
-    <!-- RED -->
+
+    <!-- ===================================================== -->
+    <!-- CPL RED -->
+    <!-- ===================================================== -->
+
     <div class="divisionHeader">
         🔴 CPL Red
     </div>
 
     <div class="managerConstrained">
 
-        {#each managers.filter(m => m.division === 'red') as manager}
+        {#each finalManagers.filter(manager => manager.division === 'red') as manager}
 
             <ManagerRow
                 {manager}
@@ -72,14 +151,17 @@
     </div>
 
 
-    <!-- GREEN -->
+    <!-- ===================================================== -->
+    <!-- CPL GREEN -->
+    <!-- ===================================================== -->
+
     <div class="divisionHeader">
         🟢 CPL Green
     </div>
 
     <div class="managerConstrained">
 
-        {#each managers.filter(m => m.division === 'green') as manager}
+        {#each finalManagers.filter(manager => manager.division === 'green') as manager}
 
             <ManagerRow
                 {manager}
