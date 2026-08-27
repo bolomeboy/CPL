@@ -5,10 +5,12 @@
     export let redLeagueTeamManagers;
     export let greenLeagueTeamManagers;
 
-    let innerWidth;
+    const getLeagueData = (manager) => {
+        return manager.division === 'green'
+            ? greenLeagueTeamManagers
+            : redLeagueTeamManagers;
+    };
 </script>
-
-<svelte:window bind:innerWidth={innerWidth} />
 
 <style>
     .managerContainer {
@@ -37,10 +39,8 @@
 
     @media (max-width: 520px) {
         h2 {
-            text-align: center;
             font-size: 2em;
             margin: 1.5em 0 1em;
-            line-height: 1em;
         }
 
         .divisionHeader {
@@ -53,20 +53,18 @@
 
     <h2>California Primeira Liga Managers</h2>
 
-
-    <!-- RED MANAGERS -->
+    <!-- RED -->
     <div class="divisionHeader">
         🔴 CPL Red
     </div>
 
     <div class="managerConstrained">
 
-        {#each managers.filter(manager => manager.division === 'red') as manager, key}
+        {#each managers.filter(m => m.division === 'red') as manager}
 
             <ManagerRow
                 {manager}
-                leagueTeamManagers={redLeagueTeamManagers}
-                {key}
+                leagueTeamManagers={getLeagueData(manager)}
             />
 
         {/each}
@@ -74,19 +72,18 @@
     </div>
 
 
-    <!-- GREEN MANAGERS -->
+    <!-- GREEN -->
     <div class="divisionHeader">
         🟢 CPL Green
     </div>
 
     <div class="managerConstrained">
 
-        {#each managers.filter(manager => manager.division === 'green') as manager, key}
+        {#each managers.filter(m => m.division === 'green') as manager}
 
             <ManagerRow
                 {manager}
-                leagueTeamManagers={greenLeagueTeamManagers}
-                {key}
+                leagueTeamManagers={getLeagueData(manager)}
             />
 
         {/each}
