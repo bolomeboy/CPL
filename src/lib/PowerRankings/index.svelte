@@ -1,14 +1,50 @@
 <script>
-    import {getNflState, getLeagueRosters, getLeagueTeamManagers, waitForAll, loadPlayers, getLeagueData} from '$lib/utils/helper';
+    import {
+        getNflState,
+        getLeagueRosters,
+        getLeagueTeamManagers,
+        waitForAll,
+        loadPlayers,
+        getLeagueData
+    } from '$lib/utils/helper';
+
+    import {
+        cplLeagueID,
+        segundaLeagueID
+    } from '$lib/utils/leagueInfo';
+
     import PowerRankingsDisplay from './PowerRankingsDisplay.svelte';
     import LinearProgress from '@smui/linear-progress';
-    
+
+    /*
+     * Determine which division is being viewed.
+     *
+     * /power-rankings?division=red
+     * /power-rankings?division=green
+     */
+
+    export let division = 'red';
+
+    /*
+     * Select the correct Sleeper league.
+     */
+
+    const selectedLeagueID =
+        division === 'green'
+            ? segundaLeagueID
+            : cplLeagueID;
+
+
+    /*
+     * Load data from the selected league.
+     */
+
     const helperPromises = waitForAll(
         getNflState(),
-        getLeagueRosters(),
-        getLeagueTeamManagers(),
-        getLeagueData(),
-        loadPlayers(null),
+        getLeagueRosters(selectedLeagueID),
+        getLeagueTeamManagers(selectedLeagueID),
+        getLeagueData(selectedLeagueID),
+        loadPlayers(null)
     );
 
 </script>
@@ -22,20 +58,41 @@
     }
 </style>
 
+
 {#await helperPromises}
-    <!-- promise is pending -->
+
     <div class="loading">
-        <p>Calculating power rankings...</p>
+
+        <p>
+            Calculating
+            {division === 'green' ? 'CPL Green' : 'CPL Red'}
+            power rankings...
+        </p>
+
         <LinearProgress indeterminate />
+
     </div>
+
+
 {:then [nflState, rostersData, leagueTeamManagers, leagueData, playersInfo]}
+
     {#if leagueData.status != 'pre_draft' && leagueData.status != 'complete'}
-        <PowerRankingsDisplay {nflState} {rostersData} {leagueTeamManagers} {leagueData} {playersInfo} />
+
+        <PowerRankingsDisplay
+            {nflState}
+            {rostersData}
+            {leagueTeamManagers}
+            {leagueData}
+            {playersInfo}
+        />
+
     {/if}
+
+
 {:catch error}
-	<!-- promise was rejected -->
-	<p>Something went wrong: {error.message}</p>
+
+    <p>
+        Something went wrong: {error.message}
+    </p>
+
 {/await}
-
-
-
