@@ -9,8 +9,6 @@
     export let division = 'red';
 
 
-    // Least important to most important.
-    // The most important tiebreaker goes last.
     const sortOrder = [
         "fptsAgainst",
         "divisionTies",
@@ -21,7 +19,6 @@
     ];
 
 
-    // Column order from left to right.
     const columnOrder = [
         { name: "W", field: "wins" },
         { name: "T", field: "ties" },
@@ -37,35 +34,36 @@
 
     let loading = true;
     let preseason = false;
+
     let standings = [];
     let year = null;
     let leagueTeamManagers = null;
 
+    /*
+     * Keep track of the specific data request being displayed.
+     *
+     * This prevents an older Red request from overwriting
+     * a newer Green request (or vice versa).
+     */
+
+    let loadNumber = 0;
+
 
     /*
      * ============================================================
-     * LOAD STANDINGS
+     * RELOAD WHEN DIVISION DATA CHANGES
      * ============================================================
-     *
-     * This is intentionally reactive.
-     *
-     * When the URL changes from:
-     *
-     * /standings?division=red
-     *
-     * to:
-     *
-     * /standings?division=green
-     *
-     * SvelteKit provides new standingsData and this
-     * block runs again.
      */
 
-    $: if (standingsData) {
+    $: if (standingsData && leagueTeamManagersData) {
+
+        const currentLoad =
+            ++loadNumber;
 
         loadStandings(
             standingsData,
-            leagueTeamManagersData
+            leagueTeamManagersData,
+            currentLoad
         );
 
     }
@@ -73,109 +71,178 @@
 
     async function loadStandings(
         standingsPromise,
-        teamManagersPromise
+        teamManagersPromise,
+        currentLoad
     ) {
+
+        /*
+         * Show loading while the new league is being loaded.
+         */
 
         loading = true;
         preseason = false;
 
 
-        const asyncStandingsData =
-            await standingsPromise;
+        try {
+
+            /*
+             * Load both pieces of data.
+             */
+
+            const asyncStandingsData =
+                await standingsPromise;
+
+            const newLeagueTeamManagers =
+                await teamManagersPromise;
 
 
-        /*
-         * No standings yet.
-         */
+            /*
+             * If another division was selected while
+             * this request was loading, ignore this result.
+             */
 
-        if (!asyncStandingsData) {
+            if (currentLoad !== loadNumber) {
+                return;
+            }
 
-            standings = [];
-
-            year = null;
 
             leagueTeamManagers =
-                await teamManagersPromise;
+                newLeagueTeamManagers;
+
+
+            /*
+             * No standings means the league hasn't
+             * started yet.
+             */
+
+            if (!asyncStandingsData) {
+
+                standings = [];
+
+                year = null;
+
+                loading = false;
+
+                preseason = true;
+
+                return;
+
+            }
+
+
+            const {
+                standingsInfo,
+                yearData
+            } = asyncStandingsData;
+
+
+            year = yearData;
+
+
+            /*
+             * Make sure standingsInfo actually contains
+             * teams before trying to sort it.
+             */
+
+            if (
+                !standingsInfo ||
+                Object.keys(standingsInfo).length === 0
+            ) {
+
+                standings = [];
+
+                loading = false;
+
+                preseason = true;
+
+                return;
+
+            }
+
+
+            /*
+             * Convert the standings object into an array.
+             */
+
+            let finalStandings =
+                Object.keys(standingsInfo)
+                    .map(
+                        key =>
+                            standingsInfo[key]
+                    );
+
+
+            /*
+             * Apply the normal league tiebreakers.
+             */
+
+            for (const sortType of sortOrder) {
+
+                if (
+                    !finalStandings[0] ||
+                    (
+                        !finalStandings[0][sortType] &&
+                        finalStandings[0][sortType] != 0
+                    )
+                ) {
+
+                    continue;
+
+                }
+
+
+                finalStandings =
+                    [...finalStandings].sort(
+                        (a, b) =>
+                            b[sortType] -
+                            a[sortType]
+                    );
+
+            }
+
+
+            /*
+             * Only update the page if this is still
+             * the most recent request.
+             */
+
+            if (currentLoad !== loadNumber) {
+                return;
+            }
+
+
+            standings =
+                finalStandings;
+
+            loading = false;
+
+        } catch (error) {
+
+            /*
+             * If this is still the current request,
+             * stop loading instead of getting stuck.
+             */
+
+            if (currentLoad !== loadNumber) {
+
+                return;
+
+            }
+
+
+            console.error(
+                'Error loading standings:',
+                error
+            );
+
+
+            standings = [];
 
             loading = false;
 
             preseason = true;
 
-            return;
-
         }
-
-
-        /*
-         * Get the new standings information.
-         */
-
-        const {
-            standingsInfo,
-            yearData
-        } = asyncStandingsData;
-
-
-        /*
-         * Get the managers/teams from the
-         * same Red or Green league.
-         */
-
-        leagueTeamManagers =
-            await teamManagersPromise;
-
-
-        year = yearData;
-
-
-        /*
-         * Convert standings object into an array.
-         */
-
-        let finalStandings =
-            Object.keys(standingsInfo)
-                .map(
-                    key =>
-                        standingsInfo[key]
-                );
-
-
-        /*
-         * Apply the league's tiebreaker order.
-         */
-
-        for (const sortType of sortOrder) {
-
-            if (
-                !finalStandings[0] ||
-                (
-                    !finalStandings[0][sortType] &&
-                    finalStandings[0][sortType] != 0
-                )
-            ) {
-                continue;
-            }
-
-
-            finalStandings =
-                [...finalStandings].sort(
-                    (a, b) =>
-                        b[sortType] -
-                        a[sortType]
-                );
-
-        }
-
-
-        /*
-         * Replace the displayed standings.
-         */
-
-        standings =
-            finalStandings;
-
-
-        loading = false;
 
     }
 
@@ -221,7 +288,7 @@
             {division === 'green'
                 ? 'CPL Green'
                 : 'CPL Red'}
-            Standings...
+            standings...
         </p>
 
         <LinearProgress indeterminate />
@@ -237,7 +304,7 @@
             {division === 'green'
                 ? 'CPL Green'
                 : 'CPL Red'}
-            is in preseason. No standings yet.
+            standings are not available yet.
         </p>
 
     </div>
@@ -263,9 +330,7 @@
                     {#each columnOrder as column}
 
                         <Cell class="center wrappable">
-
                             {column.name}
-
                         </Cell>
 
                     {/each}
