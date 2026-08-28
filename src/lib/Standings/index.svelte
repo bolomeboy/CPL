@@ -9,28 +9,48 @@
     export let division = 'red';
 
 
+    /*
+     * ============================================================
+     * STANDINGS SORT ORDER
+     * ============================================================
+     *
+     * Least important to most important.
+     *
+     * Divisional records are no longer displayed or used
+     * as visible standings columns.
+     */
+
     const sortOrder = [
         "fptsAgainst",
-        "divisionTies",
-        "divisionWins",
         "fpts",
         "ties",
         "wins"
     ];
 
 
+    /*
+     * ============================================================
+     * TABLE COLUMNS
+     * ============================================================
+     *
+     * Div W / Div T / Div L have been removed.
+     */
+
     const columnOrder = [
         { name: "W", field: "wins" },
         { name: "T", field: "ties" },
         { name: "L", field: "losses" },
-        { name: "Div W", field: "divisionWins" },
-        { name: "Div T", field: "divisionTies" },
-        { name: "Div L", field: "divisionLosses" },
         { name: "FPTS", field: "fpts" },
         { name: "FPTS Against", field: "fptsAgainst" },
         { name: "Streak", field: "streak" }
     ];
 
+
+    /*
+     * ============================================================
+     * STATE
+     * ============================================================
+     */
 
     let loading = true;
     let preseason = false;
@@ -39,11 +59,12 @@
     let year = null;
     let leagueTeamManagers = null;
 
+
     /*
      * Keep track of the specific data request being displayed.
      *
      * This prevents an older Red request from overwriting
-     * a newer Green request (or vice versa).
+     * a newer Green request.
      */
 
     let loadNumber = 0;
@@ -69,15 +90,17 @@
     }
 
 
+    /*
+     * ============================================================
+     * LOAD STANDINGS
+     * ============================================================
+     */
+
     async function loadStandings(
         standingsPromise,
         teamManagersPromise,
         currentLoad
     ) {
-
-        /*
-         * Show loading while the new league is being loaded.
-         */
 
         loading = true;
         preseason = false;
@@ -86,7 +109,7 @@
         try {
 
             /*
-             * Load both pieces of data.
+             * Load standings and team/manager information.
              */
 
             const asyncStandingsData =
@@ -97,12 +120,14 @@
 
 
             /*
-             * If another division was selected while
-             * this request was loading, ignore this result.
+             * If the user switched divisions while the
+             * request was loading, ignore the old result.
              */
 
             if (currentLoad !== loadNumber) {
+
                 return;
+
             }
 
 
@@ -136,12 +161,12 @@
             } = asyncStandingsData;
 
 
-            year = yearData;
+            year =
+                yearData;
 
 
             /*
-             * Make sure standingsInfo actually contains
-             * teams before trying to sort it.
+             * Make sure standingsInfo contains teams.
              */
 
             if (
@@ -161,7 +186,7 @@
 
 
             /*
-             * Convert the standings object into an array.
+             * Convert standings object into an array.
              */
 
             let finalStandings =
@@ -173,7 +198,7 @@
 
 
             /*
-             * Apply the normal league tiebreakers.
+             * Apply league tiebreakers.
              */
 
             for (const sortType of sortOrder) {
@@ -207,7 +232,9 @@
              */
 
             if (currentLoad !== loadNumber) {
+
                 return;
+
             }
 
 
@@ -217,11 +244,6 @@
             loading = false;
 
         } catch (error) {
-
-            /*
-             * If this is still the current request,
-             * stop loading instead of getting stuck.
-             */
 
             if (currentLoad !== loadNumber) {
 
@@ -284,11 +306,13 @@
     <div class="loading">
 
         <p>
+
             Loading
             {division === 'green'
                 ? 'CPL Green'
                 : 'CPL Red'}
             standings...
+
         </p>
 
         <LinearProgress indeterminate />
@@ -301,10 +325,12 @@
     <div class="loading">
 
         <p>
+
             {division === 'green'
                 ? 'CPL Green'
                 : 'CPL Red'}
             standings are not available yet.
+
         </p>
 
     </div>
@@ -330,7 +356,9 @@
                     {#each columnOrder as column}
 
                         <Cell class="center wrappable">
+
                             {column.name}
+
                         </Cell>
 
                     {/each}
