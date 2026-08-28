@@ -1,6 +1,5 @@
 <script>
 	import { Standings } from '$lib/components';
-	import { goto } from '$app/navigation';
 
 	export let data;
 
@@ -9,46 +8,72 @@
 		leagueTeamManagersData,
 		division
 	} = data;
-
-
-	function switchDivision(newDivision) {
-		goto(`/standings?division=${newDivision}`);
-	}
 </script>
 
 
 <style>
+
 	.holder {
 		position: relative;
 		z-index: 1;
 		text-align: center;
+		width: 100%;
 	}
 
-	.divisionSwitcher {
+
+	/*
+	 * ============================================================
+	 * PAGE TITLE
+	 * ============================================================
+	 */
+
+	h1 {
+		text-align: center;
+		margin: 25px 0 10px;
+		font-size: 1.8em;
+	}
+
+
+	/*
+	 * ============================================================
+	 * RED / GREEN SWITCHER
+	 * ============================================================
+	 */
+
+	.divisionButtons {
 		display: flex;
+
 		justify-content: center;
+
 		align-items: center;
+
 		gap: 10px;
-		margin: 20px auto 25px;
-		flex-wrap: wrap;
+
+		margin: 15px 0 30px;
+
 		position: relative;
-		z-index: 100;
+
+		z-index: 10;
 	}
 
-	.divisionButton {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
 
-		padding: 10px 22px;
+	.divisionButtons a {
+		display: inline-block;
+
+		padding: 9px 18px;
 
 		border: 1px solid var(--ccc);
-		border-radius: 25px;
 
-		background-color: var(--f3f3f3);
+		border-radius: 20px;
+
+		text-decoration: none;
+
 		color: inherit;
 
-		font-size: 1em;
+		background-color: var(--fff);
+
+		font-size: 0.95em;
+
 		font-weight: 600;
 
 		cursor: pointer;
@@ -58,71 +83,111 @@
 			transform 0.15s ease;
 	}
 
-	.divisionButton:hover {
-		transform: translateY(-1px);
+
+	.divisionButtons a:hover {
 		background-color: var(--eee);
+
+		transform: translateY(-1px);
 	}
 
-	.divisionButton.active {
+
+	/*
+	 * Highlight the division currently being viewed.
+	 */
+
+	.divisionButtons a.active {
 		background-color: var(--blueOne);
+
 		color: #fff;
+
 		border-color: var(--blueOne);
 	}
 
-	.dot {
-		width: 14px;
-		height: 14px;
-		border-radius: 50%;
-		display: inline-block;
-		margin-right: 8px;
-	}
 
-	.redDot {
-		background-color: #d00000;
-	}
-
-	.greenDot {
-		background-color: #00a000;
-	}
+	/*
+	 * ============================================================
+	 * MOBILE
+	 * ============================================================
+	 */
 
 	@media (max-width: 500px) {
-		.divisionSwitcher {
-			margin: 15px auto 20px;
+
+		h1 {
+			font-size: 1.5em;
+
+			margin-top: 20px;
 		}
 
-		.divisionButton {
-			padding: 8px 16px;
-			font-size: 0.9em;
+
+		.divisionButtons {
+			margin-bottom: 25px;
 		}
+
+
+		.divisionButtons a {
+			padding: 8px 14px;
+
+			font-size: 0.85em;
+		}
+
 	}
+
 </style>
 
 
 <div class="holder">
 
-	<div class="divisionSwitcher">
 
-		<button
-			type="button"
-			class="divisionButton {division === 'red' ? 'active' : ''}"
-			onclick={() => switchDivision('red')}
+	<!--
+		============================================================
+		TITLE
+		============================================================
+	-->
+
+	<h1>
+
+		{division === 'green'
+			? 'CPL Green Standings'
+			: 'CPL Red Standings'}
+
+	</h1>
+
+
+	<!--
+		============================================================
+		RED / GREEN SWITCHER
+		============================================================
+	-->
+
+	<div class="divisionButtons">
+
+		<a
+			href="/standings?division=red"
+			class:active={division === 'red'}
 		>
-			<span class="dot redDot"></span>
-			CPL Red
-		</button>
+
+			🔴 CPL Red
+
+		</a>
 
 
-		<button
-			type="button"
-			class="divisionButton {division === 'green' ? 'active' : ''}"
-			onclick={() => switchDivision('green')}
+		<a
+			href="/standings?division=green"
+			class:active={division === 'green'}
 		>
-			<span class="dot greenDot"></span>
-			CPL Green
-		</button>
+
+			🟢 CPL Green
+
+		</a>
 
 	</div>
 
+
+	<!--
+		============================================================
+		STANDINGS
+		============================================================
+	-->
 
 	<Standings
 		{standingsData}
