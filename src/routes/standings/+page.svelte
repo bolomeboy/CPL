@@ -1,13 +1,28 @@
 <script>
 	import { Standings } from '$lib/components';
+	import { page } from '$app/stores';
 
-	export let data;
+	/*
+	 * Read the division directly from the URL.
+	 *
+	 * This updates automatically when the Red/Green
+	 * button changes the query string.
+	 */
 
-	const {
-		standingsData,
-		leagueTeamManagersData,
-		division
-	} = data;
+	$: division =
+		$page.url.searchParams.get('division') === 'green'
+			? 'green'
+			: 'red';
+
+
+	/*
+	 * The route's load function provides the correct
+	 * standings data for the selected division.
+	 */
+
+	$: standingsData = $page.data.standingsData;
+	$: leagueTeamManagersData = $page.data.leagueTeamManagersData;
+
 </script>
 
 
@@ -23,7 +38,7 @@
 
 	/*
 	 * ============================================================
-	 * PAGE TITLE
+	 * TITLE
 	 * ============================================================
 	 */
 
@@ -36,24 +51,18 @@
 
 	/*
 	 * ============================================================
-	 * RED / GREEN SWITCHER
+	 * RED / GREEN BUTTONS
 	 * ============================================================
 	 */
 
 	.divisionButtons {
 		display: flex;
-
 		justify-content: center;
-
 		align-items: center;
-
 		gap: 10px;
-
 		margin: 15px 0 30px;
-
 		position: relative;
-
-		z-index: 10;
+		z-index: 100;
 	}
 
 
@@ -86,20 +95,13 @@
 
 	.divisionButtons a:hover {
 		background-color: var(--eee);
-
 		transform: translateY(-1px);
 	}
 
 
-	/*
-	 * Highlight the division currently being viewed.
-	 */
-
 	.divisionButtons a.active {
 		background-color: var(--blueOne);
-
 		color: #fff;
-
 		border-color: var(--blueOne);
 	}
 
@@ -114,7 +116,6 @@
 
 		h1 {
 			font-size: 1.5em;
-
 			margin-top: 20px;
 		}
 
@@ -126,7 +127,6 @@
 
 		.divisionButtons a {
 			padding: 8px 14px;
-
 			font-size: 0.85em;
 		}
 
@@ -138,11 +138,9 @@
 <div class="holder">
 
 
-	<!--
-		============================================================
-		TITLE
-		============================================================
-	-->
+	<!-- ========================================================
+	     TITLE
+	     ======================================================== -->
 
 	<h1>
 
@@ -153,11 +151,9 @@
 	</h1>
 
 
-	<!--
-		============================================================
-		RED / GREEN SWITCHER
-		============================================================
-	-->
+	<!-- ========================================================
+	     RED / GREEN SWITCHER
+	     ======================================================== -->
 
 	<div class="divisionButtons">
 
@@ -165,9 +161,7 @@
 			href="/standings?division=red"
 			class:active={division === 'red'}
 		>
-
 			🔴 CPL Red
-
 		</a>
 
 
@@ -175,24 +169,20 @@
 			href="/standings?division=green"
 			class:active={division === 'green'}
 		>
-
 			🟢 CPL Green
-
 		</a>
 
 	</div>
 
 
-	<!--
-		============================================================
-		STANDINGS
-		============================================================
-	-->
+	<!-- ========================================================
+	     STANDINGS
+	     ======================================================== -->
 
-<Standings
-    {standingsData}
-    {leagueTeamManagersData}
-    {division}
-/>
+	<Standings
+		{standingsData}
+		{leagueTeamManagersData}
+		{division}
+	/>
 
 </div>
