@@ -1,423 +1,271 @@
 <script>
-    import { tabs } from '$lib/utils/tabs';
-    import Tab, { Icon, Label } from '@smui/tab';
-    import List, { Item, Graphic, Text, Separator } from '@smui/list';
-    import TabBar from '@smui/tab-bar';
-    import { page } from '@sveltejs/kit';
-    import { goto, preloadData } from '@sveltejs/kit';
-    import { enableBlog, managers } from '$lib/utils/leagueInfo';
+	import { tabs } from '$lib/utils/tabs';
+	import Tab, { Icon, Label } from '@smui/tab';
+	import List, { Item, Graphic, Text, Separator } from '@smui/list';
+	import TabBar from '@smui/tab-bar';
+	import { page } from '$app/state';
+	import { goto, preloadData } from '$app/navigation';
+	import { enableBlog, managers } from '$lib/utils/leagueInfo';
 
-    let active = $state(
-        tabs.find(
-            tab =>
-                tab.dest == page.url.pathname ||
-                (
-                    tab.nest &&
-                    tab.children.find(
-                        subTab =>
-                            subTab.dest == page.url.pathname
-                    )
-                )
-        )
-    );
+	let active = $state(tabs.find(tab => tab.dest == page.url.pathname || (tab.nest && tab.children.find(subTab => subTab.dest == page.url.pathname))));
 
-    let display = $state(false);
-    let el = $state();
-    let width = $state();
-    let height = $state();
-    let left = $state();
-    let top = $state();
+	let display = $state(false);
+	let el = $state();
+	let width = $state();
+	let height = $state();
+	let left = $state();
+	let top = $state();
 
-    $effect(() => {
+	$effect(() => {
+		top = el?.getBoundingClientRect() ? el?.getBoundingClientRect().top : 0;
+		const bottom = el?.getBoundingClientRect() ? el?.getBoundingClientRect().bottom : 0;
 
-        top =
-            el?.getBoundingClientRect()
-                ? el.getBoundingClientRect().top
-                : 0;
+		height = bottom - top + 1;
 
-        const bottom =
-            el?.getBoundingClientRect()
-                ? el.getBoundingClientRect().bottom
-                : 0;
+		left = el?.getBoundingClientRect() ? el?.getBoundingClientRect().left : 0;
+		const right = el?.getBoundingClientRect() ? el?.getBoundingClientRect().right : 0;
 
-        height =
-            bottom - top + 1;
+		width = right - left;
+	});
 
-        left =
-            el?.getBoundingClientRect()
-                ? el.getBoundingClientRect().left
-                : 0;
+	let innerWidth = $state();
 
-        const right =
-            el?.getBoundingClientRect()
-                ? el.getBoundingClientRect().right
-                : 0;
+	const open = () => {
+		display = !display;
+	}
 
-        width =
-            right - left;
+	const subGoto = (dest) => {
+		open(false);
+		goto(dest);
+	}
 
-    });
+	let tabChildren = $state([]);
 
-    let innerWidth = $state();
-
-    const open = () => {
-        display = !display;
-    };
-
-    const subGoto = (dest) => {
-        display = false;
-        goto(dest);
-    };
-
-    let tabChildren = $state([]);
-
-    for (const tab of tabs) {
-
-        if (tab.nest) {
-            tabChildren = tab.children;
-        }
-
-    }
+	for(const tab of tabs) {
+		if(tab.nest) {
+			tabChildren = tab.children;
+		}
+	}
 
 </script>
 
-
 <svelte:window bind:innerWidth={innerWidth} />
 
-
 <style>
-
-    /*
-     * ============================================================
-     * NAVIGATION BAR
-     * ============================================================
-     */
-
     :global(.navBar) {
+		display: inline-flex;
+		position: relative;
+    	justify-content: center;
 
-        display: inline-flex;
-
-        position: relative;
-
-        justify-content: center;
-
-        /*
-         * Keep the navigation above page content.
-         */
-        z-index: 10000;
-
+		/*
+		 * Keep the desktop navigation above page content.
+		 */
+		z-index: 10000;
     }
 
+	:global(.navBar .material-icons) {
+		font-size: 1.8em;
+		height: 25px;
+		width: 22px;
+	}
 
-    :global(.navBar .material-icons) {
+	.parent {
+		position: relative;
 
-        font-size: 1.8em;
+		/*
+		 * Keep the complete navigation above
+		 * Power Rankings, team logos, charts, etc.
+		 */
+		z-index: 10000;
+	}
 
-        height: 25px;
+	.subMenu {
+		overflow-y: hidden;
+		display: block;
+		position: absolute;
 
-        width: 22px;
+		/*
+		 * Dropdown needs to be above everything.
+		 */
+		z-index: 10002;
 
-    }
+		background-color: var(--fff);
+		transition: all 0.4s;
+	}
 
+	.overlay {
+		display: block;
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100vh;
 
-    /*
-     * ============================================================
-     * MENU CONTAINER
-     * ============================================================
-     */
+		/*
+		 * Overlay sits above page content but
+		 * below the actual dropdown.
+		 */
+		z-index: 10001;
+	}
 
-    .parent {
+	:global(.mdc-deprecated-list) {
+		padding: 0;
+	}
 
-        position: relative;
+	:global(.subText) {
+		font-size: 0.8em;
+	}
 
-        /*
-         * This is the important fix.
-         */
-        z-index: 10000;
-
-    }
-
-
-    /*
-     * ============================================================
-     * DROPDOWN / SUBMENU
-     * ============================================================
-     */
-
-    .subMenu {
-
-        overflow-y: hidden;
-
-        display: block;
-
-        position: absolute;
-
-        /*
-         * Previously this was only z-index: 5.
-         * Power Rankings was appearing above it.
-         */
-        z-index: 10002;
-
-        background-color: var(--fff);
-
-        transition: all 0.4s;
-
-    }
-
-
-    /*
-     * ============================================================
-     * PAGE OVERLAY
-     * ============================================================
-     */
-
-    .overlay {
-
-        display: block;
-
-        position: absolute;
-
-        top: 0;
-
-        left: 0;
-
-        width: 100%;
-
-        height: 100vh;
-
-        /*
-         * Put overlay below the menu,
-         * but above page content.
-         */
-        z-index: 9999;
-
-    }
-
-
-    :global(.mdc-deprecated-list) {
-
-        padding: 0;
-
-    }
-
-
-    :global(.subText) {
-
-        font-size: 0.8em;
-
-    }
-
-
-    :global(.dontDisplay) {
-
-        display: none;
-
-    }
-
+	:global(.dontDisplay) {
+		display: none;
+	}
 </style>
 
-
-<!--
-    ============================================================
-    PAGE OVERLAY
-    ============================================================
--->
-
 <div
-    tabindex="0"
-    role="button"
-    class="overlay"
-    style="display: {display ? 'block' : 'none'};"
-    onclick={() => open(true)}
+	tabindex="0"
+	role="button"
+	class="overlay"
+	style="display: {display ? "block" : "none"};"
+	onclick={() => open(true)}
 ></div>
-
-
-<!--
-    ============================================================
-    NAVIGATION
-    ============================================================
--->
 
 <div class="parent">
 
-    <TabBar
-        class="navBar"
-        {tabs}
-        key={(tab) => tab.key}
-        bind:active
-    >
+	<TabBar
+		class="navBar"
+		{tabs}
+		key={(tab) => tab.key}
+		bind:active
+	>
 
-        {#snippet tab(tab)}
+		{#snippet tab(tab)}
 
-            {#if tab.nest}
+			{#if tab.nest}
 
-                <div bind:this={el}>
+				<div bind:this={el}>
 
-                    <Tab
-                        {tab}
-                        minWidth
-                        onclick={() => open()}
-                    >
+					<Tab
+						{tab}
+						minWidth
+						onclick={() => open()}
+					>
 
-                        <Icon class="material-icons">
-                            {tab.icon}
-                        </Icon>
+						<Icon class="material-icons">
+							{tab.icon}
+						</Icon>
 
-                        <Label>
-                            {tab.label}
-                        </Label>
+						<Label>
+							{tab.label}
+						</Label>
 
-                    </Tab>
+					</Tab>
 
-                </div>
+				</div>
 
-            {:else}
+			{:else}
 
-                <Tab
-                    class="{tab.label == 'Blog' && !enableBlog
-                        ? 'dontDisplay'
-                        : ''}"
-                    {tab}
-                    onTouchstart={() => preloadData(tab.dest)}
-                    onMouseover={() => preloadData(tab.dest)}
-                    href={tab.dest}
-                    minWidth
-                >
+				<Tab
+					class="{tab.label == 'Blog' && !enableBlog ? 'dontDisplay' : ''}"
+					{tab}
+					onTouchstart={() => preloadData(tab.dest)}
+					onMouseover={() => preloadData(tab.dest)}
+					href={tab.dest}
+					minWidth
+				>
 
-                    <Icon class="material-icons">
-                        {tab.icon}
-                    </Icon>
+					<Icon class="material-icons">
+						{tab.icon}
+					</Icon>
 
-                    <Label>
-                        {tab.label}
-                    </Label>
+					<Label>
+						{tab.label}
+					</Label>
 
-                </Tab>
+				</Tab>
 
-            {/if}
+			{/if}
 
-        {/snippet}
+		{/snippet}
 
-    </TabBar>
+	</TabBar>
 
 
-    <!--
-        ========================================================
-        SUBMENU
-        ========================================================
-    -->
+	<div
+		class="subMenu"
+		style="
+			max-height: {display ? 49 * tabChildren.length - 1 - (managers.length ? 0 : 48) : 0}px;
+			width: {width}px;
+			top: {height}px;
+			left: {left}px;
+			box-shadow: 0 0 {display ? "3px" : "0"} 0 #00316b;
+			border: {display ? "1px" : "0"} solid #00316b;
+			border-top: none;
+		"
+	>
 
-    <div
-        class="subMenu"
-        style="
-            max-height:
-                {display
-                    ? 49 * tabChildren.length - 1 -
-                      (managers.length ? 0 : 48)
-                    : 0}px;
+		<List>
 
-            width: {width}px;
+			{#each tabChildren as subTab, ix}
 
-            top: {height}px;
+				{#if subTab.label == 'Managers'}
 
-            left: {left}px;
+					<Item
+						class="{managers.length ? '' : 'dontDisplay'}"
+						onSMUIAction={() => subGoto(subTab.dest)}
+						ontouchstart={() => preloadData(subTab.dest)}
+						onmouseover={() => preloadData(subTab.dest)}
+					>
 
-            box-shadow:
-                0 0 {display ? '3px' : '0'}
-                0 #00316b;
+						<Graphic class="material-icons">
+							{subTab.icon}
+						</Graphic>
 
-            border:
-                {display ? '1px' : '0'}
-                solid #00316b;
+						<Text class="subText">
+							{subTab.label}
+						</Text>
 
-            border-top: none;
-        "
-    >
+					</Item>
 
-        <List>
+					{#if ix != tabChildren.length - 1}
+						<Separator />
+					{/if}
 
-            {#each tabChildren as subTab, ix}
+				{:else}
 
-                {#if subTab.label == 'Managers'}
+					<Item
+						onSMUIAction={() => subGoto(subTab.dest)}
+						ontouchstart={() => {
+							if(subTab.label != 'Go to Sleeper') {
+								preloadData(subTab.dest);
+							}
+						}}
+						onmouseover={() => {
+							if(subTab.label != 'Go to Sleeper') {
+								preloadData(subTab.dest);
+							}
+						}}
+					>
 
-                    <Item
-                        class="{managers.length
-                            ? ''
-                            : 'dontDisplay'}"
+						<Graphic class="material-icons">
+							{subTab.icon}
+						</Graphic>
 
-                        onSMUIAction={() =>
-                            subGoto(subTab.dest)}
+						<Text class="subText">
+							{subTab.label}
+						</Text>
 
-                        ontouchstart={() =>
-                            preloadData(subTab.dest)}
+					</Item>
 
-                        onmouseover={() =>
-                            preloadData(subTab.dest)}
-                    >
+					{#if ix != tabChildren.length - 1}
+						<Separator />
+					{/if}
 
-                        <Graphic class="material-icons">
-                            {subTab.icon}
-                        </Graphic>
+				{/if}
 
-                        <Text class="subText">
-                            {subTab.label}
-                        </Text>
+			{/each}
 
-                    </Item>
+		</List>
 
-                    {#if ix != tabChildren.length - 1}
-
-                        <Separator />
-
-                    {/if}
-
-                {:else}
-
-                    <Item
-                        onSMUIAction={() =>
-                            subGoto(subTab.dest)}
-
-                        ontouchstart={() => {
-                            if (
-                                subTab.label !=
-                                'Go to Sleeper'
-                            ) {
-                                preloadData(subTab.dest);
-                            }
-                        }}
-
-                        onmouseover={() => {
-                            if (
-                                subTab.label !=
-                                'Go to Sleeper'
-                            ) {
-                                preloadData(subTab.dest);
-                            }
-                        }}
-                    >
-
-                        <Graphic class="material-icons">
-                            {subTab.icon}
-                        </Graphic>
-
-                        <Text class="subText">
-                            {subTab.label}
-                        </Text>
-
-                    </Item>
-
-                    {#if ix != tabChildren.length - 1}
-
-                        <Separator />
-
-                    {/if}
-
-                {/if}
-
-            {/each}
-
-        </List>
-
-    </div>
+	</div>
 
 </div>
