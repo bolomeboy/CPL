@@ -1,9 +1,7 @@
 <script>
-    import { round } from '$lib/utils/helper';
     import { getTeamFromTeamManagers } from '$lib/utils/helperFunctions/universalFunctions';
     import DataTable, { Head, Body, Row, Cell } from '@smui/data-table';
     import LinearProgress from '@smui/linear-progress';
-    import { onMount } from 'svelte';
     import Standing from './Standing.svelte';
 
     export let standingsData;
@@ -11,8 +9,8 @@
     export let division = 'red';
 
 
-    // Least important to most important
-    // The most important usually goes last.
+    // Least important to most important.
+    // The most important tiebreaker goes last.
     const sortOrder = [
         "fptsAgainst",
         "divisionTies",
@@ -23,7 +21,7 @@
     ];
 
 
-    // Column order from left to right
+    // Column order from left to right.
     const columnOrder = [
         { name: "W", field: "wins" },
         { name: "T", field: "ties" },
@@ -39,19 +37,65 @@
 
     let loading = true;
     let preseason = false;
+    let standings = [];
+    let year = null;
+    let leagueTeamManagers = null;
 
-    let standings;
-    let year;
-    let leagueTeamManagers;
+
+    /*
+     * ============================================================
+     * LOAD STANDINGS
+     * ============================================================
+     *
+     * This is intentionally reactive.
+     *
+     * When the URL changes from:
+     *
+     * /standings?division=red
+     *
+     * to:
+     *
+     * /standings?division=green
+     *
+     * SvelteKit provides new standingsData and this
+     * block runs again.
+     */
+
+    $: if (standingsData) {
+
+        loadStandings(
+            standingsData,
+            leagueTeamManagersData
+        );
+
+    }
 
 
-    onMount(async () => {
+    async function loadStandings(
+        standingsPromise,
+        teamManagersPromise
+    ) {
+
+        loading = true;
+        preseason = false;
+
 
         const asyncStandingsData =
-            await standingsData;
+            await standingsPromise;
 
+
+        /*
+         * No standings yet.
+         */
 
         if (!asyncStandingsData) {
+
+            standings = [];
+
+            year = null;
+
+            leagueTeamManagers =
+                await teamManagersPromise;
 
             loading = false;
 
@@ -62,18 +106,31 @@
         }
 
 
+        /*
+         * Get the new standings information.
+         */
+
         const {
             standingsInfo,
             yearData
         } = asyncStandingsData;
 
 
+        /*
+         * Get the managers/teams from the
+         * same Red or Green league.
+         */
+
         leagueTeamManagers =
-            await leagueTeamManagersData;
+            await teamManagersPromise;
 
 
         year = yearData;
 
+
+        /*
+         * Convert standings object into an array.
+         */
 
         let finalStandings =
             Object.keys(standingsInfo)
@@ -83,11 +140,18 @@
                 );
 
 
+        /*
+         * Apply the league's tiebreaker order.
+         */
+
         for (const sortType of sortOrder) {
 
             if (
-                !finalStandings[0][sortType] &&
-                finalStandings[0][sortType] != 0
+                !finalStandings[0] ||
+                (
+                    !finalStandings[0][sortType] &&
+                    finalStandings[0][sortType] != 0
+                )
             ) {
                 continue;
             }
@@ -103,21 +167,19 @@
         }
 
 
+        /*
+         * Replace the displayed standings.
+         */
+
         standings =
             finalStandings;
 
 
         loading = false;
 
-    });
-
-
-    let innerWidth;
+    }
 
 </script>
-
-
-<svelte:window bind:innerWidth={innerWidth} />
 
 
 <style>
@@ -141,12 +203,6 @@
     }
 
 
-    /*
-     * The title is now handled by the
-     * standings route page, so the old
-     * generic title is removed.
-     */
-
     .standingsTable {
         max-width: 100%;
         overflow-x: scroll;
@@ -161,7 +217,11 @@
     <div class="loading">
 
         <p>
-            Loading Standings...
+            Loading
+            {division === 'green'
+                ? 'CPL Green'
+                : 'CPL Red'}
+            Standings...
         </p>
 
         <LinearProgress indeterminate />
@@ -174,7 +234,10 @@
     <div class="loading">
 
         <p>
-            Preseason, No Standings Yet
+            {division === 'green'
+                ? 'CPL Green'
+                : 'CPL Red'}
+            is in preseason. No standings yet.
         </p>
 
     </div>
