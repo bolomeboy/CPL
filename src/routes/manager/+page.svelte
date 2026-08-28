@@ -2,34 +2,75 @@
     import LinearProgress from '@smui/linear-progress';
     import { Manager } from '$lib/components';
     import { goto } from '$app/navigation';
-    import { onMount } from 'svelte';
+    import { page } from '$app/stores';
+
 
     export let data;
 
-    const {
-        manager,
-        managerID,
-        rosterID,
-        year,
-        division,
-        managers,
-        managersInfo
-    } = data;
 
-    onMount(() => {
+    /*
+     * ============================================================
+     * PAGE DATA
+     * ============================================================
+     */
 
-        if (!managerID) {
-            goto('/managers');
-        }
+    $: manager = data.manager;
+    $: managerID = data.managerID;
+    $: rosterID = data.rosterID;
+    $: year = data.year;
+    $: division = data.division;
+    $: managers = data.managers;
+    $: managersInfo = data.managersInfo;
 
-    });
+
+    /*
+     * ============================================================
+     * RED / GREEN DIVISION
+     * ============================================================
+     *
+     * Keep the division from the URL/profile.
+     */
+
+    $: currentDivision =
+        $page.url.searchParams.get('division') === 'green'
+            ? 'green'
+            : division === 'green'
+                ? 'green'
+                : 'red';
+
+
+    /*
+     * ============================================================
+     * NO MANAGER SELECTED
+     * ============================================================
+     */
+
+    $: if (!managerID && $page.url.pathname === '/manager') {
+
+        /*
+         * Only redirect if the page was actually opened
+         * without a manager.
+         */
+        goto(
+            `/managers?division=${currentDivision}`,
+            {
+                replaceState: true
+            }
+        );
+
+    }
+
 </script>
 
+
 <style>
+
     .main {
         position: relative;
         z-index: 1;
+        width: 100%;
     }
+
 
     .loading {
         display: block;
@@ -37,7 +78,17 @@
         max-width: 500px;
         margin: 80px auto;
     }
+
+
+    .error {
+        text-align: center;
+        margin: 80px auto;
+        width: 85%;
+        max-width: 600px;
+    }
+
 </style>
+
 
 <div class="main">
 
@@ -46,32 +97,75 @@
         {#await managersInfo}
 
             <div class="loading">
-                <p>Retrieving manager...</p>
+
+                <p>
+                    Retrieving
+                    {currentDivision === 'green'
+                        ? 'CPL Green'
+                        : 'CPL Red'}
+                    manager...
+                </p>
+
                 <LinearProgress indeterminate />
+
             </div>
 
-        {:then [rostersData, leagueTeamManagers, leagueData, transactionsData, awards, records]}
 
-            <Manager
-                {awards}
-                {records}
-                {manager}
-                {managerID}
-                {rosterID}
-                {year}
-                {division}
-                {managers}
-                {rostersData}
-                {leagueTeamManagers}
-                rosterPositions={leagueData.roster_positions}
-                {transactionsData}
-            />
+        {:then [
+            rostersData,
+            leagueTeamManagers,
+            leagueData,
+            transactionsData,
+            awards,
+            records
+        ]}
+
+            {#key `${managerID}-${currentDivision}`}
+
+                <Manager
+                    {awards}
+                    {records}
+                    {manager}
+                    {managerID}
+                    {rosterID}
+                    {year}
+                    division={currentDivision}
+                    {managers}
+                    {rostersData}
+                    {leagueTeamManagers}
+                    rosterPositions={leagueData.roster_positions}
+                    {transactionsData}
+                />
+
+            {/key}
+
 
         {:catch error}
 
-            <p>Something went wrong: {error.message}</p>
+            <div class="error">
+
+                <p>
+                    Something went wrong:
+                    {error.message}
+                </p>
+
+            </div>
 
         {/await}
+
+
+    {:else if managerID}
+
+        <div class="loading">
+
+            <p>
+                Loading manager...
+            </p>
+
+            <LinearProgress indeterminate />
+
+        </div>
+
 
     {/if}
 
