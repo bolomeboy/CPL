@@ -38,19 +38,9 @@
 
 	const refreshTransactions = async () => {
 
-		const newTransactions =
-			await getLeagueTransactions(
-				false,
-				true,
-				division === 'green'
-					? undefined
-					: undefined
-			);
+	return;
 
-		transactions =
-			newTransactions.transactions;
-
-	};
+};
 
 
 	if (stale) {
