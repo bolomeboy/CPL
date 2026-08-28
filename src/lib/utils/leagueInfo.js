@@ -110,7 +110,7 @@ export const managers = [
         bio: "",
         photo: null,
         fantasyStart: null,
-        favoriteTeam: null,
+        favoriteTeam: "sf",
         mode: null,
         rival: {
             name: null,
@@ -182,7 +182,7 @@ export const managers = [
         bio: "",
         photo: null,
         fantasyStart: null,
-        favoriteTeam: null,
+        favoriteTeam: "buf",
         mode: null,
         rival: {
             name: null,
@@ -206,7 +206,7 @@ export const managers = [
         bio: "",
         photo: null,
         fantasyStart: null,
-        favoriteTeam: null,
+        favoriteTeam: "sf",
         mode: null,
         rival: {
             name: null,
@@ -302,7 +302,7 @@ export const managers = [
         bio: "",
         photo: null,
         fantasyStart: null,
-        favoriteTeam: null,
+        favoriteTeam: "sf",
         mode: null,
         rival: {
             name: null,
@@ -475,7 +475,7 @@ export const managers = [
         bio: "",
         photo: null,
         fantasyStart: null,
-        favoriteTeam: null,
+        favoriteTeam: "lv",
         mode: null,
         rival: {
             name: null,
@@ -499,7 +499,7 @@ export const managers = [
         bio: "",
         photo: null,
         fantasyStart: null,
-        favoriteTeam: null,
+        favoriteTeam: "lv",
         mode: null,
         rival: {
             name: null,
@@ -523,7 +523,7 @@ export const managers = [
         bio: "",
         photo: null,
         fantasyStart: null,
-        favoriteTeam: null,
+        favoriteTeam: "cle",
         mode: null,
         rival: {
             name: null,
@@ -547,7 +547,7 @@ export const managers = [
         bio: "",
         photo: null,
         fantasyStart: null,
-        favoriteTeam: null,
+        favoriteTeam: "pit",
         mode: null,
         rival: {
             name: null,
@@ -571,7 +571,7 @@ export const managers = [
         bio: "",
         photo: null,
         fantasyStart: null,
-        favoriteTeam: null,
+        favoriteTeam: "sf",
         mode: null,
         rival: {
             name: null,
@@ -595,7 +595,7 @@ export const managers = [
         bio: "",
         photo: null,
         fantasyStart: null,
-        favoriteTeam: null,
+        favoriteTeam: "sf",
         mode: null,
         rival: {
             name: null,
@@ -643,7 +643,7 @@ export const managers = [
         bio: "",
         photo: null,
         fantasyStart: null,
-        favoriteTeam: null,
+        favoriteTeam: "sf",
         mode: null,
         rival: {
             name: null,
@@ -667,7 +667,7 @@ export const managers = [
         bio: "",
         photo: null,
         fantasyStart: null,
-        favoriteTeam: null,
+        favoriteTeam: "lv",
         mode: null,
         rival: {
             name: null,
