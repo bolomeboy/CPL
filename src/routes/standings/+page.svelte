@@ -1,5 +1,6 @@
 <script>
 	import { Standings } from '$lib/components';
+	import { goto } from '$app/navigation';
 
 	export let data;
 
@@ -8,6 +9,11 @@
 		leagueTeamManagersData,
 		division
 	} = data;
+
+
+	function switchDivision(newDivision) {
+		goto(`/standings?division=${newDivision}`);
+	}
 </script>
 
 
@@ -21,9 +27,12 @@
 	.divisionSwitcher {
 		display: flex;
 		justify-content: center;
+		align-items: center;
 		gap: 10px;
 		margin: 20px auto 25px;
 		flex-wrap: wrap;
+		position: relative;
+		z-index: 100;
 	}
 
 	.divisionButton {
@@ -37,10 +46,7 @@
 		border-radius: 25px;
 
 		background-color: var(--f3f3f3);
-
 		color: inherit;
-
-		text-decoration: none;
 
 		font-size: 1em;
 		font-weight: 600;
@@ -94,45 +100,29 @@
 
 <div class="holder">
 
-	<!--
-		============================================================
-		RED / GREEN SWITCHER
-		============================================================
-	-->
-
 	<div class="divisionSwitcher">
 
-		<a
+		<button
+			type="button"
 			class="divisionButton {division === 'red' ? 'active' : ''}"
-			href="/standings?division=red"
+			onclick={() => switchDivision('red')}
 		>
-
 			<span class="dot redDot"></span>
-
 			CPL Red
+		</button>
 
-		</a>
 
-
-		<a
+		<button
+			type="button"
 			class="divisionButton {division === 'green' ? 'active' : ''}"
-			href="/standings?division=green"
+			onclick={() => switchDivision('green')}
 		>
-
 			<span class="dot greenDot"></span>
-
 			CPL Green
-
-		</a>
+		</button>
 
 	</div>
 
-
-	<!--
-		============================================================
-		STANDINGS
-		============================================================
-	-->
 
 	<Standings
 		{standingsData}
