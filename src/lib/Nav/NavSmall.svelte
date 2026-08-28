@@ -1,150 +1,594 @@
 <script>
-	import { tabs } from '$lib/utils/tabs';
-	import Drawer, {
-		Content,
-		Header,
-		Title,
-	} from '@smui/drawer';
-	import { Icon } from '@smui/tab';
-	import List, { Item, Text, Graphic, Separator, Subheader } from '@smui/list';
-	import { goto, preloadData } from '$app/navigation';
-	import { page } from '$app/state';
-	import { leagueName } from '$lib/utils/helper';
-	import { enableBlog, managers } from '$lib/utils/leagueInfo';
+    import { tabs } from '$lib/utils/tabs';
 
-	let active = $state(page.url.pathname);
+    import Tab, {
+        Icon,
+        Label
+    } from '@smui/tab';
 
-	let open = $state(false);
+    import List, {
+        Item,
+        Graphic,
+        Text,
+        Separator
+    } from '@smui/list';
 
-	const selectTab = (tab) => {
-		open = false;
-		goto(tab.dest);
-	};
+    import TabBar from '@smui/tab-bar';
 
-	// Tabs that should appear underneath League Info
-	const leagueInfoTabs = ['Promotion & Relegation', 'League Rules'];
+    import { page } from '$app/state';
+
+    import {
+        goto,
+        preloadData
+    } from '$app/navigation';
+
+    import {
+        enableBlog,
+        managers
+    } from '$lib/utils/leagueInfo';
+
+
+    /*
+     * ============================================================
+     * ACTIVE TAB
+     * ============================================================
+     */
+
+    let active = $state(
+        tabs.find(
+            tab =>
+                tab.dest == page.url.pathname ||
+                (
+                    tab.nest &&
+                    tab.children.find(
+                        subTab =>
+                            subTab.dest ==
+                            page.url.pathname
+                    )
+                )
+        )
+    );
+
+
+    /*
+     * ============================================================
+     * MENU STATE
+     * ============================================================
+     */
+
+    let display = $state(false);
+
+
+    /*
+     * ============================================================
+     * MENU POSITION
+     * ============================================================
+     */
+
+    let el = $state();
+
+    let width = $state();
+
+    let height = $state();
+
+    let left = $state();
+
+    let top = $state();
+
+
+    $effect(() => {
+
+        const rect =
+            el?.getBoundingClientRect();
+
+        top =
+            rect
+                ? rect.top
+                : 0;
+
+        const bottom =
+            rect
+                ? rect.bottom
+                : 0;
+
+        height =
+            bottom - top + 1;
+
+        left =
+            rect
+                ? rect.left
+                : 0;
+
+        const right =
+            rect
+                ? rect.right
+                : 0;
+
+        width =
+            right - left;
+
+    });
+
+
+    /*
+     * ============================================================
+     * WINDOW SIZE
+     * ============================================================
+     */
+
+    let innerWidth = $state();
+
+
+    /*
+     * ============================================================
+     * OPEN / CLOSE SUBMENU
+     * ============================================================
+     */
+
+    const open = () => {
+
+        display = !display;
+
+    };
+
+
+    const subGoto = (dest) => {
+
+        display = false;
+
+        goto(dest);
+
+    };
+
+
+    /*
+     * ============================================================
+     * FIND NESTED TAB CHILDREN
+     * ============================================================
+     */
+
+    let tabChildren = $state([]);
+
+    for (const tab of tabs) {
+
+        if (tab.nest) {
+
+            tabChildren =
+                tab.children;
+
+        }
+
+    }
+
 </script>
 
+
+<svelte:window bind:innerWidth={innerWidth} />
+
+
 <style>
-	:global(.menuIcon) {
-		position: absolute;
-		top: 15px;
-		left: 15px;
-		font-size: 2em;
-		color: #888;
-		padding: 6px;
-		cursor: pointer;
-	}
 
-	:global(.menuIcon:hover) {
-		color: #00316b;
-	}
+    /*
+     * ============================================================
+     * MAIN NAVIGATION
+     * ============================================================
+     */
 
-	:global(.nav-drawer) {
-		z-index: 9;
-		top: 0;
-		left: 0;
-	}
+    :global(.navBar) {
 
-	:global(.nav-item) {
-		color: #858585 !important;
-	}
+        display: inline-flex;
 
-	.nav-back {
-		position: fixed;
-		z-index: 8;
-		width: 100vw;
-		height: 100vh;
-		top: 0;
-		left: 0;
-		background-color: rgba(0, 0, 0, 0.32);
-		transition: all 0.7s;
-	}
+        position: relative;
+
+        justify-content: center;
+
+        /*
+         * Keep navigation above page content.
+         */
+        z-index: 10001;
+
+    }
+
+
+    :global(.navBar .material-icons) {
+
+        font-size: 1.8em;
+
+        height: 25px;
+
+        width: 22px;
+
+    }
+
+
+    /*
+     * ============================================================
+     * PARENT
+     * ============================================================
+     */
+
+    .parent {
+
+        position: relative;
+
+        /*
+         * Keep the navigation above things such as
+         * manager logos and Power Rankings graphics.
+         */
+        z-index: 10001;
+
+    }
+
+
+    /*
+     * ============================================================
+     * SUBMENU
+     * ============================================================
+     */
+
+    .subMenu {
+
+        overflow-y: hidden;
+
+        display: block;
+
+        position: absolute;
+
+        /*
+         * This is intentionally very high so that
+         * team/manager images cannot appear over it.
+         */
+        z-index: 10003;
+
+        background-color: var(--fff);
+
+        transition: all 0.4s;
+
+    }
+
+
+    /*
+     * ============================================================
+     * OVERLAY
+     * ============================================================
+     */
+
+    .overlay {
+
+        display: block;
+
+        position: fixed;
+
+        top: 0;
+
+        left: 0;
+
+        width: 100%;
+
+        height: 100vh;
+
+        /*
+         * Overlay sits above page content but
+         * below the navigation submenu.
+         */
+        z-index: 10002;
+
+    }
+
+
+    /*
+     * ============================================================
+     * SMUI LIST
+     * ============================================================
+     */
+
+    :global(.mdc-deprecated-list) {
+
+        padding: 0;
+
+    }
+
+
+    :global(.subText) {
+
+        font-size: 0.8em;
+
+    }
+
+
+    :global(.dontDisplay) {
+
+        display: none;
+
+    }
+
 </style>
 
-<Icon
-	class="material-icons menuIcon"
-	onclick={() => open = true}
-	ripple={false}
-	touch={true}
->
-	menu
-</Icon>
+
+<!--
+    ============================================================
+    BACKGROUND OVERLAY
+    ============================================================
+-->
 
 <div
-	class="nav-back"
-	style="pointer-events: {open ? "visible" : "none"}; opacity: {open ? 1 : 0};"
-	onclick={() => open = false}
+    tabindex="0"
+    role="button"
+    class="overlay"
+
+    style="
+        display:
+            {display ? 'block' : 'none'};
+    "
+
+    onclick={() => open(true)}
 ></div>
 
-<Drawer variant="modal" class="nav-drawer" fixed={true} bind:open>
 
-	<Header>
-		<Title>{leagueName}</Title>
-	</Header>
+<!--
+    ============================================================
+    DESKTOP NAVIGATION
+    ============================================================
+-->
 
-	<Content>
-		<List>
+<div class="parent">
 
-			<!-- Main navigation -->
-			{#each tabs as tab}
-				{#if !tab.nest &&
-					(tab.label != 'Blog' || (tab.label == 'Blog' && enableBlog)) &&
-					!leagueInfoTabs.includes(tab.label)}
+    <TabBar
+        class="navBar"
+        {tabs}
+        key={(tab) => tab.key}
+        bind:active
+    >
 
-					<Item
-						href="javascript:void(0)"
-						onSMUIAction={() => selectTab(tab)}
-						ontouchstart={() => preloadData(tab.dest)}
-						onmouseover={() => preloadData(tab.dest)}
-						activated={active == tab.dest}
-					>
-						<Graphic
-							class="material-icons{active == tab.dest ? "" : " nav-item"}"
-							aria-hidden="true"
-						>
-							{tab.icon}
-						</Graphic>
+        {#snippet tab(tab)}
 
-						<Text class="{active == tab.dest ? "" : "nav-item"}">
-							{tab.label}
-						</Text>
-					</Item>
+            {#if tab.nest}
 
-				{/if}
-			{/each}
+                <div bind:this={el}>
+
+                    <Tab
+                        {tab}
+                        minWidth
+                        onclick={() => open()}
+                    >
+
+                        <Icon class="material-icons">
+                            {tab.icon}
+                        </Icon>
+
+                        <Label>
+                            {tab.label}
+                        </Label>
+
+                    </Tab>
+
+                </div>
+
+            {:else}
+
+                <Tab
+                    class={
+                        tab.label == 'Blog' &&
+                        !enableBlog
+                            ? 'dontDisplay'
+                            : ''
+                    }
+
+                    {tab}
+
+                    onTouchstart={() =>
+                        preloadData(tab.dest)
+                    }
+
+                    onMouseover={() =>
+                        preloadData(tab.dest)
+                    }
+
+                    href={tab.dest}
+
+                    minWidth
+                >
+
+                    <Icon class="material-icons">
+                        {tab.icon}
+                    </Icon>
+
+                    <Label>
+                        {tab.label}
+                    </Label>
+
+                </Tab>
+
+            {/if}
+
+        {/snippet}
+
+    </TabBar>
 
 
-			<!-- League Info section -->
-			<Separator />
-			<Subheader>League Info</Subheader>
+    <!--
+        ========================================================
+        DROPDOWN SUBMENU
+        ========================================================
+    -->
 
-			{#each tabs as tab}
-				{#if leagueInfoTabs.includes(tab.label)}
+    <div
+        class="subMenu"
 
-					<Item
-						href="javascript:void(0)"
-						onSMUIAction={() => selectTab(tab)}
-						ontouchstart={() => preloadData(tab.dest)}
-						onmouseover={() => preloadData(tab.dest)}
-						activated={active == tab.dest}
-					>
-						<Graphic
-							class="material-icons{active == tab.dest ? "" : " nav-item"}"
-							aria-hidden="true"
-						>
-							{tab.icon}
-						</Graphic>
+        style="
+            max-height:
+                {
+                    display
+                        ? 49 *
+                            tabChildren.length -
+                            1 -
+                            (
+                                managers.length
+                                    ? 0
+                                    : 48
+                            )
+                        : 0
+                }px;
 
-						<Text class="{active == tab.dest ? "" : "nav-item"}">
-							{tab.label}
-						</Text>
-					</Item>
+            width:
+                {width}px;
 
-				{/if}
-			{/each}
+            top:
+                {height}px;
 
-		</List>
-	</Content>
+            left:
+                {left}px;
 
-</Drawer>
+            box-shadow:
+                0 0
+                {
+                    display
+                        ? '3px'
+                        : '0'
+                }
+                0
+                #00316b;
+
+            border:
+                {
+                    display
+                        ? '1px'
+                        : '0'
+                }
+                solid
+                #00316b;
+
+            border-top:
+                none;
+        "
+    >
+
+        <List>
+
+            {#each tabChildren as subTab, ix}
+
+                <!--
+                    ====================================================
+                    MANAGERS
+                    ====================================================
+                -->
+
+                {#if subTab.label == 'Managers'}
+
+                    <Item
+                        class={
+                            managers.length
+                                ? ''
+                                : 'dontDisplay'
+                        }
+
+                        onSMUIAction={() =>
+                            subGoto(subTab.dest)
+                        }
+
+                        ontouchstart={() =>
+                            preloadData(subTab.dest)
+                        }
+
+                        onmouseover={() =>
+                            preloadData(subTab.dest)
+                        }
+                    >
+
+                        <Graphic class="material-icons">
+
+                            {subTab.icon}
+
+                        </Graphic>
+
+                        <Text class="subText">
+
+                            {subTab.label}
+
+                        </Text>
+
+                    </Item>
+
+
+                    {#if ix != tabChildren.length - 1}
+
+                        <Separator />
+
+                    {/if}
+
+
+                {:else}
+
+
+                    <!--
+                        ====================================================
+                        OTHER SUBMENU ITEMS
+                        ====================================================
+                    -->
+
+                    <Item
+                        onSMUIAction={() =>
+                            subGoto(subTab.dest)
+                        }
+
+                        ontouchstart={() => {
+
+                            if (
+                                subTab.label !=
+                                'Go to Sleeper'
+                            ) {
+
+                                preloadData(
+                                    subTab.dest
+                                );
+
+                            }
+
+                        }}
+
+                        onmouseover={() => {
+
+                            if (
+                                subTab.label !=
+                                'Go to Sleeper'
+                            ) {
+
+                                preloadData(
+                                    subTab.dest
+                                );
+
+                            }
+
+                        }}
+                    >
+
+                        <Graphic class="material-icons">
+
+                            {subTab.icon}
+
+                        </Graphic>
+
+                        <Text class="subText">
+
+                            {subTab.label}
+
+                        </Text>
+
+                    </Item>
+
+
+                    {#if ix != tabChildren.length - 1}
+
+                        <Separator />
+
+                    {/if}
+
+                {/if}
+
+            {/each}
+
+        </List>
+
+    </div>
+
+</div>
