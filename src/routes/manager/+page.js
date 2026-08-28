@@ -18,15 +18,21 @@ import {
 export async function load({ url }) {
 
     /*
-     * Get the manager ID from the URL.
+     * ============================================================
+     * MANAGER ID
+     * ============================================================
      */
+
     const managerID =
         url?.searchParams?.get('managerID');
 
 
     /*
-     * Optional roster/year information.
+     * ============================================================
+     * OPTIONAL ROSTER / YEAR
+     * ============================================================
      */
+
     const rosterID =
         url?.searchParams?.get('rosterID');
 
@@ -35,9 +41,28 @@ export async function load({ url }) {
 
 
     /*
-     * Find the selected manager in the
-     * custom manager profile list.
+     * ============================================================
+     * DIVISION
+     * ============================================================
+     *
+     * IMPORTANT:
+     *
+     * Use the URL first.
+     *
+     * This prevents the page from automatically falling
+     * back to Red when switching between divisions.
      */
+
+    const urlDivision =
+        url?.searchParams?.get('division');
+
+
+    /*
+     * If the URL explicitly says Green, use Green.
+     * Otherwise use the manager profile's division.
+     * Default to Red.
+     */
+
     const selectedManager =
         managerID
             ? managerProfiles.find(
@@ -48,21 +73,22 @@ export async function load({ url }) {
             : null;
 
 
-    /*
-     * Determine division from the manager profile.
-     *
-     * Green = CPL Green
-     * Red = CPL Red
-     */
     const division =
-        selectedManager?.division === 'green'
+        urlDivision === 'green'
             ? 'green'
-            : 'red';
+            : urlDivision === 'red'
+                ? 'red'
+                : selectedManager?.division === 'green'
+                    ? 'green'
+                    : 'red';
 
 
     /*
-     * Select the correct Sleeper league.
+     * ============================================================
+     * SELECT LEAGUE
+     * ============================================================
      */
+
     const queryLeagueID =
         division === 'green'
             ? segundaLeagueID
@@ -70,8 +96,11 @@ export async function load({ url }) {
 
 
     /*
-     * No manager selected.
+     * ============================================================
+     * NO MANAGER
+     * ============================================================
      */
+
     if (!managerID) {
 
         return {
@@ -86,7 +115,8 @@ export async function load({ url }) {
 
             division,
 
-            managers: managerProfiles,
+            managers:
+                managerProfiles,
 
             managersInfo: null,
 
@@ -98,75 +128,96 @@ export async function load({ url }) {
 
 
     /*
-     * Load the selected manager's league data.
+     * ============================================================
+     * LOAD MANAGER'S LEAGUE DATA
+     * ============================================================
      */
-    const managersInfo = waitForAll(
 
-        getLeagueRosters(
-            queryLeagueID
-        ),
+    const managersInfo =
+        waitForAll(
 
-        getLeagueTeamManagers(
-            queryLeagueID
-        ),
+            getLeagueRosters(
+                queryLeagueID
+            ),
 
-        getLeagueData(
-            queryLeagueID
-        ),
+            getLeagueTeamManagers(
+                queryLeagueID
+            ),
 
-        getLeagueTransactions(
-            false,
-            false,
-            queryLeagueID
-        ),
+            getLeagueData(
+                queryLeagueID
+            ),
 
-        getAwards(
-            queryLeagueID
-        ),
+            getLeagueTransactions(
+                false,
+                false,
+                queryLeagueID
+            ),
 
-        getLeagueRecords(
-            false,
-            queryLeagueID
-        )
+            getAwards(
+                queryLeagueID
+            ),
 
-    );
+            getLeagueRecords(
+                false,
+                queryLeagueID
+            )
+
+        );
 
 
     return {
 
         /*
-         * Keep the actual Sleeper ID.
+         * Actual Sleeper manager ID.
          */
         managerID,
 
+
         /*
-         * Optional roster information.
+         * Roster information if supplied.
          */
         rosterID,
 
+
+        /*
+         * Selected historical year.
+         */
         year:
             yearParam
                 ? parseInt(yearParam)
                 : null,
 
-        division,
 
         /*
-         * IMPORTANT:
-         *
-         * Pass the entire custom manager profile
-         * list to Manager.svelte.
-         *
-         * This is what allows custom names,
-         * locations, favorite teams, etc.
-         * to work.
+         * Red or Green.
          */
-        managers: managerProfiles,
+        division,
 
+
+        /*
+         * Custom manager profiles.
+         */
+        managers:
+            managerProfiles,
+
+
+        /*
+         * Manager component finds the
+         * selected manager from managerID.
+         */
         manager: -1,
 
+
+        /*
+         * All data required by Manager.svelte.
+         */
         managersInfo,
 
+
+        /*
+         * Useful if other components need it.
+         */
         queryLeagueID
 
     };
