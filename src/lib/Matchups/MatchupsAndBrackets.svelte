@@ -1,23 +1,17 @@
 <script>
-    import LinearProgress from '@smui/linear-progress';
-    import MatchupWeeks from './MatchupWeeks.svelte';
-    import Brackets from './Brackets.svelte';
-
+	import LinearProgress from '@smui/linear-progress';
+	import MatchupWeeks from './MatchupWeeks.svelte';
+	import Brackets from './Brackets.svelte';
     import Button, { Group, Label } from '@smui/button';
-
     import { goto } from '$app/navigation';
-    import { page } from '$app/stores';
-
-    import { loadPlayers } from '$lib/utils/helper';
     import { onMount } from 'svelte';
+    import { loadPlayers } from '$lib/utils/helper';
 
-
-    export let queryWeek;
-    export let leagueTeamManagersData;
-    export let matchupsData;
-    export let bracketsData;
-    export let playersData;
-
+	export let queryWeek;
+	export let leagueTeamManagersData;
+	export let matchupsData;
+	export let bracketsData;
+	export let playersData;
 
     let players;
     let matchupWeeks;
@@ -27,25 +21,19 @@
     let brackets;
     let leagueTeamManagers;
 
-
     let loading = true;
 
-
     /*
-     * ============================================================
-     * CURRENT DIVISION
-     * ============================================================
+     * Keep track of which data promises we have loaded.
      *
-     * Read the division directly from the URL.
-     *
-     * This is important because the Matchups page can be
-     * Red or Green.
+     * This is important because the Red and Green leagues
+     * are different leagues and the component needs to
+     * reload when SvelteKit gives it new data.
      */
-
-    $: division =
-        $page.url.searchParams.get('division') === 'green'
-            ? 'green'
-            : 'red';
+    let loadedMatchupsData = null;
+    let loadedBracketsData = null;
+    let loadedLeagueTeamManagersData = null;
+    let loadedPlayersData = null;
 
 
     /*
@@ -54,55 +42,144 @@
      * ============================================================
      */
 
-    onMount(async () => {
+    const loadMatchupData = async () => {
 
         loading = true;
 
-        brackets = await bracketsData;
+        try {
 
-        const matchupsInfo =
-            await matchupsData;
+            const newBrackets =
+                await bracketsData;
 
-        leagueTeamManagers =
-            await leagueTeamManagersData;
+            const matchupsInfo =
+                await matchupsData;
 
-        matchupWeeks =
-            matchupsInfo.matchupWeeks;
+            const newLeagueTeamManagers =
+                await leagueTeamManagersData;
 
-        year =
-            matchupsInfo.year;
-
-        week =
-            matchupsInfo.week;
-
-        regularSeasonLength =
-            matchupsInfo.regularSeasonLength;
+            const playersInfo =
+                await playersData;
 
 
-        const playersInfo =
-            await playersData;
+            /*
+             * Save the newly loaded data.
+             */
 
-        players =
-            playersInfo.players;
+            brackets =
+                newBrackets;
 
-        loading = false;
+            leagueTeamManagers =
+                newLeagueTeamManagers;
 
+            matchupWeeks =
+                matchupsInfo?.matchupWeeks || [];
 
-        /*
-         * Refresh stale player information.
-         */
+            year =
+                matchupsInfo?.year;
 
-        if (playersInfo.stale) {
+            week =
+                matchupsInfo?.week;
 
-            const newPlayersInfo =
-                await loadPlayers(null, true);
+            regularSeasonLength =
+                matchupsInfo?.regularSeasonLength;
+
 
             players =
-                newPlayersInfo.players;
+                playersInfo?.players || [];
+
+
+            /*
+             * Remember which promises/data we loaded.
+             */
+
+            loadedMatchupsData =
+                matchupsData;
+
+            loadedBracketsData =
+                bracketsData;
+
+            loadedLeagueTeamManagersData =
+                leagueTeamManagersData;
+
+            loadedPlayersData =
+                playersData;
+
+
+            loading = false;
+
+
+            /*
+             * Refresh stale player information.
+             */
+
+            if (playersInfo?.stale) {
+
+                const newPlayersInfo =
+                    await loadPlayers(null, true);
+
+                players =
+                    newPlayersInfo.players;
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                'Error loading matchup data:',
+                error
+            );
+
+            loading = false;
 
         }
 
+    };
+
+
+    /*
+     * ============================================================
+     * INITIAL LOAD
+     * ============================================================
+     */
+
+    onMount(() => {
+
+        loadMatchupData();
+
     });
+
+
+    /*
+     * ============================================================
+     * WATCH FOR RED / GREEN DATA CHANGES
+     * ============================================================
+     *
+     * When the route changes from:
+     *
+     * /matchups?division=red
+     *
+     * to:
+     *
+     * /matchups?division=green
+     *
+     * the page can give this component new promises.
+     *
+     * Reload the component's data when that happens.
+     */
+
+    $: if (
+        matchupsData &&
+        (
+            loadedMatchupsData !== matchupsData ||
+            loadedBracketsData !== bracketsData ||
+            loadedLeagueTeamManagersData !== leagueTeamManagersData ||
+            loadedPlayersData !== playersData
+        )
+    ) {
+
+        loadMatchupData();
+
+    }
 
 
     /*
@@ -144,6 +221,23 @@
 
     let selection = 'regular';
 
+
+    /*
+     * ============================================================
+     * CURRENT DIVISION
+     * ============================================================
+     *
+     * We need this here so the week buttons don't accidentally
+     * remove the current division from the URL.
+     */
+
+    import { page } from '$app/stores';
+
+    $: division =
+        $page.url.searchParams.get('division') === 'green'
+            ? 'green'
+            : 'red';
+
 </script>
 
 
@@ -151,22 +245,15 @@
 
     .message {
         display: block;
-
         width: 85%;
-
         max-width: 500px;
-
         margin: 80px auto;
     }
 
-
     .buttonHolder {
         display: flex;
-
         flex-direction: column;
-
         align-items: center;
-
         margin: 3em 0;
     }
 
@@ -174,12 +261,6 @@
 
 
 {#if loading}
-
-    <!--
-        ========================================================
-        LOADING
-        ========================================================
-    -->
 
     <div class="message">
 
@@ -200,12 +281,6 @@
 
     {#if matchupWeeks.length}
 
-        <!--
-            ====================================================
-            MATCHUP TYPE BUTTONS
-            ====================================================
-        -->
-
         <div class="buttonHolder">
 
             <Group variant="outlined">
@@ -214,8 +289,7 @@
 
                 <Button
                     class="selectionButtons"
-                    onclick={() =>
-                        changeSelection('regular')}
+                    onclick={() => changeSelection('regular')}
                     variant={
                         selection == 'regular'
                             ? "raised"
@@ -234,8 +308,7 @@
 
                 <Button
                     class="selectionButtons"
-                    onclick={() =>
-                        changeSelection('champions')}
+                    onclick={() => changeSelection('champions')}
                     variant={
                         selection == 'champions' ||
                         selection == 'losers'
@@ -261,8 +334,7 @@
 
                     <Button
                         class="selectionButtons"
-                        onclick={() =>
-                            changeSelection('champions')}
+                        onclick={() => changeSelection('champions')}
                         variant={
                             selection == 'champions'
                                 ? "raised"
@@ -281,8 +353,7 @@
 
                     <Button
                         class="selectionButtons"
-                        onclick={() =>
-                            changeSelection('losers')}
+                        onclick={() => changeSelection('losers')}
                         variant={
                             selection == 'losers'
                                 ? "raised"
@@ -302,12 +373,6 @@
 
         </div>
 
-
-        <!--
-            ====================================================
-            REGULAR SEASON MATCHUPS
-            ====================================================
-        -->
 
         {#if selection == 'regular'}
 
@@ -337,12 +402,6 @@
 
     {/if}
 
-
-    <!--
-        ========================================================
-        PLAYOFF BRACKETS
-        ========================================================
-    -->
 
     {#if
         brackets?.champs?.bracket?.[0]?.[0]?.[0]?.points &&
