@@ -93,6 +93,10 @@
 	}
 
 
+	/*
+	 * Highlight the current division.
+	 */
+
 	.divisionButtons a.active {
 		background-color: var(--blueOne);
 		color: #fff;
@@ -149,7 +153,7 @@
 
 	<!--
 		============================================================
-		RED / GREEN BUTTONS
+		RED / GREEN SWITCHER
 		============================================================
 	-->
 
@@ -159,7 +163,9 @@
 			href="/standings?division=red"
 			class:active={division === 'red'}
 		>
+
 			🔴 CPL Red
+
 		</a>
 
 
@@ -167,7 +173,9 @@
 			href="/standings?division=green"
 			class:active={division === 'green'}
 		>
+
 			🟢 CPL Green
+
 		</a>
 
 	</div>
@@ -177,15 +185,21 @@
 		============================================================
 		STANDINGS
 		============================================================
-	-->
+		*
+		* The key forces the Standings component to completely
+		* reload when switching between Red and Green.
+		*
+		* This is what fixed the Red -> Green issue.
+		-->
 
-{#key division}
+	{#key division}
 
-    <Standings
-        {standingsData}
-        {leagueTeamManagersData}
-    />
+		<Standings
+			{standingsData}
+			{leagueTeamManagersData}
+			{division}
+		/>
 
-{/key}
+	{/key}
 
 </div>
