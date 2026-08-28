@@ -1,24 +1,124 @@
 <script>
 	import LinearProgress from '@smui/linear-progress';
-	import { TransactionsPage } from '$lib/components'
-    import { waitForAll } from '$lib/utils/helper';
+	import { TransactionsPage } from '$lib/components';
+	import { waitForAll } from '$lib/utils/helper';
+	import { page } from '$app/stores';
 
-    export let data;
-    const {show, query, page, playersData, transactionsData, leagueTeamManagersData} = data;
+
+	/*
+	 * ============================================================
+	 * CURRENT DIVISION
+	 * ============================================================
+	 *
+	 * /transactions?division=red
+	 * /transactions?division=green
+	 */
+
+	$: division =
+		$page.url.searchParams.get('division') === 'green'
+			? 'green'
+			: 'red';
+
+
+	/*
+	 * ============================================================
+	 * PAGE DATA
+	 * ============================================================
+	 */
+
+	export let data;
+
+	$: show = data.show;
+	$: query = data.query;
+	$: pageNumber = data.page;
+	$: playersData = data.playersData;
+	$: transactionsData = data.transactionsData;
+	$: leagueTeamManagersData = data.leagueTeamManagersData;
 
 	const perPage = 10;
+
 </script>
 
+
 <style>
-    #main {
-        position: relative;
-        z-index: 1;
-        display: block;
-        margin: 30px auto;
+
+	#main {
+		position: relative;
+		z-index: 1;
+		display: block;
+		margin: 30px auto;
 		width: 95%;
 		max-width: 1000px;
-        overflow-y: hidden;
-    }
+		overflow-y: hidden;
+	}
+
+
+	/*
+	 * ============================================================
+	 * PAGE TITLE
+	 * ============================================================
+	 */
+
+	h1 {
+		text-align: center;
+		margin: 25px 0 10px;
+		font-size: 1.8em;
+	}
+
+
+	/*
+	 * ============================================================
+	 * RED / GREEN SWITCHER
+	 * ============================================================
+	 */
+
+	.divisionButtons {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		gap: 10px;
+		margin: 15px 0 30px;
+		position: relative;
+		z-index: 10;
+	}
+
+
+	.divisionButtons a {
+		display: inline-block;
+		padding: 9px 18px;
+		border: 1px solid var(--ccc);
+		border-radius: 20px;
+		text-decoration: none;
+		color: inherit;
+		background-color: var(--fff);
+		font-size: 0.95em;
+		font-weight: 600;
+		cursor: pointer;
+
+		transition:
+			background-color 0.15s ease,
+			transform 0.15s ease;
+	}
+
+
+	.divisionButtons a:hover {
+		background-color: var(--eee);
+		transform: translateY(-1px);
+	}
+
+
+	.divisionButtons a.active {
+		background-color: var(--blueOne);
+		color: #fff;
+		border-color: var(--blueOne);
+	}
+
+
+	/*
+	 * ============================================================
+	 * LOADING
+	 * ============================================================
+	 */
 
 	.loading {
 		display: block;
@@ -28,17 +128,151 @@
 		max-width: 500px;
 		margin: 80px auto;
 	}
+
+
+	/*
+	 * ============================================================
+	 * MOBILE
+	 * ============================================================
+	 */
+
+	@media (max-width: 500px) {
+
+		h1 {
+			font-size: 1.5em;
+			margin-top: 20px;
+		}
+
+
+		.divisionButtons {
+			margin-bottom: 25px;
+		}
+
+
+		.divisionButtons a {
+			padding: 8px 14px;
+			font-size: 0.85em;
+		}
+
+	}
+
 </style>
 
+
 <div id="main">
-    {#await waitForAll(transactionsData, playersData, leagueTeamManagersData)}
-        <div class="loading" >
-            <p>Loading league transactions...</p>
-            <LinearProgress indeterminate />
-        </div>
-    {:then [{transactions, currentTeams, stale}, playersInfo, leagueTeamManagers]}
-        <TransactionsPage {playersInfo} {stale} {transactions} {currentTeams} {show} {query} queryPage={page} {perPage} postUpdate={true} {leagueTeamManagers} />
-    {:catch error}
-        <p class="center">Something went wrong: {error.message}</p>
-    {/await}
+
+
+	<!--
+		============================================================
+		TITLE
+		============================================================
+	-->
+
+	<h1>
+
+		{division === 'green'
+			? 'CPL Green Transactions'
+			: 'CPL Red Transactions'}
+
+	</h1>
+
+
+	<!--
+		============================================================
+		RED / GREEN SWITCHER
+		============================================================
+	-->
+
+	<div class="divisionButtons">
+
+		<a
+			href="/transactions?division=red"
+			class:active={division === 'red'}
+		>
+
+			🔴 CPL Red
+
+		</a>
+
+
+		<a
+			href="/transactions?division=green"
+			class:active={division === 'green'}
+		>
+
+			🟢 CPL Green
+
+		</a>
+
+	</div>
+
+
+	<!--
+		============================================================
+		TRANSACTIONS
+		============================================================
+		*
+		* Recreate the transaction component when switching
+		* between CPL Red and CPL Green.
+		-->
+
+	{#key division}
+
+		{#await waitForAll(
+			transactionsData,
+			playersData,
+			leagueTeamManagersData
+		)}
+
+			<div class="loading">
+
+				<p>
+
+					Loading
+					{division === 'green'
+						? 'CPL Green'
+						: 'CPL Red'}
+					transactions...
+
+				</p>
+
+				<LinearProgress indeterminate />
+
+			</div>
+
+
+		{:then [
+			transactionResult,
+			playersInfo,
+			leagueTeamManagers
+		]}
+
+			<TransactionsPage
+				{playersInfo}
+				stale={transactionResult.stale}
+				transactions={transactionResult.transactions}
+				currentTeams={transactionResult.currentTeams}
+				{show}
+				{query}
+				queryPage={pageNumber}
+				{perPage}
+				postUpdate={true}
+				{leagueTeamManagers}
+				{division}
+			/>
+
+
+		{:catch error}
+
+			<p class="center">
+
+				Something went wrong:
+				{error.message}
+
+			</p>
+
+		{/await}
+
+	{/key}
+
 </div>
