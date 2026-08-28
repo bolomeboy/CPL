@@ -21,11 +21,7 @@
 	import { page } from '$app/state';
 
 	import { leagueName } from '$lib/utils/helper';
-
-	import {
-		enableBlog,
-		managers
-	} from '$lib/utils/leagueInfo';
+	import { enableBlog, managers } from '$lib/utils/leagueInfo';
 
 
 	let active = $state(page.url.pathname);
@@ -42,10 +38,7 @@
 	};
 
 
-	/*
-	 * Tabs that should appear underneath
-	 * League Info.
-	 */
+	// Tabs that should appear underneath League Info
 	const leagueInfoTabs = [
 		'Promotion & Relegation',
 		'League Rules'
@@ -64,7 +57,7 @@
 
 	:global(.menuIcon) {
 
-		position: absolute;
+		position: fixed;
 
 		top: 15px;
 
@@ -79,9 +72,10 @@
 		cursor: pointer;
 
 		/*
-		 * Keep the hamburger above page content.
+		 * Extremely high so team logos/charts
+		 * cannot cover the hamburger.
 		 */
-		z-index: 10001;
+		z-index: 999999 !important;
 
 	}
 
@@ -95,21 +89,51 @@
 
 	/*
 	 * ============================================================
-	 * MOBILE DRAWER
+	 * SMUI DRAWER
 	 * ============================================================
 	 */
 
 	:global(.nav-drawer) {
 
-		/*
-		 * Keep the drawer above the page,
-		 * Power Rankings, team logos, etc.
-		 */
-		z-index: 10003;
+		position: fixed !important;
 
-		top: 0;
+		top: 0 !important;
 
-		left: 0;
+		left: 0 !important;
+
+		z-index: 1000000 !important;
+
+	}
+
+
+	/*
+	 * Make sure the actual drawer content
+	 * also sits above page content.
+	 */
+
+	:global(.nav-drawer .mdc-drawer) {
+
+		z-index: 1000000 !important;
+
+	}
+
+
+	:global(.nav-drawer .mdc-drawer__content) {
+
+		z-index: 1000001 !important;
+
+	}
+
+
+	/*
+	 * ============================================================
+	 * DRAWER SCRIM
+	 * ============================================================
+	 */
+
+	:global(.mdc-drawer-scrim) {
+
+		z-index: 999998 !important;
 
 	}
 
@@ -137,19 +161,18 @@
 
 		position: fixed;
 
-		/*
-		 * Above page content but below
-		 * the actual drawer.
-		 */
-		z-index: 10002;
+		top: 0;
+
+		left: 0;
 
 		width: 100vw;
 
 		height: 100vh;
 
-		top: 0;
-
-		left: 0;
+		/*
+		 * Above the website content.
+		 */
+		z-index: 999997;
 
 		background-color:
 			rgba(0, 0, 0, 0.32);
@@ -163,7 +186,7 @@
 
 <!--
 	============================================================
-	MOBILE HAMBURGER BUTTON
+	MOBILE HAMBURGER
 	============================================================
 -->
 
@@ -191,7 +214,7 @@
 
 	style="
 		pointer-events:
-			{open ? 'visible' : 'none'};
+			{open ? 'auto' : 'none'};
 
 		opacity:
 			{open ? 1 : 0};
@@ -244,9 +267,7 @@
 							enableBlog
 						)
 					) &&
-					!leagueInfoTabs.includes(
-						tab.label
-					)
+					!leagueInfoTabs.includes(tab.label)
 				}
 
 					<Item
@@ -318,9 +339,7 @@
 
 			{#each tabs as tab}
 
-				{#if leagueInfoTabs.includes(
-					tab.label
-				)}
+				{#if leagueInfoTabs.includes(tab.label)}
 
 					<Item
 						href="javascript:void(0)"
