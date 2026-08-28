@@ -179,9 +179,13 @@
 		============================================================
 	-->
 
-	<Standings
-		{standingsData}
-		{leagueTeamManagersData}
-	/>
+{#key division}
+
+    <Standings
+        {standingsData}
+        {leagueTeamManagersData}
+    />
+
+{/key}
 
 </div>
