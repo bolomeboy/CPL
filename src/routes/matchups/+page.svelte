@@ -14,7 +14,7 @@
         segundaLeagueID
     } from '$lib/utils/leagueInfo';
 
-    import MatchupsAndBrackets from '$lib/components/MatchupsAndBrackets.svelte';
+    import { MatchupsAndBrackets } from '$lib/components';
 
     import { page } from '$app/stores';
 
@@ -23,9 +23,6 @@
      * ============================================================
      * DETERMINE DIVISION FROM URL
      * ============================================================
-     *
-     * /matchups?division=red
-     * /matchups?division=green
      */
 
     $: division =
@@ -48,14 +45,10 @@
 
     /*
      * ============================================================
-     * WEEK SELECTOR
+     * CURRENT WEEK
      * ============================================================
      *
-     * Keep the week from the URL.
-     *
-     * Example:
-     *
-     * /matchups?division=red&week=3
+     * Keeps the existing week selector working.
      */
 
     $: queryWeek =
@@ -67,7 +60,8 @@
      * LOAD THE CORRECT LEAGUE DATA
      * ============================================================
      *
-     * This updates when Red/Green changes.
+     * This follows the same reactive approach as
+     * the working Power Rankings page.
      */
 
     $: helperPromises = waitForAll(
@@ -106,7 +100,7 @@
 
     /*
      * ============================================================
-     * RED / GREEN SWITCHER
+     * RED / GREEN BUTTONS
      * ============================================================
      */
 
@@ -114,9 +108,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-
         gap: 10px;
-
         margin: 20px 0 30px;
     }
 
