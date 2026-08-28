@@ -189,9 +189,10 @@
 		============================================================
 	-->
 
-	<Standings
-		{standingsData}
-		{leagueTeamManagersData}
-	/>
+<Standings
+    {standingsData}
+    {leagueTeamManagersData}
+    {division}
+/>
 
 </div>
