@@ -45,108 +45,127 @@
 
     function buildSleeperManager(id) {
 
-        const sleeperUser =
-            leagueTeamManagers?.users?.[id];
+    const sleeperUser =
+        leagueTeamManagers?.users?.[id];
 
-        const profile =
-            managers?.find(
-                manager =>
-                    String(manager.managerID) ===
-                    String(id)
-            );
-
-
-        /*
-         * Make sure custom manager photos work whether the profile
-         * contains:
-         *
-         * /managers/name.jpg
-         *
-         * or
-         *
-         * managers/name.jpg
-         */
-
-        let photo =
-            profile?.photo || null;
+    const profile =
+        managers?.find(
+            manager =>
+                String(manager.managerID) ===
+                String(id)
+        );
 
 
-        if (photo && !photo.startsWith('/')) {
-            photo = `/${photo}`;
-        }
+    /*
+     * ============================================================
+     * MANAGER PHOTO
+     * ============================================================
+     *
+     * Priority:
+     *
+     * 1. Custom manager photo
+     * 2. Sleeper avatar
+     * 3. Question-mark fallback
+     */
+
+    let photo = null;
 
 
-        /*
-         * If there is no custom photo, use the Sleeper avatar.
-         */
+    if (profile?.photo) {
 
-        if (!photo) {
-
-            if (sleeperUser?.metadata?.avatar) {
-
-                photo =
-                    sleeperUser.metadata.avatar;
-
-            } else if (sleeperUser?.avatar) {
-
-                photo =
-                    `https://sleepercdn.com/avatars/thumbs/${sleeperUser.avatar}`;
-
-            } else {
-
-                photo =
-                    '/managers/question.jpg';
-
-            }
-
-        }
-
-
-        return {
-
-            ...(profile || {}),
-
-            managerID:
-                String(id),
-
-            name:
-                profile?.name ||
-                sleeperUser?.display_name ||
-                sleeperUser?.user_name ||
-                'Unknown Manager',
-
-            photo,
-
-            location:
-                profile?.location || null,
-
-            fantasyStart:
-                profile?.fantasyStart || null,
-
-            favoriteTeam:
-                profile?.favoriteTeam || null,
-
-            preferredContact:
-                profile?.preferredContact || null,
-
-            bio:
-                profile?.bio || '',
-
-            philosophy:
-                profile?.philosophy || '',
-
-            rival:
-                profile?.rival || null,
-
-            mode:
-                profile?.mode || null,
-
-            tookOver:
-                profile?.tookOver || null
-
-        };
+        photo = profile.photo;
 
     }
+
+
+    /*
+     * If there is no custom photo,
+     * use the manager's Sleeper avatar.
+     */
+
+    if (!photo && sleeperUser?.avatar) {
+
+        photo =
+            `https://sleepercdn.com/avatars/thumbs/${sleeperUser.avatar}`;
+
+    }
+
+
+    /*
+     * Final fallback.
+     */
+
+    if (!photo) {
+
+        photo =
+            '/managers/question.jpg';
+
+    }
+
+
+    /*
+     * Fix custom photos that don't already
+     * start with a slash or full URL.
+     */
+
+    if (
+        photo &&
+        !photo.startsWith('/') &&
+        !photo.startsWith('http://') &&
+        !photo.startsWith('https://')
+    ) {
+
+        photo =
+            `/${photo}`;
+
+    }
+
+
+    return {
+
+        ...(profile || {}),
+
+        managerID:
+            String(id),
+
+        name:
+            profile?.name ||
+            sleeperUser?.display_name ||
+            sleeperUser?.user_name ||
+            'Unknown Manager',
+
+        photo,
+
+        location:
+            profile?.location || null,
+
+        fantasyStart:
+            profile?.fantasyStart || null,
+
+        favoriteTeam:
+            profile?.favoriteTeam || null,
+
+        preferredContact:
+            profile?.preferredContact || null,
+
+        bio:
+            profile?.bio || '',
+
+        philosophy:
+            profile?.philosophy || '',
+
+        rival:
+            profile?.rival || null,
+
+        mode:
+            profile?.mode || null,
+
+        tookOver:
+            profile?.tookOver || null
+
+    };
+
+}
 
 
     /*
@@ -771,10 +790,10 @@
 
 
         <img
-            class="managerPhoto"
-            src={managerPhoto}
-            alt="manager"
-        />
+    class="managerPhoto"
+    src={managerPhoto}
+    alt={viewManager?.name || 'manager'}
+/>
 
 
         <h2>
