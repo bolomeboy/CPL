@@ -21,9 +21,13 @@
     let rosterID = null;
     let year = null;
 
+
     /*
-     * Find the manager's current roster.
+     * ============================================================
+     * FIND MANAGER ROSTER
+     * ============================================================
      */
+
     if (managerID && leagueTeamManagers) {
 
         const dates =
@@ -43,23 +47,35 @@
             );
 
         if (rosterInfo) {
-            rosterID = rosterInfo.rosterID;
-            year = rosterInfo.year;
+
+            rosterID =
+                rosterInfo.rosterID;
+
+            year =
+                rosterInfo.year;
+
         }
+
     }
 
 
     /*
-     * Commissioner
+     * ============================================================
+     * COMMISSIONER
+     * ============================================================
      */
+
     const commissioner =
         manager?.is_owner === true ||
         leagueTeamManagers?.users?.[managerID]?.is_owner === true;
 
 
     /*
-     * Team name
+     * ============================================================
+     * TEAM NAME
+     * ============================================================
      */
+
     const teamName =
         rosterID !== null &&
         year !== null
@@ -72,35 +88,116 @@
 
 
     /*
-     * Manager photo
+     * ============================================================
+     * TEAM LOGO
+     * ============================================================
+     *
+     * This is the team's logo, NOT the manager's personal avatar.
      */
+
     const managerPhoto =
-    manager?.photo ||
-    manager?.sleeperAvatar ||
-    manager?.metadata?.avatar ||
-    (
-        manager?.avatar
-            ? `https://sleepercdn.com/avatars/thumbs/${manager.avatar}`
-            : '/managers/question.jpg'
-    );
+        manager?.photo ||
+        manager?.sleeperAvatar ||
+        manager?.metadata?.avatar ||
+        (
+            manager?.avatar
+                ? `https://sleepercdn.com/avatars/thumbs/${manager.avatar}`
+                : '/managers/question.jpg'
+        );
 
 
     /*
-     * CPL division logo
+     * ============================================================
+     * CPL DIVISION
+     * ============================================================
      */
-    const divisionLogo =
+
+    const division =
         manager?.division === 'green'
-            ? '/CPL-Green-logo.png'
+            ? 'green'
+            : 'red';
+
+
+    const divisionLogo =
+        division === 'green'
+            ? '/CPL-Green-Logo.png'
             : '/CPL-Red-logo.png';
 
 
+    const divisionName =
+        division === 'green'
+            ? 'Green'
+            : 'Red';
+
+
     /*
-     * Open manager profile
+     * ============================================================
+     * FAVORITE NFL TEAM ABBREVIATION
+     * ============================================================
+     *
+     * These are the Sleeper NFL team IDs converted to the
+     * familiar abbreviations shown underneath the logo.
      */
+
+    const nflTeamAbbreviations = {
+
+        ARI: 'ARI',
+        ATL: 'ATL',
+        BAL: 'BAL',
+        BUF: 'BUF',
+        CAR: 'CAR',
+        CHI: 'CHI',
+        CIN: 'CIN',
+        CLE: 'CLE',
+        DAL: 'DAL',
+        DEN: 'DEN',
+        DET: 'DET',
+        GB: 'GB',
+        HOU: 'HOU',
+        IND: 'IND',
+        JAX: 'JAX',
+        KC: 'KC',
+        LAC: 'LAC',
+        LAR: 'LAR',
+        LV: 'LV',
+        MIA: 'MIA',
+        MIN: 'MIN',
+        NE: 'NE',
+        NO: 'NO',
+        NYG: 'NYG',
+        NYJ: 'NYJ',
+        PHI: 'PHI',
+        PIT: 'PIT',
+        SEA: 'SEA',
+        SF: 'SF',
+        TB: 'TB',
+        TEN: 'TEN',
+        WAS: 'WAS'
+
+    };
+
+
+    const favoriteTeamAbbreviation =
+        manager?.favoriteTeam
+            ? (
+                nflTeamAbbreviations[
+                    manager.favoriteTeam
+                ] ||
+                manager.favoriteTeam
+            )
+            : null;
+
+
+    /*
+     * ============================================================
+     * OPEN MANAGER PROFILE
+     * ============================================================
+     */
+
     function openManager() {
 
         goto(
-            `/manager?managerID=${encodeURIComponent(managerID)}&division=${encodeURIComponent(manager.division)}`
+            `/manager?managerID=${encodeURIComponent(managerID)}&division=${encodeURIComponent(division)}`
         );
 
     }
@@ -131,6 +228,12 @@
         background-color: var(--eee);
     }
 
+
+    /*
+     * ============================================================
+     * MAIN TEAM LOGO
+     * ============================================================
+     */
 
     .photo {
         height: 40px;
@@ -168,6 +271,12 @@
     }
 
 
+    /*
+     * ============================================================
+     * INFO AREA
+     * ============================================================
+     */
+
     .info {
         display: flex;
         align-items: center;
@@ -201,11 +310,33 @@
     }
 
 
+    /*
+     * ============================================================
+     * LABEL UNDER EACH LOGO
+     * ============================================================
+     */
+
+    .infoLabel {
+        display: block;
+        margin-top: 3px;
+        font-size: 0.72em;
+        line-height: 1em;
+        font-weight: 600;
+        color: var(--g555);
+    }
+
+
     .avatarHolder {
         display: inline-flex;
         position: relative;
     }
 
+
+    /*
+     * ============================================================
+     * COMMISSIONER BADGE
+     * ============================================================
+     */
 
     .commissionerBadge {
         display: flex;
@@ -231,6 +362,7 @@
             margin-left: 0.5em;
         }
 
+
         .team {
             font-size: 0.8em;
             margin-left: 0.5em;
@@ -247,11 +379,13 @@
             border-radius: 1.5em;
         }
 
+
         .photo {
             height: 30px;
             width: 30px;
             margin-left: 0.5em;
         }
+
 
         .commissionerBadge {
             height: 15px;
@@ -259,19 +393,27 @@
             font-size: 0.8em;
         }
 
+
         .infoSlot {
             margin: 0 0.4em;
             width: 56px;
         }
+
 
         .infoIcon {
             height: 30px;
             width: 30px;
         }
 
+
         .infoImg {
             height: 25px;
             width: 25px;
+        }
+
+
+        .infoLabel {
+            font-size: 0.65em;
         }
 
     }
@@ -284,29 +426,39 @@
             margin-left: 0.4em;
         }
 
+
         .team {
             font-size: 0.7em;
             margin-left: 0.4em;
         }
+
 
         .photo {
             height: 25px;
             width: 25px;
         }
 
+
         .infoSlot {
             margin: 0 0.4em;
             width: 49px;
         }
+
 
         .infoIcon {
             height: 25px;
             width: 25px;
         }
 
+
         .infoImg {
             height: 22px;
             width: 22px;
+        }
+
+
+        .infoLabel {
+            font-size: 0.6em;
         }
 
     }
@@ -314,8 +466,26 @@
 
     @media (max-width: 370px) {
 
-        .infoTeam {
-            display: none;
+        .infoSlot {
+            margin: 0 0.2em;
+            width: 43px;
+        }
+
+
+        .infoIcon {
+            height: 23px;
+            width: 23px;
+        }
+
+
+        .infoImg {
+            height: 20px;
+            width: 20px;
+        }
+
+
+        .infoLabel {
+            font-size: 0.55em;
         }
 
     }
@@ -332,20 +502,27 @@
 >
 
 
-    <!-- MANAGER PHOTO -->
+    <!-- ========================================================
+         TEAM LOGO
+         ======================================================== -->
 
     <div class="avatarHolder">
 
         <img
             class="photo"
             src={managerPhoto}
-            alt={manager.name}
+            alt="team logo"
         />
+
 
         {#if commissioner}
 
             <div class="commissionerBadge">
-                <span>C</span>
+
+                <span>
+                    C
+                </span>
+
             </div>
 
         {/if}
@@ -353,14 +530,18 @@
     </div>
 
 
-    <!-- CUSTOM MANAGER NAME -->
+    <!-- ========================================================
+         MANAGER NAME
+         ======================================================== -->
 
     <div class="name">
         {manager.name}
     </div>
 
 
-    <!-- TEAM NAME -->
+    <!-- ========================================================
+         TEAM NAME
+         ======================================================== -->
 
     <div class="team">
         {teamName}
@@ -370,12 +551,16 @@
     <div class="spacer"></div>
 
 
-    <!-- INFO -->
+    <!-- ========================================================
+         INFO
+         ======================================================== -->
 
     <div class="info">
 
 
-        <!-- FAVORITE NFL TEAM -->
+        <!-- ====================================================
+             FAVORITE NFL TEAM
+             ==================================================== -->
 
         {#if manager.favoriteTeam}
 
@@ -391,12 +576,19 @@
 
                 </div>
 
+
+                <span class="infoLabel">
+                    {favoriteTeamAbbreviation}
+                </span>
+
             </div>
 
         {/if}
 
 
-        <!-- CPL DIVISION -->
+        <!-- ====================================================
+             CPL DIVISION
+             ==================================================== -->
 
         <div class="infoSlot">
 
@@ -405,14 +597,17 @@
                 <img
                     class="infoImg"
                     src={divisionLogo}
-                    alt={
-                        manager.division === 'green'
-                            ? 'CPL Green'
-                            : 'CPL Red'
-                    }
+                    alt={division === 'green'
+                        ? 'CPL Green'
+                        : 'CPL Red'}
                 />
 
             </div>
+
+
+            <span class="infoLabel">
+                {divisionName}
+            </span>
 
         </div>
 
