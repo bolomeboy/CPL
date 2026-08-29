@@ -120,7 +120,7 @@
 
     const divisionLogo =
         division === 'green'
-            ? '/CPL-Green-Logo.png'
+            ? '/CPL-Green-logo.png'
             : '/CPL-Red-logo.png';
 
 
