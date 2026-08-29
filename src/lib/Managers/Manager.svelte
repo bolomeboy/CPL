@@ -161,18 +161,11 @@
      */
 
     $: viewManager =
-        managerID
-            ? (
-                managers?.find(
-                    m =>
-                        String(m.managerID) ===
-                        String(managerID)
-                ) ||
-                buildSleeperManager(
-                    String(managerID)
-                )
-            )
-            : managers?.[manager];
+    managerID
+        ? buildSleeperManager(
+            String(managerID)
+        )
+        : managers?.[manager];
 
 
     /*
@@ -183,45 +176,55 @@
 
     $: managerPhoto = (() => {
 
+    /*
+     * 1. Custom CPL manager photo
+     */
+    if (viewManager?.photo) {
+
         let photo =
-            viewManager?.photo;
-
-
-        if (!photo) {
-
-            return '/managers/question.jpg';
-
-        }
-
-
-        /*
-         * Custom photos stored in manager profiles.
-         */
+            viewManager.photo;
 
         if (
-            photo.startsWith('/') ||
-            photo.startsWith('http://') ||
-            photo.startsWith('https://')
+            !photo.startsWith('/') &&
+            !photo.startsWith('http://') &&
+            !photo.startsWith('https://')
         ) {
 
-            return photo;
+            photo =
+                `/${photo}`;
 
         }
 
+        return photo;
 
-        /*
-         * Convert:
-         *
-         * managers/name.jpg
-         *
-         * into:
-         *
-         * /managers/name.jpg
-         */
+    }
 
-        return `/${photo}`;
 
-    })();
+    /*
+     * 2. Sleeper avatar
+     *
+     * viewManager.managerID is the real
+     * Sleeper user ID.
+     */
+    const sleeperUser =
+        leagueTeamManagers?.users?.[
+            String(viewManager?.managerID)
+        ];
+
+
+    if (sleeperUser?.avatar) {
+
+        return `https://sleepercdn.com/avatars/thumbs/${sleeperUser.avatar}`;
+
+    }
+
+
+    /*
+     * 3. Final fallback
+     */
+    return '/managers/question.jpg';
+
+})();
 
 
     /*
