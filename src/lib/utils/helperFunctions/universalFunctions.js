@@ -71,55 +71,37 @@ const max = (stats, roundOverride) => {
 
 export const gotoManager = ({
     leagueTeamManagers,
-    managerID,
-    rosterID,
-    year,
+    managerID = null,
+    rosterID = null,
+    year = null,
     division = null
 }) => {
 
     /*
-     * We need the league/team manager data to
-     * determine which manager owns the roster.
+     * ============================================================
+     * BASIC VALIDATION
+     * ============================================================
      */
-    if(!leagueTeamManagers) {
+
+    if (!leagueTeamManagers) {
+
         goto('/managers');
+
         return;
+
     }
 
 
     /*
-     * Use the current season if no year was supplied.
+     * ============================================================
+     * NORMALIZE IDS
+     * ============================================================
      */
-    if(
-        !year ||
-        year > leagueTeamManagers.currentSeason
-    ) {
-        year =
-            leagueTeamManagers.currentSeason;
-    }
-
-
-    const yearManagers =
-        leagueTeamManagers
-            ?.teamManagersMap
-            ?.[year];
-
-
-    /*
-     * If there is no manager data for this year,
-     * fall back to the Managers page.
-     */
-    if(!yearManagers) {
-        goto('/managers');
-        return;
-    }
-
 
     let selectedManagerID =
-        managerID
+        managerID != null
             ? String(managerID)
             : null;
-
 
     let selectedRosterID =
         rosterID != null
@@ -129,45 +111,105 @@ export const gotoManager = ({
 
     /*
      * ============================================================
-     * MANAGER ID -> ROSTER ID
+     * FIND ROSTER FROM MANAGER
      * ============================================================
+     *
+     * If a page gives us a managerID, search every season
+     * instead of relying only on the current season.
+     *
+     * This is especially important for historical records.
      */
 
-    if(selectedManagerID) {
+    if (
+        selectedManagerID &&
+        !selectedRosterID
+    ) {
 
-        for(
-            const currentRosterID
-            in yearManagers
+        const years =
+            Object.keys(
+                leagueTeamManagers.teamManagersMap || {}
+            )
+            .sort(
+                (a, b) =>
+                    Number(b) - Number(a)
+            );
+
+
+        for (
+            const currentYear
+            of years
         ) {
 
-            const rosterData =
-                yearManagers[
-                    currentRosterID
-                ];
+            const yearManagers =
+                leagueTeamManagers
+                    .teamManagersMap?.[
+                        currentYear
+                    ];
 
 
-            if(!rosterData?.managers) {
+            if (!yearManagers) {
                 continue;
             }
 
 
-            const managerIDs =
-                rosterData.managers.map(
-                    id => String(id)
-                );
-
-
-            if(
-                managerIDs.includes(
-                    selectedManagerID
-                )
+            for (
+                const currentRosterID
+                in yearManagers
             ) {
 
-                selectedRosterID =
-                    String(currentRosterID);
+                const rosterData =
+                    yearManagers[
+                        currentRosterID
+                    ];
 
+
+                if (
+                    !rosterData?.managers
+                ) {
+                    continue;
+                }
+
+
+                const managerIDs =
+                    rosterData.managers.map(
+                        id =>
+                            String(id)
+                    );
+
+
+                if (
+                    managerIDs.includes(
+                        selectedManagerID
+                    )
+                ) {
+
+                    selectedRosterID =
+                        String(
+                            currentRosterID
+                        );
+
+                    /*
+                     * Only use the supplied year if there
+                     * wasn't already a historical year.
+                     */
+                    if (!year) {
+
+                        year =
+                            Number(
+                                currentYear
+                            );
+
+                    }
+
+                    break;
+
+                }
+
+            }
+
+
+            if (selectedRosterID) {
                 break;
-
             }
 
         }
@@ -177,58 +219,114 @@ export const gotoManager = ({
 
     /*
      * ============================================================
-     * ROSTER ID -> MANAGER ID
+     * FIND MANAGER FROM ROSTER
      * ============================================================
      *
-     * Most pages such as Standings and Records call:
-     *
-     * gotoManager({
-     *     leagueTeamManagers,
-     *     rosterID
-     * })
-     *
-     * So we need to determine the manager from
-     * that roster.
+     * This is what standings, rosters, transactions,
+     * awards, records, etc. normally use.
      */
 
-    if(
+    if (
         !selectedManagerID &&
-        selectedRosterID &&
-        yearManagers[selectedRosterID]
+        selectedRosterID
     ) {
 
-        const rosterData =
-            yearManagers[
-                selectedRosterID
-            ];
+        const years =
+            Object.keys(
+                leagueTeamManagers.teamManagersMap || {}
+            )
+            .sort(
+                (a, b) =>
+                    Number(b) - Number(a)
+            );
 
 
-        if(
-            rosterData?.managers &&
-            rosterData.managers.length
+        /*
+         * If a year was supplied, try that year first.
+         */
+        const orderedYears =
+            year
+                ? [
+                    String(year),
+                    ...years.filter(
+                        currentYear =>
+                            String(currentYear) !==
+                            String(year)
+                    )
+                ]
+                : years;
+
+
+        for (
+            const currentYear
+            of orderedYears
         ) {
 
+            const yearManagers =
+                leagueTeamManagers
+                    .teamManagersMap?.[
+                        currentYear
+                    ];
+
+
+            if (!yearManagers) {
+                continue;
+            }
+
+
+            const rosterData =
+                yearManagers[
+                    selectedRosterID
+                ];
+
+
+            if (
+                !rosterData?.managers?.length
+            ) {
+                continue;
+            }
+
+
+            /*
+             * Use the first manager on the roster.
+             *
+             * This is the original site's behavior
+             * for co-owned teams as well.
+             */
             selectedManagerID =
                 String(
                     rosterData.managers[0]
                 );
 
+
+            if (!year) {
+
+                year =
+                    Number(
+                        currentYear
+                    );
+
+            }
+
+
+            break;
+
         }
 
     }
 
 
     /*
-     * If we still couldn't find a manager,
-     * go to the Managers page instead of opening
-     * an invalid manager.
+     * ============================================================
+     * IF WE STILL DON'T HAVE A MANAGER
+     * ============================================================
      */
 
-    if(!selectedManagerID) {
+    if (!selectedManagerID) {
 
         goto(
             division
-                ? `/managers?division=${division}`
+                ? `/managers?division=${encodeURIComponent(division)}`
                 : '/managers'
         );
 
@@ -242,17 +340,19 @@ export const gotoManager = ({
      * DETERMINE DIVISION
      * ============================================================
      *
-     * If the calling page already knows the division,
-     * preserve it.
-     *
-     * Otherwise look at the manager profile.
+     * Prefer an explicitly supplied division.
+     * Otherwise use the custom CPL manager profile.
      */
 
     let selectedDivision =
-        division;
+        division === 'green'
+            ? 'green'
+            : division === 'red'
+                ? 'red'
+                : null;
 
 
-    if(!selectedDivision) {
+    if (!selectedDivision) {
 
         const managerProfile =
             managersObj?.find(
@@ -267,8 +367,7 @@ export const gotoManager = ({
 
 
         selectedDivision =
-            managerProfile?.division ===
-                'green'
+            managerProfile?.division === 'green'
                 ? 'green'
                 : 'red';
 
@@ -277,13 +376,27 @@ export const gotoManager = ({
 
     /*
      * ============================================================
-     * NAVIGATE
+     * DEFAULT YEAR
+     * ============================================================
+     */
+
+    if (!year) {
+
+        year =
+            leagueTeamManagers.currentSeason;
+
+    }
+
+
+    /*
+     * ============================================================
+     * OPEN INDIVIDUAL MANAGER PAGE
      * ============================================================
      */
 
     goto(
         `/manager?managerID=${encodeURIComponent(
-            selectedManagerID
+            String(selectedManagerID)
         )}` +
         `&division=${encodeURIComponent(
             selectedDivision
@@ -296,7 +409,7 @@ export const gotoManager = ({
         )}`
     );
 
-}
+};
 
 
 /*
