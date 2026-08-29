@@ -90,7 +90,14 @@
              * Otherwise ManagerRow will use Sleeper's avatar.
              */
             photo:
-                profile.photo || manager.photo,
+    profile.photo ||
+    manager.sleeperAvatar ||
+    manager.photo ||
+    (
+        manager.avatar
+            ? `https://sleepercdn.com/avatars/thumbs/${manager.avatar}`
+            : null
+    ),
 
             fantasyStart:
                 profile.fantasyStart,
