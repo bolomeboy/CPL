@@ -578,8 +578,8 @@
 
 
                 <span class="infoLabel">
-                    {favoriteTeamAbbreviation}
-                </span>
+    {favoriteTeamAbbreviation?.toUpperCase()}
+</span>
 
             </div>
 
