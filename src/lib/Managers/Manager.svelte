@@ -28,8 +28,8 @@
      * or logos change.
      */
 
-    const RED_LEAGUE_LOGO = '/cpl-red.png';
-    const GREEN_LEAGUE_LOGO = '/cpl-green.png';
+    const RED_LEAGUE_LOGO = '/CPL-Red-logo.png';
+    const GREEN_LEAGUE_LOGO = '/CPL-Green-Logo.png';
 
 
     /*
