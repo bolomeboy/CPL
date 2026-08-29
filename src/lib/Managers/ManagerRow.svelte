@@ -75,13 +75,14 @@
      * Manager photo
      */
     const managerPhoto =
-        manager?.photo ||
-        manager?.metadata?.avatar ||
-        (
-            manager?.avatar
-                ? `https://sleepercdn.com/avatars/thumbs/${manager.avatar}`
-                : '/managers/question.jpg'
-        );
+    manager?.photo ||
+    manager?.sleeperAvatar ||
+    manager?.metadata?.avatar ||
+    (
+        manager?.avatar
+            ? `https://sleepercdn.com/avatars/thumbs/${manager.avatar}`
+            : '/managers/question.jpg'
+    );
 
 
     /*
