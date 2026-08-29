@@ -29,7 +29,7 @@
      */
 
     const RED_LEAGUE_LOGO = '/CPL-Red-logo.png';
-    const GREEN_LEAGUE_LOGO = '/CPL-Green-Logo.png';
+    const GREEN_LEAGUE_LOGO = '/CPL-Green-logo.png';
 
 
     /*
