@@ -25,6 +25,14 @@ export const tabs = [
 
 
     {
+        icon: 'sports',
+        label: 'Matchups',
+        dest: '/matchups?week=1',
+        key: 'matchups',
+    },
+
+    
+    {
         icon: 'people',
         label: 'Managers',
         dest: '/managers',
@@ -33,13 +41,13 @@ export const tabs = [
 
 
     {
-        icon: 'edit_note',
+        icon: 'view_comfy',
         label: 'Drafts',
         dest: '/drafts',
         key: 'drafts',
     },
 
-
+    
     {
         icon: 'sync_alt',
         label: 'Promotion & Relegation',
