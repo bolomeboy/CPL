@@ -38,6 +38,9 @@
      * ============================================================
      * BUILD MANAGER
      * ============================================================
+     *
+     * Creates a manager object even when the manager does not have
+     * a custom profile in leagueInfo.js.
      */
 
     function buildSleeperManager(id) {
@@ -52,6 +55,53 @@
                     String(id)
             );
 
+
+        /*
+         * Make sure custom manager photos work whether the profile
+         * contains:
+         *
+         * /managers/name.jpg
+         *
+         * or
+         *
+         * managers/name.jpg
+         */
+
+        let photo =
+            profile?.photo || null;
+
+
+        if (photo && !photo.startsWith('/')) {
+            photo = `/${photo}`;
+        }
+
+
+        /*
+         * If there is no custom photo, use the Sleeper avatar.
+         */
+
+        if (!photo) {
+
+            if (sleeperUser?.metadata?.avatar) {
+
+                photo =
+                    sleeperUser.metadata.avatar;
+
+            } else if (sleeperUser?.avatar) {
+
+                photo =
+                    `https://sleepercdn.com/avatars/thumbs/${sleeperUser.avatar}`;
+
+            } else {
+
+                photo =
+                    '/managers/question.jpg';
+
+            }
+
+        }
+
+
         return {
 
             ...(profile || {}),
@@ -65,16 +115,7 @@
                 sleeperUser?.user_name ||
                 'Unknown Manager',
 
-            photo:
-                profile?.photo ||
-                (
-                    sleeperUser?.metadata?.avatar ||
-                    (
-                        sleeperUser?.avatar
-                            ? `https://sleepercdn.com/avatars/thumbs/${sleeperUser.avatar}`
-                            : '/managers/question.jpg'
-                    )
-                ),
+            photo,
 
             location:
                 profile?.location || null,
@@ -127,6 +168,55 @@
                 )
             )
             : managers?.[manager];
+
+
+    /*
+     * ============================================================
+     * MANAGER PHOTO
+     * ============================================================
+     */
+
+    $: managerPhoto = (() => {
+
+        let photo =
+            viewManager?.photo;
+
+
+        if (!photo) {
+
+            return '/managers/question.jpg';
+
+        }
+
+
+        /*
+         * Custom photos stored in manager profiles.
+         */
+
+        if (
+            photo.startsWith('/') ||
+            photo.startsWith('http://') ||
+            photo.startsWith('https://')
+        ) {
+
+            return photo;
+
+        }
+
+
+        /*
+         * Convert:
+         *
+         * managers/name.jpg
+         *
+         * into:
+         *
+         * /managers/name.jpg
+         */
+
+        return `/${photo}`;
+
+    })();
 
 
     /*
@@ -184,6 +274,7 @@
 
     const startersAndReserve =
         rostersData.startersAndReserve;
+
 
     let rosters =
         rostersData.rosters;
@@ -272,8 +363,13 @@
                 true
             );
 
-        transactions =
-            newTransactions.transactions;
+
+        if (newTransactions) {
+
+            transactions =
+                newTransactions.transactions || [];
+
+        }
 
     };
 
@@ -281,7 +377,9 @@
     onMount(async () => {
 
         if (transactionsData?.stale) {
+
             refreshTransactions();
+
         }
 
 
@@ -306,6 +404,7 @@
                     true
                 );
 
+
             playersInfo =
                 newPlayerData;
 
@@ -318,118 +417,157 @@
 
 
     /*
- * ============================================================
- * MANAGER NAVIGATION
- * ============================================================
- *
- * Navigation uses the complete CPL manager list.
- *
- * Order:
- * CPL Red managers
- * then
- * CPL Green managers
- *
- * This allows Previous / Next to move across
- * divisions instead of stopping at the end
- * of Red or Green.
- */
+     * ============================================================
+     * MANAGER NAVIGATION
+     * ============================================================
+     *
+     * Use manager IDs rather than array indexes.
+     *
+     * This is important because the URL now uses:
+     *
+     * /manager?managerID=123456789
+     *
+     * instead of:
+     *
+     * /manager?manager=6
+     *
+     */
 
 
-/*
- * Get a reliable ID from a manager object.
- */
-function getManagerID(manager) {
+    function getManagerID(manager) {
 
-    return manager?.managerID ||
-           manager?.user_id ||
-           null;
+        return manager?.managerID ||
+               manager?.user_id ||
+               null;
 
-}
-
-
-/*
- * Build a clean list of managers.
- *
- * Remove any managers that don't have an ID.
- */
-$: navigationManagers =
-    (managers || [])
-        .filter(manager =>
-            getManagerID(manager) !== null
-        );
-
-
-/*
- * Find the manager currently being viewed.
- */
-$: currentManagerIndex =
-    navigationManagers.findIndex(
-        manager =>
-            String(
-                getManagerID(manager)
-            ) ===
-            String(
-                managerID ||
-                viewManager?.managerID
-            )
-    );
-
-
-/*
- * Previous manager.
- */
-$: previousManager =
-    currentManagerIndex > 0
-        ? navigationManagers[
-            currentManagerIndex - 1
-        ]
-        : null;
-
-
-/*
- * Next manager.
- */
-$: nextManager =
-    currentManagerIndex >= 0 &&
-    currentManagerIndex <
-        navigationManagers.length - 1
-        ? navigationManagers[
-            currentManagerIndex + 1
-        ]
-        : null;
-
-
-/*
- * Go to another manager.
- */
-function changeManager(
-    newManager,
-    noscroll = false
-) {
-
-    const newManagerID =
-        getManagerID(newManager);
-
-
-    if (!newManagerID) {
-        return;
     }
 
 
-    const newDivision =
-        newManager?.division === 'green'
-            ? 'green'
-            : 'red';
+    /*
+     * Remove managers that don't have an ID.
+     */
+
+    $: navigationManagers =
+        (managers || [])
+            .filter(manager =>
+                getManagerID(manager) !== null
+            );
 
 
-    goto(
-        `/manager?managerID=${encodeURIComponent(String(newManagerID))}&division=${newDivision}`,
-        {
-            noscroll
+    /*
+     * Find the manager currently being displayed.
+     */
+
+    $: currentManagerIndex =
+        navigationManagers.findIndex(
+            manager =>
+                String(
+                    getManagerID(manager)
+                ) ===
+                String(
+                    managerID ||
+                    viewManager?.managerID
+                )
+        );
+
+
+    /*
+     * Previous manager.
+     */
+
+    $: previousManager =
+        currentManagerIndex > 0
+            ? navigationManagers[
+                currentManagerIndex - 1
+            ]
+            : null;
+
+
+    /*
+     * Next manager.
+     */
+
+    $: nextManager =
+        currentManagerIndex >= 0 &&
+        currentManagerIndex <
+            navigationManagers.length - 1
+            ? navigationManagers[
+                currentManagerIndex + 1
+            ]
+            : null;
+
+
+    /*
+     * ============================================================
+     * CHANGE MANAGER
+     * ============================================================
+     *
+     * IMPORTANT:
+     *
+     * Use a full browser navigation here.
+     *
+     * The previous version changed the URL with goto(), but the
+     * page could remain displaying the previous manager because
+     * the route/component was already mounted.
+     *
+     * window.location.href guarantees that the new manager's
+     * route load runs again.
+     */
+
+    function changeManager(
+        newManager,
+        noscroll = false
+    ) {
+
+        const newManagerID =
+            getManagerID(newManager);
+
+
+        if (!newManagerID) {
+
+            return;
+
         }
-    );
 
-}
+
+        const newDivision =
+            newManager?.division === 'green'
+                ? 'green'
+                : 'red';
+
+
+        const newURL =
+            `/manager?managerID=${encodeURIComponent(
+                String(newManagerID)
+            )}&division=${newDivision}`;
+
+
+        /*
+         * Full navigation ensures the new manager data loads.
+         */
+
+        if (typeof window !== 'undefined') {
+
+            window.location.href =
+                newURL;
+
+            return;
+
+        }
+
+
+        /*
+         * Fallback for environments where window isn't available.
+         */
+
+        goto(
+            newURL,
+            {
+                noscroll
+            }
+        );
+
+    }
 
 </script>
 
@@ -455,6 +593,7 @@ function changeManager(
         width: 70%;
         max-width: 200px;
         height: auto;
+        aspect-ratio: 1 / 1;
         margin: 5em auto 1em;
         box-shadow: 0 0 8px 4px #aaa;
         object-fit: cover;
@@ -633,7 +772,7 @@ function changeManager(
 
         <img
             class="managerPhoto"
-            src={viewManager?.photo}
+            src={managerPhoto}
             alt="manager"
         />
 
@@ -641,6 +780,7 @@ function changeManager(
         <h2>
 
             {viewManager?.name}
+
 
             <div class="teamSub">
 
@@ -728,6 +868,27 @@ function changeManager(
                     </span>
 
                 {/if}
+
+            {/if}
+
+
+            {#if viewManager?.preferredContact}
+
+                <span class="seperator">
+                    |
+                </span>
+
+                <span class="infoChild">
+
+                    {viewManager.preferredContact}
+
+                    <img
+                        class="infoChild infoContact"
+                        src="/{viewManager.preferredContact}.png"
+                        alt="preferred contact"
+                    />
+
+                </span>
 
             {/if}
 
@@ -1065,6 +1226,7 @@ function changeManager(
                     <Label>
                         Next Manager
                     </Label>
+
                 </Button>
 
             {/if}
