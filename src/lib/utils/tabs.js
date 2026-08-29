@@ -1,10 +1,12 @@
 export const tabs = [
+
     {
         icon: 'home',
         label: 'Home',
         dest: '/',
         key: 'home',
     },
+
 
     {
         icon: 'emoji_events',
@@ -13,12 +15,30 @@ export const tabs = [
         key: 'cpl',
     },
 
+
     {
         icon: 'emoji_events',
         label: 'CPL Green',
         dest: '/segunda',
         key: 'segunda',
     },
+
+
+    {
+        icon: 'people',
+        label: 'Managers',
+        dest: '/managers',
+        key: 'managers',
+    },
+
+
+    {
+        icon: 'edit_note',
+        label: 'Drafts',
+        dest: '/drafts',
+        key: 'drafts',
+    },
+
 
     {
         icon: 'sync_alt',
@@ -27,10 +47,12 @@ export const tabs = [
         key: 'promotion',
     },
 
+
     {
         icon: 'menu_book',
         label: 'League Rules',
         dest: '/rules',
         key: 'rules',
     },
+
 ];
