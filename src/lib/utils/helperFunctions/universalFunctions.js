@@ -5,7 +5,7 @@ import { stringDate } from './news';
 const QUESTION = 'managers/question.jpg';
 
 export const cleanName = (name) => {
-    return name.replace('Team ', '').toLowerCase().replace(/[ ’'!"#$%&\\'()\*+,\-\.\/:;<=>?@\[\\\]\^_`{|}~']/g, "");
+    return name.replace('Team ', '').toLowerCase().replace(/[ ’'!"#$%&\\'()\*+,\-\.\/:;<=>?@\[\\\]\^_`{|}~']/g, "")
 }
 
 export const round = (num) => {
@@ -23,7 +23,6 @@ const min = (stats, roundOverride, max) => {
         while(minAnswer > 0 && (num - minAnswer) / (max - minAnswer) < .15) {
             minAnswer -= roundOverride;
             i++;
-            // prevent infinite loop, emergency exit
             if(i > 100) {
                 break;
             }
@@ -37,6 +36,26 @@ const max = (stats, roundOverride) => {
     return Math.ceil(num / roundOverride) * roundOverride;
 }
 
+
+/*
+ * ============================================================
+ * GO TO MANAGER
+ * ============================================================
+ *
+ * This is used throughout the site:
+ *
+ * Standings
+ * Rosters
+ * Transactions
+ * Records
+ * Awards
+ * etc.
+ *
+ * If a roster is clicked, find the manager attached to that
+ * roster and determine the manager's Red/Green division from
+ * the custom manager profile list.
+ */
+
 export const gotoManager = ({
     leagueTeamManagers,
     managerID,
@@ -44,350 +63,533 @@ export const gotoManager = ({
     year,
     division = null
 }) => {
+
     if (!leagueTeamManagers) {
         goto('/managers');
         return;
     }
 
+
+    /*
+     * Use the current season when no year was supplied.
+     */
     if (!year || year > leagueTeamManagers.currentSeason) {
         year = leagueTeamManagers.currentSeason;
     }
 
+
     const yearManagers =
         leagueTeamManagers.teamManagersMap?.[year];
+
 
     if (!yearManagers) {
         goto('/managers');
         return;
     }
 
-    const currentDivision =
-        division ||
-        leagueTeamManagers.division ||
-        'red';
 
-    // Manager ID was provided
-    if (managerID) {
+    let selectedManagerID =
+        managerID
+            ? String(managerID)
+            : null;
+
+
+    let selectedRosterID =
+        rosterID
+            ? String(rosterID)
+            : null;
+
+
+    /*
+     * If a manager ID was supplied, find the roster
+     * that belongs to that manager.
+     */
+    if (selectedManagerID) {
 
         for (const rID in yearManagers) {
 
-            const rosterData = yearManagers[rID];
+            const rosterData =
+                yearManagers[rID];
 
-            if (!rosterData || !rosterData.managers) {
+
+            if (!rosterData?.managers) {
                 continue;
             }
+
 
             if (
                 rosterData.managers
                     .map(String)
-                    .includes(String(managerID))
+                    .includes(selectedManagerID)
             ) {
 
-                const managersIndex =
-                    managersObj.findIndex(
-                        manager =>
-                            String(manager.managerID) ===
-                            String(managerID)
-                    );
+                selectedRosterID =
+                    String(rID);
 
-                if (managersIndex > -1) {
+                break;
 
-                    goto(
-                        `/manager?manager=${managersIndex}` +
-                        `&division=${currentDivision}` +
-                        `&year=${year}` +
-                        `&rosterID=${rID}`
-                    );
-
-                    return;
-                }
-
-                // Green manager not in the old managersObj
-                goto(
-                    `/manager?` +
-                    `managerID=${encodeURIComponent(managerID)}` +
-                    `&rosterID=${encodeURIComponent(rID)}` +
-                    `&year=${encodeURIComponent(year)}` +
-                    `&division=${encodeURIComponent(currentDivision)}`
-                );
-
-                return;
             }
+
         }
+
     }
 
-    // Roster ID was provided
-    if (rosterID && yearManagers[rosterID]) {
 
-        const rosterData = yearManagers[rosterID];
+    /*
+     * If only a roster was supplied, find the manager
+     * attached to that roster.
+     */
+    if (
+        !selectedManagerID &&
+        selectedRosterID &&
+        yearManagers[selectedRosterID]
+    ) {
+
+        const rosterData =
+            yearManagers[selectedRosterID];
+
 
         if (
-            rosterData.managers &&
-            rosterData.managers.length > 0
+            rosterData?.managers &&
+            rosterData.managers.length
         ) {
 
-            const sleeperManagerID =
-                rosterData.managers[0];
-
-            const managersIndex =
-                managersObj.findIndex(
-                    manager =>
-                        String(manager.managerID) ===
-                        String(sleeperManagerID)
+            selectedManagerID =
+                String(
+                    rosterData.managers[0]
                 );
 
-            if (managersIndex > -1) {
+        }
 
-                goto(
-                    `/manager?manager=${managersIndex}` +
-                    `&division=${currentDivision}` +
-                    `&year=${year}` +
-                    `&rosterID=${rosterID}`
-                );
+    }
 
-                return;
-            }
 
-            // New/Green manager
-            goto(
-                `/manager?` +
-                `managerID=${encodeURIComponent(sleeperManagerID)}` +
-                `&rosterID=${encodeURIComponent(rosterID)}` +
-                `&year=${encodeURIComponent(year)}` +
-                `&division=${encodeURIComponent(currentDivision)}`
+    /*
+     * If we still don't have a manager, there is nowhere
+     * specific to navigate.
+     */
+    if (!selectedManagerID) {
+
+        const fallbackDivision =
+            division || 'red';
+
+        goto(
+            `/managers?division=${encodeURIComponent(
+                fallbackDivision
+            )}`
+        );
+
+        return;
+
+    }
+
+
+    /*
+     * ============================================================
+     * DETERMINE RED / GREEN
+     * ============================================================
+     *
+     * First use an explicitly supplied division.
+     *
+     * Otherwise look at the custom manager profile.
+     *
+     * This is what allows Standings, Rosters, Transactions,
+     * Records, etc. to correctly open a Green manager instead
+     * of defaulting back to Red.
+     */
+
+    let currentDivision =
+        division;
+
+
+    if (!currentDivision) {
+
+        const managerProfile =
+            managersObj?.find(
+                manager =>
+                    String(manager.managerID) ===
+                    String(selectedManagerID)
             );
 
-            return;
+
+        if (
+            managerProfile?.division ===
+            'green'
+        ) {
+
+            currentDivision =
+                'green';
+
+        } else {
+
+            currentDivision =
+                'red';
+
         }
+
     }
 
-    goto('/managers');
+
+    /*
+     * ============================================================
+     * MANAGER URL
+     * ============================================================
+     */
+
+    goto(
+        `/manager?managerID=${encodeURIComponent(
+            selectedManagerID
+        )}` +
+        `&division=${encodeURIComponent(
+            currentDivision
+        )}` +
+        `&year=${encodeURIComponent(
+            year
+        )}` +
+        `&rosterID=${encodeURIComponent(
+            selectedRosterID || ''
+        )}`
+    );
+
 };
 
-    
 
 export const getAuthor = (leagueTeamManagers, author) => {
+
     for(const userID in leagueTeamManagers.users) {
-        if(leagueTeamManagers.users[userID].user_name.toLowerCase() == author.toLowerCase()) {
-            return [`<a href="/manager?manager=${managersObj.findIndex(m => m.managerID == String(userID))}">${leagueTeamManagers.users[userID].display_name}</a>`, ]
+
+        if(
+            leagueTeamManagers.users[userID].user_name
+                .toLowerCase() ==
+            author.toLowerCase()
+        ) {
+
+            return [
+                `<a href="/manager?managerID=${userID}">${leagueTeamManagers.users[userID].display_name}</a>`
+            ];
+
         }
+
     }
+
     return author;
-}
 
-export const getAvatar = (leagueTeamManagers, author) => {
-    for(const uID in leagueTeamManagers.users) {
-        if(leagueTeamManagers.users[uID].user_name.toLowerCase() == author.toLowerCase()) {
-            return `https://sleepercdn.com/avatars/thumbs/${leagueTeamManagers.users[uID].avatar}`;
-        }
-    }
-    return QUESTION;
-}
-
-export const parseDate = (rawDate) => {
-    const ts = Date.parse(rawDate);
-    const d = new Date(ts);
-    return stringDate(d);
-}
-
-export const generateGraph = ({stats, x, stat, header, field, short, secondField = null}, year, roundOverride = 10, xMinOverride = null) => {
-    if(!stats) {
-        return null;
-    }
-    const graph = {
-        stats: [],
-        secondStats: [],
-        managerIDs: [],
-        rosterIDs: [],
-        labels: {x, stat},
-        header,
-        xMin: 0,
-        xMax: 0,
-        short,
-        year
-    }
-
-    const sortedStats = [...stats].sort((a, b) => b[field] - a[field]);
-
-    for(const indivStat of sortedStats) {
-        graph.stats.push(indivStat[field]);
-        if(secondField) {
-            graph.secondStats.push(indivStat[secondField]);
-        }
-        if(indivStat.managerID) {
-            graph.managerIDs.push(indivStat.managerID);
-            graph.rosterIDs.push(null);
-        } else if(indivStat.rosterID) {
-            graph.managerIDs.push(null);
-            graph.rosterIDs.push(indivStat.rosterID);
-        }
-    }
-
-    graph.xMax = max(graph.stats, roundOverride);
-    graph.xMin = min(graph.stats, roundOverride, graph.xMax);
-    if(secondField) {
-        graph.xMin = min(graph.secondStats, roundOverride, graph.xMax);
-    }
-    if(xMinOverride) {
-        graph.xMin = xMinOverride;
-    }
-
-    return graph;
 }
 
 
-/**
- * takes an array and array field, sorts the array, and returns
- * the 10 highest and lowest members of the array in desc and asc order respectively
- * @param {Object[]} arr the array to be sorted
- * @param {string} field the field to sort on
- * @returns {arr|arr} [high, low] an array where the first element is the 10 highest records and the second is the 10 lowest elements
- */
- export const sortHighAndLow = (arr, field) => {
-	const sorted = arr.sort((a, b) => b[field] - a[field]);
-	const high = sorted.slice(0, 10);
-	const low = sorted.slice(-10).reverse();
-	return [high, low]
+export const getTeamNameFromTeamManagers = (
+    teamManagers,
+    rosterID,
+    year
+) => {
+
+    if(
+        !year ||
+        year > teamManagers.currentSeason
+    ) {
+
+        year =
+            teamManagers.currentSeason;
+
+    }
+
+    return teamManagers
+        .teamManagersMap[year]
+        [rosterID]
+        .team
+        .name;
+
 }
 
-/**
- * get all managers of a roster
- * @param {Object} roster an object with all data for a roster
- * @returns {Object[]} [managerIDs...] an array of manager IDs
- */
-export const getManagers = (roster) => {
-	const managers = [];
-    if(roster.owner_id) {
-        managers.push(roster.owner_id);
-    }
-    if(roster.co_owners) {
-        for(const coOwner of roster.co_owners) {
-            managers.push(coOwner);
-        }
-    }
-    return managers;
-}
 
-/**
- * takes in a map of users and a owner ID and returns an object with a user's avatar and name
- * @param {Object} users the map of users
- * @param {string} ownerID the ID of the owner
- * @returns {Object} {avatar, name} an object containing a user's avatar image url and their name
- */
-export const getTeamData = (users, ownerID) => {
-	const user = users[ownerID];
-	if(user) {
-		return {
-			avatar: user.metadata?.avatar ? user.metadata.avatar : `https://sleepercdn.com/avatars/thumbs/${user.avatar}`,
-			name: user.metadata.team_name ? user.metadata.team_name : user.display_name,
-		}
-	}
-    return {
-        avatar: `https://sleepercdn.com/images/v2/icons/player_default.webp`,
-        name: 'Unknown Team',
-    }
-}
+export const renderManagerNames = (
+    teamManagers,
+    rosterID,
+    year
+) => {
 
-export const getAvatarFromTeamManagers = (teamManagers, rosterID, year) => {
-    if(!year || year > teamManagers.currentSeason) {
-        year = teamManagers.currentSeason;
-    }
-    const yearManagers = teamManagers.teamManagersMap[year];
-    if(yearManagers == null) {
-        return QUESTION;
-    }
-    const roster = yearManagers[rosterID];
-    if(roster == null) {
-        return QUESTION;
-    }
-    return roster.team?.avatar;
-}
+    if(
+        !year ||
+        year > teamManagers.currentSeason
+    ) {
 
-export const getTeamNameFromTeamManagers = (teamManagers, rosterID, year) => {
-    if(!year || year > teamManagers.currentSeason) {
-        year = teamManagers.currentSeason;
-    }
-    return teamManagers.teamManagersMap[year][rosterID].team.name;
-}
+        year =
+            teamManagers.currentSeason;
 
-export const renderManagerNames = (teamManagers, rosterID, year) => {
-    if(!year || year > teamManagers.currentSeason) {
-        year = teamManagers.currentSeason;
     }
+
     let managersString = "";
-    for(const managerID of teamManagers.teamManagersMap[year][rosterID].managers) {
-        const manager = teamManagers.users[managerID];
+
+
+    for(
+        const managerID of
+        teamManagers
+            .teamManagersMap
+            [year]
+            [rosterID]
+            .managers
+    ) {
+
+        const manager =
+            teamManagers.users[managerID];
+
+
         if(manager) {
+
             if(managersString != "") {
                 managersString += ", "
             }
-            managersString += manager.display_name;
+
+            managersString +=
+                manager.display_name;
+
         }
+
     }
+
     return managersString;
+
 }
 
-export const getTeamFromTeamManagers = (teamManagers, rosterID, year) => {
-    if(!year || year > teamManagers.currentSeason) {
-        year = teamManagers.currentSeason;
+
+export const getTeamFromTeamManagers = (
+    teamManagers,
+    rosterID,
+    year
+) => {
+
+    if(
+        !year ||
+        year > teamManagers.currentSeason
+    ) {
+
+        year =
+            teamManagers.currentSeason;
+
     }
-    return teamManagers.teamManagersMap[year][rosterID]['team'];
+
+    return teamManagers
+        .teamManagersMap
+        [year]
+        [rosterID]
+        ['team'];
+
 }
 
-export const getNestedTeamNamesFromTeamManagers = (teamManagers, year, rosterID) => {
-    const originalName = teamManagers.teamManagersMap[year][rosterID]['team']['name'];
-    const currentName = teamManagers.teamManagersMap[teamManagers.currentSeason][rosterID]['team']['name'];
-    if(cleanName(originalName) != cleanName(currentName)) {
+
+export const getNestedTeamNamesFromTeamManagers = (
+    teamManagers,
+    year,
+    rosterID
+) => {
+
+    const originalName =
+        teamManagers
+            .teamManagersMap
+            [year]
+            [rosterID]
+            ['team']
+            ['name'];
+
+
+    const currentName =
+        teamManagers
+            .teamManagersMap
+            [teamManagers.currentSeason]
+            [rosterID]
+            ['team']
+            ['name'];
+
+
+    if(
+        cleanName(originalName) !=
+        cleanName(currentName)
+    ) {
+
         return `${originalName}<div class="curOwner">(${currentName})</div>`;
+
     }
+
     return originalName;
+
 }
 
-export const getDatesActive = (teamManagers, managerID) => {
+
+export const getDatesActive = (
+    teamManagers,
+    managerID
+) => {
+
     if(!managerID) return;
-    let datesActive = {start: null, end: null};
-    const years = Object.keys(teamManagers.teamManagersMap).sort((a, b) => b - a);
+
+
+    let datesActive = {
+        start: null,
+        end: null
+    };
+
+
+    const years =
+        Object.keys(
+            teamManagers.teamManagersMap
+        ).sort(
+            (a, b) => b - a
+        );
+
+
     for(const year of years) {
-        for(const rosterID in  teamManagers.teamManagersMap[year]) {
-            if(teamManagers.teamManagersMap[year][rosterID].managers.indexOf(managerID) > -1) {
-                datesActive.start = year;
+
+        for(
+            const rosterID in
+            teamManagers.teamManagersMap[year]
+        ) {
+
+            if(
+                teamManagers
+                    .teamManagersMap
+                    [year]
+                    [rosterID]
+                    .managers
+                    .indexOf(managerID) > -1
+            ) {
+
+                datesActive.start =
+                    year;
+
+
                 if(!datesActive.end) {
-                    datesActive.end = year;
+
+                    datesActive.end =
+                        year;
+
                 }
+
                 break;
+
             }
+
         }
+
     }
-    if(datesActive.end == teamManagers.currentSeason) {
-        datesActive.end = null;
+
+
+    if(
+        datesActive.end ==
+        teamManagers.currentSeason
+    ) {
+
+        datesActive.end =
+            null;
+
     }
+
+
     return datesActive;
+
 }
 
-export const getRosterIDFromManagerID = (teamManagers, managerID) => {
+
+export const getRosterIDFromManagerID = (
+    teamManagers,
+    managerID
+) => {
+
     if(!managerID) return null;
-    const years = Object.keys(teamManagers.teamManagersMap).sort((a, b) => b - a);
+
+
+    const years =
+        Object.keys(
+            teamManagers.teamManagersMap
+        ).sort(
+            (a, b) => b - a
+        );
+
+
     for(const year of years) {
-        for(const rosterID in  teamManagers.teamManagersMap[year]) {
-            if(teamManagers.teamManagersMap[year][rosterID].managers.indexOf(managerID) > -1) {
-                return {rosterID, year};
+
+        for(
+            const rosterID in
+            teamManagers.teamManagersMap[year]
+        ) {
+
+            if(
+                teamManagers
+                    .teamManagersMap
+                    [year]
+                    [rosterID]
+                    .managers
+                    .indexOf(managerID) > -1
+            ) {
+
+                return {
+                    rosterID,
+                    year
+                };
+
             }
+
         }
+
     }
+
+
     return null;
+
 }
 
-export const getRosterIDFromManagerIDAndYear = (teamManagers, managerID, year) => {
-    if(!managerID || !year) return null;
-    for(const rosterID in  teamManagers.teamManagersMap[year]) {
-        if(teamManagers.teamManagersMap[year][rosterID].managers.indexOf(managerID) > -1) {
+
+export const getRosterIDFromManagerIDAndYear = (
+    teamManagers,
+    managerID,
+    year
+) => {
+
+    if(!managerID || !year)
+        return null;
+
+
+    for(
+        const rosterID in
+        teamManagers.teamManagersMap[year]
+    ) {
+
+        if(
+            teamManagers
+                .teamManagersMap
+                [year]
+                [rosterID]
+                .managers
+                .indexOf(managerID) > -1
+        ) {
+
             return rosterID;
+
         }
+
     }
+
+
     return null;
+
 }
 
-export const checkIfManagerReceivedAward = (teamManagers, awardRosterID, year, managerID) => {
-    if(!managerID) return false;
-    return teamManagers.teamManagersMap[year][awardRosterID].managers.indexOf(managerID) > -1;
+
+export const checkIfManagerReceivedAward = (
+    teamManagers,
+    awardRosterID,
+    year,
+    managerID
+) => {
+
+    if(!managerID)
+        return false;
+
+
+    return teamManagers
+        .teamManagersMap
+        [year]
+        [awardRosterID]
+        .managers
+        .indexOf(managerID) > -1;
+
 }
