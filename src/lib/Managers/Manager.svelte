@@ -2,12 +2,15 @@
     import Button, { Group, Label } from '@smui/button';
     import LinearProgress from '@smui/linear-progress';
     import { loadPlayers, getLeagueTransactions } from '$lib/utils/helper';
+
     import Roster from '../Rosters/Roster.svelte';
     import TransactionsPage from '../Transactions/TransactionsPage.svelte';
+
     import { goto } from '$app/navigation';
+    import { onMount } from 'svelte';
+
     import ManagerFantasyInfo from './ManagerFantasyInfo.svelte';
     import ManagerAwards from './ManagerAwards.svelte';
-    import { onMount } from 'svelte';
 
     import {
         getDatesActive,
@@ -38,120 +41,68 @@
      * ============================================================
      * BUILD MANAGER
      * ============================================================
-     *
-     * Creates a manager object even when the manager does not have
-     * a custom profile in leagueInfo.js.
      */
 
     function buildSleeperManager(id) {
 
-    const sleeperUser =
-        leagueTeamManagers?.users?.[id];
-
-    const profile =
-    managers?.find(
-        manager =>
-            String(
-                manager.managerID ??
-                manager.user_id
-            ) ===
-            String(id)
-    );
+        const sleeperUser =
+            leagueTeamManagers?.users?.[id];
 
 
-    let photo =
-        null;
+        const profile =
+            managers?.find(
+                manager =>
+                    String(
+                        manager.managerID ??
+                        manager.user_id
+                    ) ===
+                    String(id)
+            );
 
 
-    /*
-     * Use the custom manager photo if one exists.
-     */
-    if (profile?.photo) {
+        return {
 
-        photo =
-            profile.photo;
+            ...(profile || {}),
 
-        if (
-            !photo.startsWith('/') &&
-            !photo.startsWith('http://') &&
-            !photo.startsWith('https://')
-        ) {
+            managerID:
+                String(id),
 
-            photo =
-                `/${photo}`;
+            name:
+                profile?.name ||
+                sleeperUser?.display_name ||
+                sleeperUser?.user_name ||
+                'Unknown Manager',
 
-        }
+            location:
+                profile?.location || null,
 
-    }
+            fantasyStart:
+                profile?.fantasyStart || null,
 
+            favoriteTeam:
+                profile?.favoriteTeam || null,
 
-    /*
-     * Otherwise use the actual Sleeper avatar.
-     */
-    if (!photo && sleeperUser?.avatar) {
+            preferredContact:
+                profile?.preferredContact || null,
 
-        photo =
-            `https://sleepercdn.com/avatars/thumbs/${sleeperUser.avatar}`;
+            bio:
+                profile?.bio || '',
 
-    }
+            philosophy:
+                profile?.philosophy || '',
 
+            rival:
+                profile?.rival || null,
 
-    /*
-     * Last-resort image.
-     */
-    if (!photo) {
+            mode:
+                profile?.mode || null,
 
-        photo =
-            '/managers/question.jpg';
+            tookOver:
+                profile?.tookOver || null
+
+        };
 
     }
-
-
-    return {
-
-        ...(profile || {}),
-
-        managerID:
-            String(id),
-
-        name:
-            profile?.name ||
-            sleeperUser?.display_name ||
-            sleeperUser?.user_name ||
-            'Unknown Manager',
-
-        photo,
-
-        location:
-            profile?.location || null,
-
-        fantasyStart:
-            profile?.fantasyStart || null,
-
-        favoriteTeam:
-            profile?.favoriteTeam || null,
-
-        preferredContact:
-            profile?.preferredContact || null,
-
-        bio:
-            profile?.bio || '',
-
-        philosophy:
-            profile?.philosophy || '',
-
-        rival:
-            profile?.rival || null,
-
-        mode:
-            profile?.mode || null,
-
-        tookOver:
-            profile?.tookOver || null
-
-    };
-
-}
 
 
     /*
@@ -161,70 +112,11 @@
      */
 
     $: viewManager =
-    managerID
-        ? buildSleeperManager(
-            String(managerID)
-        )
-        : managers?.[manager];
-
-
-    /*
-     * ============================================================
-     * MANAGER PHOTO
-     * ============================================================
-     */
-
-    $: managerPhoto = (() => {
-
-    /*
-     * 1. Custom CPL manager photo
-     */
-    if (viewManager?.photo) {
-
-        let photo =
-            viewManager.photo;
-
-        if (
-            !photo.startsWith('/') &&
-            !photo.startsWith('http://') &&
-            !photo.startsWith('https://')
-        ) {
-
-            photo =
-                `/${photo}`;
-
-        }
-
-        return photo;
-
-    }
-
-
-    /*
-     * 2. Sleeper avatar
-     *
-     * viewManager.managerID is the real
-     * Sleeper user ID.
-     */
-    const sleeperUser =
-        leagueTeamManagers?.users?.[
-            String(viewManager?.managerID)
-        ];
-
-
-    if (sleeperUser?.avatar) {
-
-        return `https://sleepercdn.com/avatars/thumbs/${sleeperUser.avatar}`;
-
-    }
-
-
-    /*
-     * 3. Final fallback
-     */
-    return '/managers/question.jpg';
-
-})();
+        managerID
+            ? buildSleeperManager(
+                String(managerID)
+            )
+            : managers?.[manager];
 
 
     /*
@@ -254,6 +146,67 @@
         managerRosterData?.year ||
         leagueTeamManagers?.currentSeason ||
         null;
+
+
+    /*
+     * ============================================================
+     * TEAM LOGO
+     * ============================================================
+     *
+     * The manager page uses the TEAM logo, not the manager's
+     * personal Sleeper avatar.
+     *
+     * Priority:
+     *
+     * 1. Team logo for the selected year
+     * 2. Team logo from the current season
+     * 3. Question-mark fallback
+     */
+
+    $: managerPhoto = (() => {
+
+        /*
+         * Selected year/team
+         */
+        const team =
+            leagueTeamManagers
+                ?.teamManagersMap
+                ?.[finalYear]
+                ?.[finalRosterID]
+                ?.team;
+
+
+        if (team?.avatar) {
+
+            return team.avatar;
+
+        }
+
+
+        /*
+         * Current season fallback
+         */
+        const currentTeam =
+            leagueTeamManagers
+                ?.teamManagersMap
+                ?.[leagueTeamManagers.currentSeason]
+                ?.[finalRosterID]
+                ?.team;
+
+
+        if (currentTeam?.avatar) {
+
+            return currentTeam.avatar;
+
+        }
+
+
+        /*
+         * Final fallback
+         */
+        return '/managers/question.jpg';
+
+    })();
 
 
     /*
@@ -398,8 +351,10 @@
         playersInfo =
             playerData;
 
+
         players =
             playerData.players;
+
 
         loading = false;
 
@@ -416,6 +371,7 @@
             playersInfo =
                 newPlayerData;
 
+
             players =
                 newPlayerData.players;
 
@@ -428,19 +384,7 @@
      * ============================================================
      * MANAGER NAVIGATION
      * ============================================================
-     *
-     * Use manager IDs rather than array indexes.
-     *
-     * This is important because the URL now uses:
-     *
-     * /manager?managerID=123456789
-     *
-     * instead of:
-     *
-     * /manager?manager=6
-     *
      */
-
 
     function getManagerID(manager) {
 
@@ -451,20 +395,13 @@
     }
 
 
-    /*
-     * Remove managers that don't have an ID.
-     */
-
     $: navigationManagers =
         (managers || [])
-            .filter(manager =>
-                getManagerID(manager) !== null
+            .filter(
+                manager =>
+                    getManagerID(manager) !== null
             );
 
-
-    /*
-     * Find the manager currently being displayed.
-     */
 
     $: currentManagerIndex =
         navigationManagers.findIndex(
@@ -479,10 +416,6 @@
         );
 
 
-    /*
-     * Previous manager.
-     */
-
     $: previousManager =
         currentManagerIndex > 0
             ? navigationManagers[
@@ -490,10 +423,6 @@
             ]
             : null;
 
-
-    /*
-     * Next manager.
-     */
 
     $: nextManager =
         currentManagerIndex >= 0 &&
@@ -509,17 +438,6 @@
      * ============================================================
      * CHANGE MANAGER
      * ============================================================
-     *
-     * IMPORTANT:
-     *
-     * Use a full browser navigation here.
-     *
-     * The previous version changed the URL with goto(), but the
-     * page could remain displaying the previous manager because
-     * the route/component was already mounted.
-     *
-     * window.location.href guarantees that the new manager's
-     * route load runs again.
      */
 
     function changeManager(
@@ -550,10 +468,6 @@
             )}&division=${newDivision}`;
 
 
-        /*
-         * Full navigation ensures the new manager data loads.
-         */
-
         if (typeof window !== 'undefined') {
 
             window.location.href =
@@ -563,10 +477,6 @@
 
         }
 
-
-        /*
-         * Fallback for environments where window isn't available.
-         */
 
         goto(
             newURL,
@@ -774,15 +684,16 @@
 
 <div class="managerContainer">
 
-
     <div class="managerConstrained">
 
 
+        <!-- TEAM LOGO -->
+
         <img
-    class="managerPhoto"
-    src={viewManager?.photo}
-    alt={viewManager?.name || 'manager'}
-/>
+            class="managerPhoto"
+            src={managerPhoto}
+            alt="team logo"
+        />
 
 
         <h2>
@@ -820,7 +731,6 @@
 
 
         <div class="basicInfo">
-
 
             {#if viewManager?.location}
 
@@ -932,7 +842,6 @@
 
             {/if}
 
-
         </div>
 
 
@@ -943,7 +852,6 @@
         <div class="managerNav upper">
 
             <Group variant="outlined">
-
 
                 {#if previousManager}
 
@@ -1028,15 +936,12 @@
 
                 {/if}
 
-
             </Group>
 
         </div>
 
 
-        <!-- ====================================================
-             BIO
-             ==================================================== -->
+        <!-- BIO -->
 
         {#if viewManager?.bio}
 
@@ -1118,7 +1023,6 @@
 
     <div class="managerConstrained">
 
-
         {#if loading}
 
             <div class="loading">
@@ -1145,7 +1049,6 @@
 
         {/if}
 
-
     </div>
 
 
@@ -1156,7 +1059,6 @@
     <div class="managerNav">
 
         <Group variant="outlined">
-
 
             {#if previousManager}
 
@@ -1239,10 +1141,8 @@
 
             {/if}
 
-
         </Group>
 
     </div>
-
 
 </div>
