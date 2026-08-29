@@ -19,6 +19,25 @@
     } from '$lib/utils/helperFunctions/universalFunctions';
 
 
+    /*
+     * ============================================================
+     * LEAGUE LOGOS
+     * ============================================================
+     *
+     * Change these two files in the future if the league names
+     * or logos change.
+     */
+
+    const RED_LEAGUE_LOGO = '/cpl-red.png';
+    const GREEN_LEAGUE_LOGO = '/cpl-green.png';
+
+
+    /*
+     * ============================================================
+     * PROPS
+     * ============================================================
+     */
+
     export let manager;
     export let managers = [];
     export let managerID = null;
@@ -32,6 +51,12 @@
     export let awards;
     export let records;
 
+
+    /*
+     * ============================================================
+     * TRANSACTIONS
+     * ============================================================
+     */
 
     let transactions =
         transactionsData?.transactions || [];
@@ -153,21 +178,17 @@
      * TEAM LOGO
      * ============================================================
      *
-     * The manager page uses the TEAM logo, not the manager's
-     * personal Sleeper avatar.
+     * This is the TEAM logo, not the manager's personal avatar.
      *
      * Priority:
      *
-     * 1. Team logo for the selected year
-     * 2. Team logo from the current season
-     * 3. Question-mark fallback
+     * 1. Team logo from selected year
+     * 2. Team logo from current season
+     * 3. Question mark
      */
 
     $: managerPhoto = (() => {
 
-        /*
-         * Selected year/team
-         */
         const team =
             leagueTeamManagers
                 ?.teamManagersMap
@@ -183,9 +204,6 @@
         }
 
 
-        /*
-         * Current season fallback
-         */
         const currentTeam =
             leagueTeamManagers
                 ?.teamManagersMap
@@ -201,12 +219,27 @@
         }
 
 
-        /*
-         * Final fallback
-         */
         return '/managers/question.jpg';
 
     })();
+
+
+    /*
+     * ============================================================
+     * LEAGUE LOGO
+     * ============================================================
+     */
+
+    $: leagueLogo =
+        division === 'green'
+            ? GREEN_LEAGUE_LOGO
+            : RED_LEAGUE_LOGO;
+
+
+    $: leagueLogoAlt =
+        division === 'green'
+            ? 'CPL Green'
+            : 'CPL Red';
 
 
     /*
@@ -505,6 +538,12 @@
     }
 
 
+    /*
+     * ============================================================
+     * TEAM LOGO
+     * ============================================================
+     */
+
     .managerPhoto {
         display: block;
         border-radius: 100%;
@@ -534,12 +573,19 @@
     }
 
 
+    /*
+     * ============================================================
+     * BASIC INFORMATION
+     * ============================================================
+     */
+
     .basicInfo {
         display: flex;
         justify-content: space-evenly;
         align-items: center;
-        height: 24px;
+        height: 36px;
         margin: 2em 0;
+        gap: 10px;
     }
 
 
@@ -554,15 +600,24 @@
     }
 
 
-    .infoContact {
-        height: 20px;
+    /*
+     * ============================================================
+     * LEAGUE LOGO
+     * ============================================================
+     */
+
+    .leagueLogo {
+        height: 32px;
+        width: auto;
+        max-width: 100px;
+        object-fit: contain;
         vertical-align: middle;
-        padding-left: 1em;
     }
 
 
     .infoTeam {
         height: 48px;
+        width: auto;
     }
 
 
@@ -645,7 +700,7 @@
     @media (max-width: 450px) {
 
         .basicInfo {
-            height: 20px;
+            height: 30px;
         }
 
 
@@ -658,13 +713,19 @@
             height: 30px;
         }
 
+
+        .leagueLogo {
+            height: 26px;
+            max-width: 80px;
+        }
+
     }
 
 
     @media (max-width: 370px) {
 
         .basicInfo {
-            height: 18px;
+            height: 26px;
         }
 
 
@@ -677,6 +738,12 @@
             height: 24px;
         }
 
+
+        .leagueLogo {
+            height: 22px;
+            max-width: 65px;
+        }
+
     }
 
 </style>
@@ -687,7 +754,9 @@
     <div class="managerConstrained">
 
 
-        <!-- TEAM LOGO -->
+        <!-- ====================================================
+             TEAM LOGO
+             ==================================================== -->
 
         <img
             class="managerPhoto"
@@ -730,7 +799,14 @@
         </h2>
 
 
+        <!-- ====================================================
+             BASIC INFORMATION
+             ==================================================== -->
+
         <div class="basicInfo">
+
+
+            <!-- LOCATION -->
 
             {#if viewManager?.location}
 
@@ -746,6 +822,8 @@
 
             {/if}
 
+
+            <!-- DATES -->
 
             {#if datesActive?.start}
 
@@ -790,26 +868,23 @@
             {/if}
 
 
-            {#if viewManager?.preferredContact}
+            <!-- =================================================
+                 LEAGUE LOGO
+                 ================================================= -->
 
-                <span class="seperator">
-                    |
-                </span>
+            <span class="seperator">
+                |
+            </span>
 
-                <span class="infoChild">
+            <img
+                class="leagueLogo"
+                src={leagueLogo}
+                alt={leagueLogoAlt}
+                title={leagueLogoAlt}
+            />
 
-                    {viewManager.preferredContact}
 
-                    <img
-                        class="infoChild infoContact"
-                        src="/{viewManager.preferredContact}.png"
-                        alt="preferred contact"
-                    />
-
-                </span>
-
-            {/if}
-
+            <!-- FAVORITE NFL TEAM -->
 
             {#if viewManager?.favoriteTeam}
 
@@ -820,11 +895,13 @@
                 <img
                     class="infoChild infoTeam"
                     src="https://sleepercdn.com/images/team_logos/nfl/{viewManager.favoriteTeam}.png"
-                    alt="favorite team"
+                    alt="favorite NFL team"
                 />
 
             {/if}
 
+
+            <!-- COMMISSIONER -->
 
             {#if commissioner}
 
@@ -852,6 +929,7 @@
         <div class="managerNav upper">
 
             <Group variant="outlined">
+
 
                 {#if previousManager}
 
@@ -941,7 +1019,9 @@
         </div>
 
 
-        <!-- BIO -->
+        <!-- ====================================================
+             BIO
+             ==================================================== -->
 
         {#if viewManager?.bio}
 
@@ -951,6 +1031,10 @@
 
         {/if}
 
+
+        <!-- ====================================================
+             TEAM PHILOSOPHY
+             ==================================================== -->
 
         {#if viewManager?.philosophy}
 
@@ -968,6 +1052,10 @@
     </div>
 
 
+    <!-- ========================================================
+         FANTASY INFORMATION
+         ======================================================== -->
+
     {#if !loading}
 
         <ManagerFantasyInfo
@@ -979,6 +1067,10 @@
     {/if}
 
 
+    <!-- ========================================================
+         AWARDS / RECORDS
+         ======================================================== -->
+
     <ManagerAwards
         {leagueTeamManagers}
         tookOver={viewManager?.tookOver}
@@ -988,6 +1080,10 @@
         managerID={viewManager?.managerID}
     />
 
+
+    <!-- ========================================================
+         ROSTER
+         ======================================================== -->
 
     {#if loading}
 
@@ -1015,6 +1111,10 @@
 
     {/if}
 
+
+    <!-- ========================================================
+         TRANSACTIONS
+         ======================================================== -->
 
     <h3>
         Team Transactions
@@ -1059,6 +1159,7 @@
     <div class="managerNav">
 
         <Group variant="outlined">
+
 
             {#if previousManager}
 
