@@ -607,12 +607,12 @@
      */
 
     .leagueLogo {
-        height: 32px;
-        width: auto;
-        max-width: 100px;
-        object-fit: contain;
-        vertical-align: middle;
-    }
+    height: 45px;
+    width: auto;
+    max-width: 140px;
+    object-fit: contain;
+    vertical-align: middle;
+}
 
 
     .infoTeam {
@@ -715,8 +715,8 @@
 
 
         .leagueLogo {
-            height: 26px;
-            max-width: 80px;
+            height: 34px;
+            max-width: 100px;
         }
 
     }
@@ -740,8 +740,8 @@
 
 
         .leagueLogo {
-            height: 22px;
-            max-width: 65px;
+            height: 30px;
+            max-width: 85px;
         }
 
     }
