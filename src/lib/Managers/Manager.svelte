@@ -49,40 +49,45 @@
         leagueTeamManagers?.users?.[id];
 
     const profile =
-        managers?.find(
-            manager =>
-                String(manager.managerID) ===
-                String(id)
-        );
+    managers?.find(
+        manager =>
+            String(
+                manager.managerID ??
+                manager.user_id
+            ) ===
+            String(id)
+    );
+
+
+    let photo =
+        null;
 
 
     /*
-     * ============================================================
-     * MANAGER PHOTO
-     * ============================================================
-     *
-     * Priority:
-     *
-     * 1. Custom manager photo
-     * 2. Sleeper avatar
-     * 3. Question-mark fallback
+     * Use the custom manager photo if one exists.
      */
-
-    let photo = null;
-
-
     if (profile?.photo) {
 
-        photo = profile.photo;
+        photo =
+            profile.photo;
+
+        if (
+            !photo.startsWith('/') &&
+            !photo.startsWith('http://') &&
+            !photo.startsWith('https://')
+        ) {
+
+            photo =
+                `/${photo}`;
+
+        }
 
     }
 
 
     /*
-     * If there is no custom photo,
-     * use the manager's Sleeper avatar.
+     * Otherwise use the actual Sleeper avatar.
      */
-
     if (!photo && sleeperUser?.avatar) {
 
         photo =
@@ -92,31 +97,12 @@
 
 
     /*
-     * Final fallback.
+     * Last-resort image.
      */
-
     if (!photo) {
 
         photo =
             '/managers/question.jpg';
-
-    }
-
-
-    /*
-     * Fix custom photos that don't already
-     * start with a slash or full URL.
-     */
-
-    if (
-        photo &&
-        !photo.startsWith('/') &&
-        !photo.startsWith('http://') &&
-        !photo.startsWith('https://')
-    ) {
-
-        photo =
-            `/${photo}`;
 
     }
 
@@ -791,7 +777,7 @@
 
         <img
     class="managerPhoto"
-    src={managerPhoto}
+    src={viewManager?.photo}
     alt={viewManager?.name || 'manager'}
 />
 
