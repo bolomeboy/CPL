@@ -1,5 +1,4 @@
 import {
-    waitForAll,
     getLeagueRosters,
     getLeagueTeamManagers,
     getLeagueData,
@@ -42,25 +41,8 @@ export async function load({ url }) {
 
     /*
      * ============================================================
-     * DIVISION
+     * FIND CUSTOM MANAGER PROFILE
      * ============================================================
-     *
-     * IMPORTANT:
-     *
-     * Use the URL first.
-     *
-     * This prevents the page from automatically falling
-     * back to Red when switching between divisions.
-     */
-
-    const urlDivision =
-        url?.searchParams?.get('division');
-
-
-    /*
-     * If the URL explicitly says Green, use Green.
-     * Otherwise use the manager profile's division.
-     * Default to Red.
      */
 
     const selectedManager =
@@ -71,6 +53,20 @@ export async function load({ url }) {
                     String(managerID)
             )
             : null;
+
+
+    /*
+     * ============================================================
+     * DETERMINE DIVISION
+     * ============================================================
+     *
+     * URL takes priority.
+     *
+     * Otherwise use the manager profile.
+     */
+
+    const urlDivision =
+        url?.searchParams?.get('division');
 
 
     const division =
@@ -85,7 +81,7 @@ export async function load({ url }) {
 
     /*
      * ============================================================
-     * SELECT LEAGUE
+     * SELECT SLEEPER LEAGUE
      * ============================================================
      */
 
@@ -97,7 +93,7 @@ export async function load({ url }) {
 
     /*
      * ============================================================
-     * NO MANAGER
+     * NO MANAGER SELECTED
      * ============================================================
      */
 
@@ -129,95 +125,148 @@ export async function load({ url }) {
 
     /*
      * ============================================================
-     * LOAD MANAGER'S LEAGUE DATA
+     * CORE MANAGER DATA
      * ============================================================
+     *
+     * These are the pieces required for the actual manager page.
      */
 
-    const managersInfo =
-        waitForAll(
-
-            getLeagueRosters(
-                queryLeagueID
-            ),
-
-            getLeagueTeamManagers(
-                queryLeagueID
-            ),
-
-            getLeagueData(
-                queryLeagueID
-            ),
-
-            getLeagueTransactions(
-                false,
-                false,
-                queryLeagueID
-            ),
-
-            getAwards(
-                queryLeagueID
-            ),
-
-            getLeagueRecords(
-                false,
-                queryLeagueID
-            )
-
+    const rostersPromise =
+        getLeagueRosters(
+            queryLeagueID
         );
 
 
+    const leagueTeamManagersPromise =
+        getLeagueTeamManagers(
+            queryLeagueID
+        );
+
+
+    const leagueDataPromise =
+        getLeagueData(
+            queryLeagueID
+        );
+
+
+    /*
+     * ============================================================
+     * OPTIONAL DATA
+     * ============================================================
+     *
+     * Transactions, awards and records should not prevent the
+     * manager page from loading.
+     *
+     * If one of these fails, we provide an empty value instead.
+     */
+
+    const transactionsPromise =
+        getLeagueTransactions(
+            false,
+            false,
+            queryLeagueID
+        )
+        .catch(error => {
+
+            console.error(
+                'Could not load manager transactions:',
+                error
+            );
+
+            return {
+                transactions: [],
+                totals: {}
+            };
+
+        });
+
+
+    const awardsPromise =
+        getAwards(
+            queryLeagueID
+        )
+        .catch(error => {
+
+            console.error(
+                'Could not load manager awards:',
+                error
+            );
+
+            return {};
+
+        });
+
+
+    const recordsPromise =
+        getLeagueRecords(
+            false,
+            queryLeagueID
+        )
+        .catch(error => {
+
+            console.error(
+                'Could not load manager records:',
+                error
+            );
+
+            return {};
+
+        });
+
+
+    /*
+     * ============================================================
+     * MANAGERS INFO
+     * ============================================================
+     *
+     * Keep the original array structure expected by
+     * +page.svelte.
+     */
+
+    const managersInfo =
+        Promise.all([
+
+            rostersPromise,
+
+            leagueTeamManagersPromise,
+
+            leagueDataPromise,
+
+            transactionsPromise,
+
+            awardsPromise,
+
+            recordsPromise
+
+        ]);
+
+
+    /*
+     * ============================================================
+     * RETURN PAGE DATA
+     * ============================================================
+     */
+
     return {
 
-        /*
-         * Actual Sleeper manager ID.
-         */
         managerID,
 
-
-        /*
-         * Roster information if supplied.
-         */
         rosterID,
 
-
-        /*
-         * Selected historical year.
-         */
         year:
             yearParam
                 ? parseInt(yearParam)
                 : null,
 
-
-        /*
-         * Red or Green.
-         */
         division,
 
-
-        /*
-         * Custom manager profiles.
-         */
         managers:
             managerProfiles,
 
-
-        /*
-         * Manager component finds the
-         * selected manager from managerID.
-         */
         manager: -1,
 
-
-        /*
-         * All data required by Manager.svelte.
-         */
         managersInfo,
 
-
-        /*
-         * Useful if other components need it.
-         */
         queryLeagueID
 
     };
