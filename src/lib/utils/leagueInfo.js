@@ -659,7 +659,7 @@ export const managers = [
     },
 
     {
-        managerID: "1314475281792118784",
+        managerID: "987136435528511488",
         username: "flipcup1",
         name: "Christian",
         division: "green",
