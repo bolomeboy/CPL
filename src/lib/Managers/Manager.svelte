@@ -811,4 +811,367 @@
             />
 
 
-            <!--
+            <!-- FAVORITE NFL TEAM -->
+
+            {#if viewManager?.favoriteTeam}
+
+                <span class="seperator">
+                    |
+                </span>
+
+                <img
+                    class="infoChild infoTeam"
+                    src="https://sleepercdn.com/images/team_logos/nfl/{viewManager.favoriteTeam}.png"
+                    alt="favorite NFL team"
+                />
+
+            {/if}
+
+
+            <!-- COMMISSIONER -->
+
+            {#if commissioner}
+
+                <span class="seperator">
+                    |
+                </span>
+
+                <div class="infoChild commissionerBadge">
+
+                    <span>
+                        C
+                    </span>
+
+                </div>
+
+            {/if}
+
+
+        </div>
+
+
+        <!-- ====================================================
+             MANAGER NAVIGATION
+             ==================================================== -->
+
+        <div class="managerNav upper">
+
+            <Group variant="outlined">
+
+
+                {#if previousManager}
+
+                    <Button
+                        class="selectionButtons"
+                        onclick={() =>
+                            changeManager(
+                                previousManager,
+                                true
+                            )}
+                        variant="outlined"
+                    >
+
+                        <Label>
+                            Previous Manager
+                        </Label>
+
+                    </Button>
+
+                {:else}
+
+                    <Button
+                        disabled
+                        class="selectionButtons"
+                        variant="outlined"
+                    >
+
+                        <Label>
+                            Previous Manager
+                        </Label>
+
+                    </Button>
+
+                {/if}
+
+
+                <Button
+                    class="selectionButtons"
+                    onclick={() =>
+                        goto('/managers')}
+                    variant="outlined"
+                >
+
+                    <Label>
+                        All Managers
+                    </Label>
+
+                </Button>
+
+
+                {#if nextManager}
+
+                    <Button
+                        class="selectionButtons"
+                        onclick={() =>
+                            changeManager(
+                                nextManager,
+                                true
+                            )}
+                        variant="outlined"
+                    >
+
+                        <Label>
+                            Next Manager
+                        </Label>
+
+                    </Button>
+
+                {:else}
+
+                    <Button
+                        disabled
+                        class="selectionButtons"
+                        variant="outlined"
+                    >
+
+                        <Label>
+                            Next Manager
+                        </Label>
+
+                    </Button>
+
+                {/if}
+
+            </Group>
+
+        </div>
+
+
+        <!-- ====================================================
+             BIO
+             ==================================================== -->
+
+        {#if viewManager?.bio}
+
+            <p class="bio">
+                {@html viewManager.bio}
+            </p>
+
+        {/if}
+
+
+        <!-- ====================================================
+             PHILOSOPHY
+             ==================================================== -->
+
+        {#if viewManager?.philosophy}
+
+            <h3>
+                Team Philosophy
+            </h3>
+
+            <p class="philosophy">
+                {@html viewManager.philosophy}
+            </p>
+
+        {/if}
+
+
+    </div>
+
+
+    <!-- ========================================================
+         FANTASY INFORMATION
+         ======================================================== -->
+
+    {#if !loading}
+
+        <ManagerFantasyInfo
+            {viewManager}
+            {players}
+            {changeManager}
+        />
+
+    {/if}
+
+
+    <!-- ========================================================
+         AWARDS / RECORDS
+         ======================================================== -->
+
+    <ManagerAwards
+        {leagueTeamManagers}
+        tookOver={viewManager?.tookOver}
+        {awards}
+        {records}
+        rosterID={finalRosterID}
+        managerID={viewManager?.managerID}
+    />
+
+
+    <!-- ========================================================
+         ROSTER
+         ======================================================== -->
+
+    {#if loading}
+
+        <div class="loading">
+
+            <p>
+                Retrieving players...
+            </p>
+
+            <LinearProgress indeterminate />
+
+        </div>
+
+    {:else}
+
+        <Roster
+            division="1"
+            expanded={false}
+            {rosterPositions}
+            {roster}
+            {leagueTeamManagers}
+            {players}
+            {startersAndReserve}
+        />
+
+    {/if}
+
+
+    <!-- ========================================================
+         TEAM TRANSACTIONS
+         ======================================================== -->
+
+    <h3>
+        Team Transactions
+    </h3>
+
+
+    <div class="managerConstrained">
+
+        {#if loading}
+
+            <div class="loading">
+
+                <p>
+                    Retrieving players...
+                </p>
+
+                <LinearProgress indeterminate />
+
+            </div>
+
+        {:else}
+
+            <TransactionsPage
+                {playersInfo}
+                transactions={teamTransactions}
+                {leagueTeamManagers}
+                show="both"
+                query=""
+                page={0}
+                perPage={5}
+            />
+
+        {/if}
+
+    </div>
+
+
+    <!-- ========================================================
+         BOTTOM NAVIGATION
+         ======================================================== -->
+
+    <div class="managerNav">
+
+        <Group variant="outlined">
+
+
+            {#if previousManager}
+
+                <Button
+                    class="selectionButtons"
+                    onclick={() =>
+                        changeManager(
+                            previousManager
+                        )}
+                    variant="outlined"
+                >
+
+                    <Label>
+                        Previous Manager
+                    </Label>
+
+                </Button>
+
+            {:else}
+
+                <Button
+                    disabled
+                    class="selectionButtons"
+                    variant="outlined"
+                >
+
+                    <Label>
+                        Previous Manager
+                    </Label>
+
+                </Button>
+
+            {/if}
+
+
+            <Button
+                class="selectionButtons"
+                onclick={() =>
+                    goto('/managers')}
+                variant="outlined"
+            >
+
+                <Label>
+                    All Managers
+                </Label>
+
+            </Button>
+
+
+            {#if nextManager}
+
+                <Button
+                    class="selectionButtons"
+                    onclick={() =>
+                        changeManager(
+                            nextManager
+                        )}
+                    variant="outlined"
+                >
+
+                    <Label>
+                        Next Manager
+                    </Label>
+
+                </Button>
+
+            {:else}
+
+                <Button
+                    disabled
+                    class="selectionButtons"
+                    variant="outlined"
+                >
+
+                    <Label>
+                        Next Manager
+                    </Label>
+
+                </Button>
+
+            {/if}
+
+        </Group>
+
+    </div>
+
+</div>
