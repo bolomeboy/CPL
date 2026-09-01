@@ -20,20 +20,21 @@ export const getLeagueTeamManagers = async (
 ) => {
 
     /*
-     * Keep the original store behavior for the main league.
-     *
-     * Red and Green are loaded independently, so Green
-     * will never overwrite Red.
+     * Keep Red and Green completely separate.
      */
+
     if (
         queryLeagueID === leagueID &&
         get(teamManagersStore)?.currentSeason
     ) {
+
         return get(teamManagersStore);
+
     }
 
 
-    let currentLeagueID = queryLeagueID;
+    let currentLeagueID =
+        queryLeagueID;
 
     const teamManagersMap = {};
     const finalUsers = {};
@@ -42,38 +43,54 @@ export const getLeagueTeamManagers = async (
 
 
     /*
-     * Walk backwards through every season of this league.
+     * Walk through the current league and
+     * its previous seasons.
      */
-    while (currentLeagueID && currentLeagueID != 0) {
 
-        const results = await waitForAll(
+    while (
+        currentLeagueID &&
+        currentLeagueID != 0
+    ) {
 
-            fetch(
-                `https://api.sleeper.app/v1/league/${currentLeagueID}/users`,
-                { compress: true }
-            ),
+        const results =
+            await waitForAll(
 
-            getLeagueData(currentLeagueID),
+                fetch(
+                    `https://api.sleeper.app/v1/league/${currentLeagueID}/users`,
+                    {
+                        compress: true
+                    }
+                ),
 
-            fetch(
-                `https://api.sleeper.app/v1/league/${currentLeagueID}/rosters`,
-                { compress: true }
-            )
+                getLeagueData(
+                    currentLeagueID
+                ),
 
-        ).catch((err) => {
-            console.error(
-                'Error loading league managers:',
-                err
-            );
+                fetch(
+                    `https://api.sleeper.app/v1/league/${currentLeagueID}/rosters`,
+                    {
+                        compress: true
+                    }
+                )
 
-            return null;
-        });
+            ).catch((err) => {
+
+                console.error(
+                    'Error loading league managers:',
+                    err
+                );
+
+                return null;
+
+            });
 
 
         if (!results) {
+
             throw new Error(
                 `Unable to load Sleeper league ${currentLeagueID}`
             );
+
         }
 
 
@@ -91,24 +108,37 @@ export const getLeagueTeamManagers = async (
             !rostersRaw.ok ||
             !leagueData
         ) {
+
             throw new Error(
                 `Unable to load data for Sleeper league ${currentLeagueID}`
             );
+
         }
 
 
-        const users = await usersRaw.json();
-        const rosters = await rostersRaw.json();
+        const users =
+            await usersRaw.json();
+
+        const rosters =
+            await rostersRaw.json();
 
 
-        const year = parseInt(leagueData.season);
+        const year =
+            parseInt(
+                leagueData.season
+            );
 
 
         /*
-         * The first league we load is the current season.
+         * The first league loaded is the
+         * current season.
          */
+
         if (!currentSeason) {
-            currentSeason = year;
+
+            currentSeason =
+                year;
+
         }
 
 
@@ -116,36 +146,134 @@ export const getLeagueTeamManagers = async (
 
 
         /*
-         * Convert Sleeper users into a user map.
+         * Convert Sleeper users into a map.
          */
-        const processedUsers = processUsers(users);
+
+        const processedUsers =
+            processUsers(users);
 
 
         /*
-         * Keep the newest version of each user.
+         * Keep the newest version of
+         * each user.
          */
-        for (const userID in processedUsers) {
+
+        for (
+            const userID
+            in processedUsers
+        ) {
 
             if (!finalUsers[userID]) {
+
                 finalUsers[userID] =
                     processedUsers[userID];
+
             }
+
         }
 
 
         /*
-         * Connect every Sleeper roster to its managers.
+         * Connect every roster to its managers.
          */
-        for (const roster of rosters) {
 
-            teamManagersMap[year][roster.roster_id] = {
+        for (
+            const roster
+            of rosters
+        ) {
 
-                team: getTeamData(
+            const rosterID =
+                String(
+                    roster.roster_id
+                );
+
+
+            const ownerID =
+                roster.owner_id
+                    ? String(roster.owner_id)
+                    : null;
+
+
+            const managers =
+                getManagers(
+                    roster
+                )
+                .map(
+                    id =>
+                        String(id)
+                );
+
+
+            /*
+             * Build the team information from
+             * the actual roster.
+             */
+
+            let team =
+                getTeamData(
                     processedUsers,
-                    roster.owner_id
-                ),
+                    ownerID
+                );
 
-                managers: getManagers(roster)
+
+            /*
+             * Sleeper team name can also exist
+             * directly on roster metadata.
+             */
+
+            const rosterTeamName =
+                roster.metadata?.team_name ||
+                roster.settings?.team_name ||
+                null;
+
+
+            if (rosterTeamName) {
+
+                team = {
+
+                    ...team,
+
+                    name:
+                        rosterTeamName
+
+                };
+
+            }
+
+
+            /*
+             * Sleeper sometimes stores the actual
+             * team logo in roster metadata.
+             *
+             * Prefer that over the manager avatar.
+             */
+
+            const rosterAvatar =
+                roster.metadata?.avatar ||
+                roster.metadata?.team_avatar ||
+                roster.metadata?.team_logo ||
+                null;
+
+
+            if (rosterAvatar) {
+
+                team = {
+
+                    ...team,
+
+                    avatar:
+                        rosterAvatar
+
+                };
+
+            }
+
+
+            teamManagersMap[year][rosterID] = {
+
+                team,
+
+                managers
 
             };
 
@@ -155,21 +283,21 @@ export const getLeagueTeamManagers = async (
         /*
          * Move to the previous season.
          */
+
         currentLeagueID =
             leagueData.previous_league_id;
+
     }
 
 
     /*
      * Determine the division.
      */
-    let division = 'red';
 
-    if (
+    const division =
         queryLeagueID === segundaLeagueID
-    ) {
-        division = 'green';
-    }
+            ? 'green'
+            : 'red';
 
 
     const response = {
@@ -178,23 +306,26 @@ export const getLeagueTeamManagers = async (
 
         teamManagersMap,
 
-        users: finalUsers,
+        users:
+            finalUsers,
 
         division,
 
-        leagueID: queryLeagueID
+        leagueID:
+            queryLeagueID
 
     };
 
 
     /*
-     * Only save the original league to the
-     * existing global store.
+     * Only store Red in the old global store.
      *
-     * Green gets its own returned object and does
-     * not overwrite the Red data.
+     * Green remains independent.
      */
-    if (queryLeagueID === leagueID) {
+
+    if (
+        queryLeagueID === leagueID
+    ) {
 
         teamManagersStore.update(
             () => response
@@ -204,6 +335,7 @@ export const getLeagueTeamManagers = async (
 
 
     return response;
+
 };
 
 
@@ -211,28 +343,31 @@ export const getLeagueTeamManagers = async (
 // PROCESS SLEEPER USERS
 // ============================================================
 
-const processUsers = (rawUsers = []) => {
+const processUsers = (
+    rawUsers = []
+) => {
 
     const finalUsers = {};
 
 
-    for (const user of rawUsers) {
+    for (
+        const user
+        of rawUsers
+    ) {
 
-        /*
-         * Sleeper is the source of truth.
-         */
         user.user_name =
             user.user_name ??
             user.display_name;
 
 
-        /*
-         * Use the actual Sleeper user ID.
-         */
-        finalUsers[user.user_id] = user;
+        finalUsers[
+            String(user.user_id)
+        ] =
+            user;
 
     }
 
 
     return finalUsers;
+
 };
