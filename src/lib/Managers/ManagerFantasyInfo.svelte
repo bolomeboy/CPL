@@ -4,15 +4,7 @@
 
 <style>
     .fantasyInfos {
-        display: flex;
-        justify-content: space-around;
-        align-items: flex-start;
-        flex-wrap: wrap;
-        padding: 0 0 2em;
-        margin: 3em 0 4em;
-        border-bottom: 1px solid var(--aaa);
-        border-top: 1px solid var(--aaa);
-        box-shadow: 0 0 8px 4px var(--ccc);
+        display: none;
     }
 
     .infoSlot {
@@ -134,8 +126,6 @@
         height: 65px;
         vertical-align: bottom;
     }
-
-    /* media queries */
 
     @media (max-width: 731px) {
         .infoSlot {
