@@ -746,22 +746,69 @@ export const getTeamData = (
 ) => {
 
     const user =
-        users[ownerID];
+        ownerID
+            ? users?.[
+                String(ownerID)
+            ]
+            : null;
 
 
-    if(user) {
+    if (user) {
+
+        /*
+         * Sleeper's team name.
+         */
+
+        const teamName =
+            user.metadata?.team_name ||
+            user.display_name ||
+            user.user_name ||
+            'Unknown Team';
+
+
+        /*
+         * IMPORTANT:
+         *
+         * Use the team/avatar information available
+         * from Sleeper.
+         *
+         * This is only a fallback. If the roster itself
+         * supplies a team logo, leagueTeamManagers.js
+         * will prefer that logo.
+         */
+
+        let avatar =
+            user.metadata?.team_avatar ||
+            user.metadata?.team_logo ||
+            user.metadata?.avatar ||
+            null;
+
+
+        if (
+            !avatar &&
+            user.avatar
+        ) {
+
+            avatar =
+                `https://sleepercdn.com/avatars/thumbs/${user.avatar}`;
+
+        }
+
+
+        if (!avatar) {
+
+            avatar =
+                'https://sleepercdn.com/images/v2/icons/player_default.webp';
+
+        }
+
 
         return {
 
-            avatar:
-                user.metadata?.avatar
-                    ? user.metadata.avatar
-                    : `https://sleepercdn.com/avatars/thumbs/${user.avatar}`,
+            avatar,
 
             name:
-                user.metadata.team_name
-                    ? user.metadata.team_name
-                    : user.display_name,
+                teamName
 
         };
 
@@ -771,14 +818,14 @@ export const getTeamData = (
     return {
 
         avatar:
-            `https://sleepercdn.com/images/v2/icons/player_default.webp`,
+            'https://sleepercdn.com/images/v2/icons/player_default.webp',
 
         name:
-            'Unknown Team',
+            'Unknown Team'
 
     };
 
-}
+};
 
 
 /*
