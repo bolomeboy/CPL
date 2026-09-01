@@ -19,25 +19,6 @@
     } from '$lib/utils/helperFunctions/universalFunctions';
 
 
-    /*
-     * ============================================================
-     * LEAGUE LOGOS
-     * ============================================================
-     *
-     * Change these two files in the future if the league names
-     * or logos change.
-     */
-
-    const RED_LEAGUE_LOGO = '/CPL-Red-logo.png';
-    const GREEN_LEAGUE_LOGO = '/CPL-Green-logo.png';
-
-
-    /*
-     * ============================================================
-     * PROPS
-     * ============================================================
-     */
-
     export let manager;
     export let managers = [];
     export let managerID = null;
@@ -51,12 +32,6 @@
     export let awards;
     export let records;
 
-
-    /*
-     * ============================================================
-     * TRANSACTIONS
-     * ============================================================
-     */
 
     let transactions =
         transactionsData?.transactions || [];
@@ -98,26 +73,17 @@
                 sleeperUser?.user_name ||
                 'Unknown Manager',
 
-            location:
-                profile?.location || null,
-
             fantasyStart:
                 profile?.fantasyStart || null,
 
             favoriteTeam:
                 profile?.favoriteTeam || null,
 
-            preferredContact:
-                profile?.preferredContact || null,
-
             bio:
                 profile?.bio || '',
 
             philosophy:
                 profile?.philosophy || '',
-
-            rival:
-                profile?.rival || null,
 
             mode:
                 profile?.mode || null,
@@ -177,14 +143,6 @@
      * ============================================================
      * TEAM LOGO
      * ============================================================
-     *
-     * This is the TEAM logo, not the manager's personal avatar.
-     *
-     * Priority:
-     *
-     * 1. Team logo from selected year
-     * 2. Team logo from current season
-     * 3. Question mark
      */
 
     $: managerPhoto = (() => {
@@ -222,24 +180,6 @@
         return '/managers/question.jpg';
 
     })();
-
-
-    /*
-     * ============================================================
-     * LEAGUE LOGO
-     * ============================================================
-     */
-
-    $: leagueLogo =
-        division === 'green'
-            ? GREEN_LEAGUE_LOGO
-            : RED_LEAGUE_LOGO;
-
-
-    $: leagueLogoAlt =
-        division === 'green'
-            ? 'CPL Green'
-            : 'CPL Red';
 
 
     /*
@@ -415,6 +355,60 @@
 
     /*
      * ============================================================
+     * ALL-TIME RECORD
+     * ============================================================
+     *
+     * Start with the current roster record.
+     *
+     * This automatically updates as the season progresses.
+     *
+     * Later, when CPL/Segunda historical records are connected
+     * to manager IDs, this can become the full career record.
+     */
+
+    $: allTimeRecord = (() => {
+
+        const currentRoster =
+            finalRosterID
+                ? rosters?.[finalRosterID]
+                : null;
+
+
+        if (!currentRoster) {
+
+            return {
+                wins: 0,
+                losses: 0,
+                ties: 0
+            };
+
+        }
+
+
+        return {
+
+            wins:
+                Number(
+                    currentRoster.settings?.wins
+                ) || 0,
+
+            losses:
+                Number(
+                    currentRoster.settings?.losses
+                ) || 0,
+
+            ties:
+                Number(
+                    currentRoster.settings?.ties
+                ) || 0
+
+        };
+
+    })();
+
+
+    /*
+     * ============================================================
      * MANAGER NAVIGATION
      * ============================================================
      */
@@ -501,7 +495,9 @@
             )}&division=${newDivision}`;
 
 
-        if (typeof window !== 'undefined') {
+        if (
+            typeof window !== 'undefined'
+        ) {
 
             window.location.href =
                 newURL;
@@ -538,12 +534,6 @@
     }
 
 
-    /*
-     * ============================================================
-     * TEAM LOGO
-     * ============================================================
-     */
-
     .managerPhoto {
         display: block;
         border-radius: 100%;
@@ -573,19 +563,12 @@
     }
 
 
-    /*
-     * ============================================================
-     * BASIC INFORMATION
-     * ============================================================
-     */
-
     .basicInfo {
         display: flex;
         justify-content: space-evenly;
         align-items: center;
-        height: 36px;
+        height: 24px;
         margin: 2em 0;
-        gap: 10px;
     }
 
 
@@ -600,24 +583,16 @@
     }
 
 
-    /*
-     * ============================================================
-     * LEAGUE LOGO
-     * ============================================================
-     */
-
-    .leagueLogo {
-    height: 45px;
-    width: auto;
-    max-width: 140px;
-    object-fit: contain;
-    vertical-align: middle;
-}
-
-
     .infoTeam {
         height: 48px;
-        width: auto;
+    }
+
+
+    .recordInfo {
+        color: #888;
+        font-style: italic;
+        font-size: 0.9em;
+        white-space: nowrap;
     }
 
 
@@ -700,11 +675,12 @@
     @media (max-width: 450px) {
 
         .basicInfo {
-            height: 30px;
+            height: 20px;
         }
 
 
-        .basicInfo span {
+        .basicInfo span,
+        .recordInfo {
             font-size: 0.75em;
         }
 
@@ -713,35 +689,24 @@
             height: 30px;
         }
 
-
-        .leagueLogo {
-            height: 34px;
-            max-width: 100px;
-        }
-
     }
 
 
     @media (max-width: 370px) {
 
         .basicInfo {
-            height: 26px;
+            height: 18px;
         }
 
 
-        .basicInfo span {
+        .basicInfo span,
+        .recordInfo {
             font-size: 0.6em;
         }
 
 
         .infoTeam {
             height: 24px;
-        }
-
-
-        .leagueLogo {
-            height: 30px;
-            max-width: 85px;
         }
 
     }
@@ -765,10 +730,13 @@
         />
 
 
+        <!-- ====================================================
+             MANAGER NAME / TEAM
+             ==================================================== -->
+
         <h2>
 
             {viewManager?.name}
-
 
             <div class="teamSub">
 
@@ -800,450 +768,47 @@
 
 
         <!-- ====================================================
-             BASIC INFORMATION
+             BASIC INFO
              ==================================================== -->
 
         <div class="basicInfo">
 
 
-            <!-- LOCATION -->
+            <!-- ALL-TIME RECORD -->
 
-            {#if viewManager?.location}
+            <span class="recordInfo">
 
-                <span class="infoChild">
-                    {viewManager.location}
-                </span>
+                All-Time Record:
 
-            {:else}
+                {allTimeRecord.wins}
+                -
+                {allTimeRecord.losses}
+                -
+                {allTimeRecord.ties}
 
-                <span class="infoChild">
-                    Undisclosed Location
-                </span>
-
-            {/if}
+            </span>
 
 
-            <!-- DATES -->
-
-            {#if datesActive?.start}
-
-                <span class="seperator">
-                    |
-                </span>
-
-
-                {#if datesActive.end}
-
-                    <span class="infoChild">
-
-                        In the league from
-                        '
-                        {datesActive.start
-                            .toString()
-                            .substring(2)}
-
-                        to
-
-                        '
-                        {datesActive.end
-                            .toString()
-                            .substring(2)}
-
-                    </span>
-
-                {:else}
-
-                    <span class="infoChild">
-
-                        In the league since
-                        '
-                        {datesActive.start
-                            .toString()
-                            .substring(2)}
-
-                    </span>
-
-                {/if}
-
-            {/if}
-
-
-            <!-- =================================================
-                 LEAGUE LOGO
-                 ================================================= -->
+            <!-- CPL LEAGUE LOGO -->
 
             <span class="seperator">
                 |
             </span>
 
+
             <img
-                class="leagueLogo"
-                src={leagueLogo}
-                alt={leagueLogoAlt}
-                title={leagueLogoAlt}
+                class="infoChild infoTeam"
+                src={
+                    division === 'green'
+                        ? '/CPL-Green-logo.png'
+                        : '/CPL-Red-logo.png'
+                }
+                alt={
+                    division === 'green'
+                        ? 'CPL Green'
+                        : 'CPL Red'
+                }
             />
 
 
-            <!-- FAVORITE NFL TEAM -->
-
-            {#if viewManager?.favoriteTeam}
-
-                <span class="seperator">
-                    |
-                </span>
-
-                <img
-                    class="infoChild infoTeam"
-                    src="https://sleepercdn.com/images/team_logos/nfl/{viewManager.favoriteTeam}.png"
-                    alt="favorite NFL team"
-                />
-
-            {/if}
-
-
-            <!-- COMMISSIONER -->
-
-            {#if commissioner}
-
-                <span class="seperator">
-                    |
-                </span>
-
-                <div class="infoChild commissionerBadge">
-
-                    <span>
-                        C
-                    </span>
-
-                </div>
-
-            {/if}
-
-        </div>
-
-
-        <!-- ====================================================
-             MANAGER NAVIGATION
-             ==================================================== -->
-
-        <div class="managerNav upper">
-
-            <Group variant="outlined">
-
-
-                {#if previousManager}
-
-                    <Button
-                        class="selectionButtons"
-                        onclick={() =>
-                            changeManager(
-                                previousManager,
-                                true
-                            )}
-                        variant="outlined"
-                    >
-
-                        <Label>
-                            Previous Manager
-                        </Label>
-
-                    </Button>
-
-                {:else}
-
-                    <Button
-                        disabled
-                        class="selectionButtons"
-                        variant="outlined"
-                    >
-
-                        <Label>
-                            Previous Manager
-                        </Label>
-
-                    </Button>
-
-                {/if}
-
-
-                <Button
-                    class="selectionButtons"
-                    onclick={() =>
-                        goto('/managers')}
-                    variant="outlined"
-                >
-
-                    <Label>
-                        All Managers
-                    </Label>
-
-                </Button>
-
-
-                {#if nextManager}
-
-                    <Button
-                        class="selectionButtons"
-                        onclick={() =>
-                            changeManager(
-                                nextManager,
-                                true
-                            )}
-                        variant="outlined"
-                    >
-
-                        <Label>
-                            Next Manager
-                        </Label>
-
-                    </Button>
-
-                {:else}
-
-                    <Button
-                        disabled
-                        class="selectionButtons"
-                        variant="outlined"
-                    >
-
-                        <Label>
-                            Next Manager
-                        </Label>
-
-                    </Button>
-
-                {/if}
-
-            </Group>
-
-        </div>
-
-
-        <!-- ====================================================
-             BIO
-             ==================================================== -->
-
-        {#if viewManager?.bio}
-
-            <p class="bio">
-                {@html viewManager.bio}
-            </p>
-
-        {/if}
-
-
-        <!-- ====================================================
-             TEAM PHILOSOPHY
-             ==================================================== -->
-
-        {#if viewManager?.philosophy}
-
-            <h3>
-                Team Philosophy
-            </h3>
-
-            <p class="philosophy">
-                {@html viewManager.philosophy}
-            </p>
-
-        {/if}
-
-
-    </div>
-
-
-    <!-- ========================================================
-         FANTASY INFORMATION
-         ======================================================== -->
-
-    {#if !loading}
-
-        <ManagerFantasyInfo
-            {viewManager}
-            {players}
-            {changeManager}
-        />
-
-    {/if}
-
-
-    <!-- ========================================================
-         AWARDS / RECORDS
-         ======================================================== -->
-
-    <ManagerAwards
-        {leagueTeamManagers}
-        tookOver={viewManager?.tookOver}
-        {awards}
-        {records}
-        rosterID={finalRosterID}
-        managerID={viewManager?.managerID}
-    />
-
-
-    <!-- ========================================================
-         ROSTER
-         ======================================================== -->
-
-    {#if loading}
-
-        <div class="loading">
-
-            <p>
-                Retrieving players...
-            </p>
-
-            <LinearProgress indeterminate />
-
-        </div>
-
-    {:else}
-
-        <Roster
-            division="1"
-            expanded={false}
-            {rosterPositions}
-            {roster}
-            {leagueTeamManagers}
-            {players}
-            {startersAndReserve}
-        />
-
-    {/if}
-
-
-    <!-- ========================================================
-         TRANSACTIONS
-         ======================================================== -->
-
-    <h3>
-        Team Transactions
-    </h3>
-
-
-    <div class="managerConstrained">
-
-        {#if loading}
-
-            <div class="loading">
-
-                <p>
-                    Retrieving players...
-                </p>
-
-                <LinearProgress indeterminate />
-
-            </div>
-
-        {:else}
-
-            <TransactionsPage
-                {playersInfo}
-                transactions={teamTransactions}
-                {leagueTeamManagers}
-                show="both"
-                query=""
-                page={0}
-                perPage={5}
-            />
-
-        {/if}
-
-    </div>
-
-
-    <!-- ========================================================
-         BOTTOM NAVIGATION
-         ======================================================== -->
-
-    <div class="managerNav">
-
-        <Group variant="outlined">
-
-
-            {#if previousManager}
-
-                <Button
-                    class="selectionButtons"
-                    onclick={() =>
-                        changeManager(
-                            previousManager
-                        )}
-                    variant="outlined"
-                >
-
-                    <Label>
-                        Previous Manager
-                    </Label>
-
-                </Button>
-
-            {:else}
-
-                <Button
-                    disabled
-                    class="selectionButtons"
-                    variant="outlined"
-                >
-
-                    <Label>
-                        Previous Manager
-                    </Label>
-
-                </Button>
-
-            {/if}
-
-
-            <Button
-                class="selectionButtons"
-                onclick={() =>
-                    goto('/managers')}
-                variant="outlined"
-            >
-
-                <Label>
-                    All Managers
-                </Label>
-
-            </Button>
-
-
-            {#if nextManager}
-
-                <Button
-                    class="selectionButtons"
-                    onclick={() =>
-                        changeManager(
-                            nextManager
-                        )}
-                    variant="outlined"
-                >
-
-                    <Label>
-                        Next Manager
-                    </Label>
-
-                </Button>
-
-            {:else}
-
-                <Button
-                    disabled
-                    class="selectionButtons"
-                    variant="outlined"
-                >
-
-                    <Label>
-                        Next Manager
-                    </Label>
-
-                </Button>
-
-            {/if}
-
-        </Group>
-
-    </div>
-
-</div>
+            <!--
