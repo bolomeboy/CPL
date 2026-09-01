@@ -1069,12 +1069,23 @@ export const getDatesActive = (
     managerID
 ) => {
 
-    if(!managerID) {
-        return;
+    if (
+        !teamManagers ||
+        !managerID ||
+        !teamManagers.teamManagersMap
+    ) {
+        return {
+            start: null,
+            end: null
+        };
     }
 
 
-    let datesActive = {
+    const targetManagerID =
+        String(managerID);
+
+
+    const datesActive = {
 
         start: null,
 
@@ -1086,44 +1097,54 @@ export const getDatesActive = (
     const years =
         Object.keys(
             teamManagers.teamManagersMap
-        )
-        .sort(
-            (a, b) =>
-                b - a
+        ).sort(
+            (a, b) => b - a
         );
 
 
-    for(
-        const year
-        of years
+    for (
+        const year of years
     ) {
 
-        for(
-            const rosterID
-            in teamManagers
-                .teamManagersMap
-                [year]
+        const yearManagers =
+            teamManagers.teamManagersMap[year];
+
+
+        if (!yearManagers) {
+            continue;
+        }
+
+
+        for (
+            const rosterID in yearManagers
         ) {
 
-            if(
-                teamManagers
-                    .teamManagersMap
-                    [year]
-                    [rosterID]
-                    .managers
-                    .indexOf(
-                        managerID
-                    ) > -1
-            ) {
+            const managers =
+                yearManagers[
+                    rosterID
+                ]?.managers || [];
+
+
+            const managerFound =
+                managers.some(
+                    id =>
+                        String(id) ===
+                        targetManagerID
+                );
+
+
+            if (managerFound) {
 
                 datesActive.start =
-                    year;
+                    Number(year);
 
 
-                if(!datesActive.end) {
+                if (
+                    !datesActive.end
+                ) {
 
                     datesActive.end =
-                        year;
+                        Number(year);
 
                 }
 
@@ -1137,8 +1158,13 @@ export const getDatesActive = (
     }
 
 
-    if(
-        datesActive.end ==
+    /*
+     * If the manager is active in the
+     * current season, there is no end date.
+     */
+
+    if (
+        datesActive.end ===
         teamManagers.currentSeason
     ) {
 
@@ -1150,7 +1176,7 @@ export const getDatesActive = (
 
     return datesActive;
 
-}
+};
 
 
 /*
@@ -1164,49 +1190,77 @@ export const getRosterIDFromManagerID = (
     managerID
 ) => {
 
-    if(!managerID) {
+    if (
+        !teamManagers ||
+        !managerID ||
+        !teamManagers.teamManagersMap
+    ) {
         return null;
     }
+
+
+    const targetManagerID =
+        String(managerID);
 
 
     const years =
         Object.keys(
             teamManagers.teamManagersMap
-        )
-        .sort(
-            (a, b) =>
-                b - a
+        ).sort(
+            (a, b) => b - a
         );
 
 
-    for(
-        const year
-        of years
+    for (
+        const year of years
     ) {
 
-        for(
-            const rosterID
-            in teamManagers
-                .teamManagersMap
-                [year]
+        const yearManagers =
+            teamManagers.teamManagersMap[year];
+
+
+        if (!yearManagers) {
+            continue;
+        }
+
+
+        for (
+            const rosterID in yearManagers
         ) {
 
-            if(
-                teamManagers
-                    .teamManagersMap
-                    [year]
-                    [rosterID]
-                    .managers
-                    .indexOf(
-                        managerID
-                    ) > -1
-            ) {
+            const roster =
+                yearManagers[rosterID];
+
+
+            const managers =
+                roster?.managers || [];
+
+
+            /*
+             * Compare IDs as strings.
+             *
+             * Sleeper data can sometimes give us
+             * an ID as a number while our custom
+             * manager profile uses a string.
+             */
+
+            const managerFound =
+                managers.some(
+                    id =>
+                        String(id) ===
+                        targetManagerID
+                );
+
+
+            if (managerFound) {
 
                 return {
 
-                    rosterID,
+                    rosterID:
+                        String(rosterID),
 
-                    year
+                    year:
+                        Number(year)
 
                 };
 
@@ -1219,7 +1273,7 @@ export const getRosterIDFromManagerID = (
 
     return null;
 
-}
+};
 
 
 /*
