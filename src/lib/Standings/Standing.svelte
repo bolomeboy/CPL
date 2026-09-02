@@ -1,25 +1,54 @@
 <script>
     import { gotoManager } from '$lib/utils/helper';
-  	import { Row, Cell } from '@smui/data-table';
+    import { Row, Cell } from '@smui/data-table';
 
-    export let columnOrder, team, standing, leagueTeamManagers;
+    export let columnOrder;
+    export let team;
+    export let standing;
+    export let leagueTeamManagers;
+
+    /*
+     * Placement is used only for the 2026 inaugural season.
+     *
+     * "cpl" = Top 6, going to the 2027 CPL
+     * "segunda" = Bottom 6, going to the 2027 Segunda Liga
+     */
+    export let placement = null;
 </script>
 
 <style>
     .clickable {
         cursor: pointer;
     }
-	
-	.teamAvatar {
-		vertical-align: middle;
-		border-radius: 50%;
-		height: 40px;
-		margin-right: 15px;
-		border: 0.25px solid #777;
-	}
+
+    .teamAvatar {
+        vertical-align: middle;
+        border-radius: 50%;
+        height: 40px;
+        margin-right: 15px;
+        border: 0.25px solid #777;
+    }
 
     :global(.contrastRow) {
         background-color: var(--f8f8f8);
+    }
+
+    /*
+     * 2026 TOP 6
+     *
+     * These teams will enter the 2027 CPL.
+     */
+    :global(.futureCplRow) {
+        background-color: rgba(0, 49, 107, 0.07) !important;
+    }
+
+    /*
+     * 2026 BOTTOM 6
+     *
+     * These teams will enter the 2027 Segunda Liga.
+     */
+    :global(.futureSegundaRow) {
+        background-color: rgba(128, 128, 128, 0.04) !important;
     }
 
     .team {
@@ -27,16 +56,35 @@
     }
 </style>
 
-<Row class="contrastRow">
-    <Cell class="">
-        <div class="clickable team" onclick={() => gotoManager({leagueTeamManagers, rosterID: standing.rosterID})}>
-            <img alt="team avatar" class="teamAvatar clickable" src="{team.avatar}" />
+<Row
+    class="contrastRow"
+    class:futureCplRow={placement === 'cpl'}
+    class:futureSegundaRow={placement === 'segunda'}
+>
+    <Cell>
+        <div
+            class="clickable team"
+            onclick={() =>
+                gotoManager({
+                    leagueTeamManagers,
+                    rosterID: standing.rosterID
+                })}
+        >
+            <img
+                alt="team avatar"
+                class="teamAvatar clickable"
+                src={team.avatar}
+            />
+
             <div>
                 {team.name}
             </div>
         </div>
     </Cell>
+
     {#each columnOrder as column}
-        <Cell class="center">{standing[column.field]}</Cell>
+        <Cell class="center">
+            {standing[column.field]}
+        </Cell>
     {/each}
 </Row>
