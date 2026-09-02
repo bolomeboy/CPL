@@ -316,10 +316,11 @@
 
 
     .divisionDividerCell {
-        padding: 0 !important;
-        border-top: 2px solid var(--blueOne);
-        border-bottom: 1px solid var(--ccc);
-    }
+    padding: 0 !important;
+    border-top: 2px solid var(--blueOne);
+    border-bottom: 1px solid var(--ccc);
+    text-align: center;
+}
 
 
     .divisionDivider {
@@ -429,106 +430,68 @@
 
             <Body>
 
-                {#each standings as standing, index}
+    {#each standings as standing, index}
 
-                    {/*
-                     * ====================================================
-                     * 2026 ONLY
-                     *
-                     * The top six will enter the 2027 CPL.
-                     *
-                     * This divider appears before team #1.
-                     * ====================================================
-                     */}
+        {#if Number(year) === 2026 && index === 0}
 
-                    {#if Number(year) === 2026 && index === 0}
+            <Row class="divisionDividerRow">
 
-                        <Row class="divisionDividerRow">
+                <Cell
+                    colspan={columnOrder.length + 1}
+                    class="divisionDividerCell"
+                >
+                    <div class="divisionDivider">
+                        <strong>2027 CPL</strong>
+                        <span>Top 6</span>
+                    </div>
+                </Cell>
 
-                            <Cell
-                                colspan={columnOrder.length + 1}
-                                class="divisionDividerCell"
-                            >
+            </Row>
 
-                                <div class="divisionDivider">
-
-                                    <span>
-                                        2027 CPL
-                                    </span>
-
-                                    <span>
-                                        Top 6
-                                    </span>
-
-                                </div>
-
-                            </Cell>
-
-                        </Row>
-
-                    {/if}
+        {/if}
 
 
-                    {/*
-                     * ====================================================
-                     * 2026 ONLY
-                     *
-                     * The bottom six will enter the 2027 Segunda Liga.
-                     *
-                     * This divider appears immediately before #7.
-                     * ====================================================
-                     */}
+        {#if Number(year) === 2026 && index === 6}
 
-                    {#if Number(year) === 2026 && index === 6}
+            <Row class="divisionDividerRow">
 
-                        <Row class="divisionDividerRow">
+                <Cell
+                    colspan={columnOrder.length + 1}
+                    class="divisionDividerCell"
+                >
+                    <div class="divisionDivider">
+                        <strong>2027 Segunda Liga</strong>
+                        <span>Bottom 6</span>
+                    </div>
+                </Cell>
 
-                            <Cell
-                                colspan={columnOrder.length + 1}
-                                class="divisionDividerCell"
-                            >
+            </Row>
 
-                                <div class="divisionDivider">
-
-                                    <span>
-                                        2027 Segunda Liga
-                                    </span>
-
-                                    <span>
-                                        Bottom 6
-                                    </span>
-
-                                </div>
-
-                            </Cell>
-
-                        </Row>
-
-                    {/if}
+        {/if}
 
 
-                    <Standing
-                        {columnOrder}
-                        {standing}
-                        {leagueTeamManagers}
-                        placement={
-                            Number(year) === 2026
-                                ? index < 6
-                                    ? 'cpl'
-                                    : 'segunda'
-                                : null
-                        }
-                        team={
-                            getTeamFromTeamManagers(
-                                leagueTeamManagers,
-                                standing.rosterID
-                            )
-                        }
-                    />
+        <Standing
+            {columnOrder}
+            {standing}
+            {leagueTeamManagers}
+            placement={
+                Number(year) === 2026
+                    ? index < 6
+                        ? 'cpl'
+                        : 'segunda'
+                    : null
+            }
+            team={
+                getTeamFromTeamManagers(
+                    leagueTeamManagers,
+                    standing.rosterID
+                )
+            }
+        />
 
-                {/each}
+    {/each}
 
-            </Body>
+</Body>
 
         </DataTable>
 
