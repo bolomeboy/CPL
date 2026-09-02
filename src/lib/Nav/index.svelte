@@ -40,9 +40,9 @@
     	margin: 0 auto;
 	}
 	nav {
-		background-color: var(--fff);
-		position: relative;
-		z-index: 2;
+    background-color: var(--fff);
+    position: relative;
+    z-index: 1000002;
 		border-bottom: 1px solid #00316b;
 		box-shadow: 0 0 8px 0 #00316b;
 	}
