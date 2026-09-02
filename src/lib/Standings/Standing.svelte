@@ -7,13 +7,17 @@
     export let standing;
     export let leagueTeamManagers;
 
-    /*
-     * Placement is used only for the 2026 inaugural season.
-     *
-     * "cpl" = Top 6, going to the 2027 CPL
-     * "segunda" = Bottom 6, going to the 2027 Segunda Liga
-     */
+    // 2026 only:
+    // "cpl" = top 6
+    // "segunda" = bottom 6
     export let placement = null;
+
+    $: rowClass =
+        placement === 'cpl'
+            ? 'contrastRow futureCplRow'
+            : placement === 'segunda'
+                ? 'contrastRow futureSegundaRow'
+                : 'contrastRow';
 </script>
 
 <style>
@@ -35,7 +39,6 @@
 
     /*
      * 2026 TOP 6
-     *
      * These teams will enter the 2027 CPL.
      */
     :global(.futureCplRow) {
@@ -44,7 +47,6 @@
 
     /*
      * 2026 BOTTOM 6
-     *
      * These teams will enter the 2027 Segunda Liga.
      */
     :global(.futureSegundaRow) {
@@ -56,11 +58,7 @@
     }
 </style>
 
-<Row
-    class="contrastRow"
-    class:futureCplRow={placement === 'cpl'}
-    class:futureSegundaRow={placement === 'segunda'}
->
+<Row class={rowClass}>
     <Cell>
         <div
             class="clickable team"
