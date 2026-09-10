@@ -21,8 +21,8 @@
      *
      * Least important to most important.
      *
-     * Divisional records are no longer displayed or used
-     * as visible standings columns.
+     * Divisional records are not used because the CPL does not
+     * have divisions in the 2026 season.
      */
 
     const sortOrder = [
@@ -38,7 +38,7 @@
      * TABLE COLUMNS
      * ============================================================
      *
-     * Div W / Div T / Div L have been removed.
+     * Div W / Div T / Div L are not displayed.
      */
 
     const columnOrder = [
@@ -303,61 +303,6 @@
         margin: 0.5em 0 5em;
     }
 
-
-    /*
-     * ============================================================
-     * 2026 PROMOTION / DIVISION DIVIDERS
-     * ============================================================
-     */
-
-    .divisionDividerRow {
-        height: 48px;
-    }
-
-
-    .divisionDividerCell {
-    padding: 0 !important;
-    border-top: 2px solid var(--blueOne);
-    border-bottom: 1px solid var(--ccc);
-    text-align: center;
-}
-
-
-    .divisionDivider {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 15px;
-        font-weight: 700;
-        font-size: 0.9em;
-        text-transform: uppercase;
-        letter-spacing: 0.03em;
-    }
-
-
-    .divisionDivider span:last-child {
-        font-weight: 500;
-        color: var(--g777);
-        text-transform: none;
-    }
-
-
-    /*
-     * On smaller screens, allow the divider text to wrap
-     * instead of forcing the table wider.
-     */
-
-    @media (max-width: 600px) {
-
-        .divisionDivider {
-            gap: 6px;
-            padding: 9px 8px;
-            font-size: 0.8em;
-        }
-
-    }
-
 </style>
 
 
@@ -430,68 +375,28 @@
 
             <Body>
 
-    {#each standings as standing, index}
+                {#each standings as standing, index}
 
-        {#if Number(year) === 2026 && index === 0}
+                    <Standing
+                        {columnOrder}
+                        {standing}
+                        {leagueTeamManagers}
+                        placement={
+                            Number(year) === 2026 && index < 6
+                                ? 'cpl'
+                                : null
+                        }
+                        team={
+                            getTeamFromTeamManagers(
+                                leagueTeamManagers,
+                                standing.rosterID
+                            )
+                        }
+                    />
 
-            <Row class="divisionDividerRow">
+                {/each}
 
-                <Cell
-                    colspan={columnOrder.length + 1}
-                    class="divisionDividerCell"
-                >
-                    <div class="divisionDivider">
-                        <strong>2027 CPL</strong>
-                        <span>Top 6</span>
-                    </div>
-                </Cell>
-
-            </Row>
-
-        {/if}
-
-
-        {#if Number(year) === 2026 && index === 6}
-
-            <Row class="divisionDividerRow">
-
-                <Cell
-                    colspan={columnOrder.length + 1}
-                    class="divisionDividerCell"
-                >
-                    <div class="divisionDivider">
-                        <strong>2027 Segunda Liga</strong>
-                        <span>Bottom 6</span>
-                    </div>
-                </Cell>
-
-            </Row>
-
-        {/if}
-
-
-        <Standing
-            {columnOrder}
-            {standing}
-            {leagueTeamManagers}
-            placement={
-                Number(year) === 2026
-                    ? index < 6
-                        ? 'cpl'
-                        : 'segunda'
-                    : null
-            }
-            team={
-                getTeamFromTeamManagers(
-                    leagueTeamManagers,
-                    standing.rosterID
-                )
-            }
-        />
-
-    {/each}
-
-</Body>
+            </Body>
 
         </DataTable>
 
