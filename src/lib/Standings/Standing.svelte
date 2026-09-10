@@ -7,23 +7,33 @@
     export let standing;
     export let leagueTeamManagers;
 
-    // 2026 only:
-    // "cpl" = top 6
-    // "segunda" = bottom 6
+    /*
+     * "cpl" means this team is currently in the
+     * top six during the 2026 season.
+     */
+
     export let placement = null;
+
+
+    /*
+     * Apply the playoff highlight only to the
+     * top six teams.
+     */
 
     $: rowClass =
         placement === 'cpl'
-            ? 'contrastRow futureCplRow'
-            : placement === 'segunda'
-                ? 'contrastRow futureSegundaRow'
-                : 'contrastRow';
+            ? 'contrastRow playoffRow'
+            : 'contrastRow';
+
 </script>
 
+
 <style>
+
     .clickable {
         cursor: pointer;
     }
+
 
     .teamAvatar {
         vertical-align: middle;
@@ -33,33 +43,34 @@
         border: 0.25px solid #777;
     }
 
+
     :global(.contrastRow) {
         background-color: var(--f8f8f8);
     }
 
-    /*
-     * 2026 TOP 6
-     * These teams will enter the 2027 CPL.
-     */
-    :global(.futureCplRow) {
-        background-color: rgba(0, 49, 107, 0.07) !important;
-    }
 
     /*
-     * 2026 BOTTOM 6
-     * These teams will enter the 2027 Segunda Liga.
+     * 2026 TOP 6
+     *
+     * Same subtle green highlight used by TBD.
      */
-    :global(.futureSegundaRow) {
-        background-color: rgba(128, 128, 128, 0.04) !important;
+
+    :global(.playoffRow) {
+        background-color: rgba(76, 175, 80, 0.22) !important;
     }
+
 
     .team {
         text-align: center;
     }
+
 </style>
 
+
 <Row class={rowClass}>
+
     <Cell>
+
         <div
             class="clickable team"
             onclick={() =>
@@ -68,6 +79,7 @@
                     rosterID: standing.rosterID
                 })}
         >
+
             <img
                 alt="team avatar"
                 class="teamAvatar clickable"
@@ -77,12 +89,20 @@
             <div>
                 {team.name}
             </div>
+
         </div>
+
     </Cell>
 
+
     {#each columnOrder as column}
+
         <Cell class="center">
+
             {standing[column.field]}
+
         </Cell>
+
     {/each}
+
 </Row>
