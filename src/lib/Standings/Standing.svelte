@@ -1,7 +1,7 @@
 <script>
     import { gotoManager } from '$lib/utils/helper';
     import { Row, Cell } from '@smui/data-table';
-    import { renderManagerNames } from '$lib/utils/helperFunctions/universalFunctions';
+    import { managers } from '$lib/utils/leagueInfo';
 
     export let columnOrder;
     export let team;
@@ -28,14 +28,33 @@
 
 
     /*
-     * Get the manager's actual Sleeper display name.
+     * Find the Sleeper manager ID attached to this roster.
      */
 
-    $: managerName =
-        renderManagerNames(
-            leagueTeamManagers,
-            standing.rosterID
+    $: rosterManagerID =
+        leagueTeamManagers?.teamManagersMap?.[
+            leagueTeamManagers?.currentSeason
+        ]?.[standing.rosterID]?.managers?.[0];
+
+
+    /*
+     * Match that Sleeper ID to the manager information
+     * entered manually in leagueInfo.js.
+     */
+
+    $: managerInfo =
+        managers.find(
+            (manager) =>
+                String(manager.managerID) ===
+                String(rosterManagerID)
         );
+
+
+    /*
+     * Use the manager's real name from leagueInfo.js.
+     */
+
+    $: managerName = managerInfo?.name || '';
 
 </script>
 
@@ -63,8 +82,6 @@
 
     /*
      * 2026 TOP 6
-     *
-     * Same subtle green highlight used by TBD.
      */
 
     :global(.playoffRow) {
