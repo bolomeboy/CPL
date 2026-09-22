@@ -1,6 +1,7 @@
 <script>
     import { gotoManager } from '$lib/utils/helper';
     import { Row, Cell } from '@smui/data-table';
+    import { renderManagerNames } from '$lib/utils/helperFunctions/universalFunctions';
 
     export let columnOrder;
     export let team;
@@ -24,6 +25,17 @@
         placement === 'cpl'
             ? 'contrastRow playoffRow'
             : 'contrastRow';
+
+
+    /*
+     * Get the manager's actual Sleeper display name.
+     */
+
+    $: managerName =
+        renderManagerNames(
+            leagueTeamManagers,
+            standing.rosterID
+        );
 
 </script>
 
@@ -64,6 +76,20 @@
         text-align: center;
     }
 
+
+    .teamName {
+        font-weight: 500;
+        line-height: 1.2;
+    }
+
+
+    .managerName {
+        font-size: 0.8rem;
+        opacity: 0.7;
+        margin-top: 3px;
+        line-height: 1.2;
+    }
+
 </style>
 
 
@@ -86,9 +112,17 @@
                 src={team.avatar}
             />
 
-            <div>
+            <div class="teamName">
                 {team.name}
             </div>
+
+            {#if managerName}
+
+                <div class="managerName">
+                    {managerName}
+                </div>
+
+            {/if}
 
         </div>
 
